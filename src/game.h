@@ -1,0 +1,28 @@
+#ifndef GAME_H
+#define GAME_H
+
+#include <SDL2/SDL.h>
+
+constexpr int fps{144};
+constexpr int timeStepInMs{1000 / fps};
+
+class Game {
+private:
+    bool isRunning{false};
+    SDL_Window *window{NULL};
+    SDL_Renderer *renderer{NULL};
+
+public:
+    Game();
+    ~Game();
+    void initialize();
+    void run();
+    void processInput();
+    void update();
+    void render(float frameExtrapolationFactor);
+    void destroy();
+    const int windowWidth{1280};
+    const int windowHeight{720};
+};
+
+#endif
