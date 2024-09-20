@@ -3,8 +3,8 @@
 
 #include <SDL2/SDL.h>
 
-constexpr int fps{144};
-constexpr int timeStepInMs{1000 / fps};
+constexpr int updateRate{144};
+constexpr int timeStepInMs{1000 / updateRate};
 
 class Game {
 private:

@@ -33,7 +33,7 @@ void setup() {}
 void Game::run() {
     setup();
     std::uint64_t previousTicks{SDL_GetTicks64()};
-    int lag = 0;
+    int lag{0};
     while (isRunning) {
         std::uint64_t currentTicks{SDL_GetTicks64()};
         lag += static_cast<int>(currentTicks - previousTicks);
