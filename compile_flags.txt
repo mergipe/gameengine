@@ -7,5 +7,7 @@
 -Werror
 -std=c++23
 -xc++
--I./libs
+-I./libs/glm/include
+-I./libs/sol/include
+-I./libs/spdlog/include
 -I./src

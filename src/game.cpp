@@ -1,9 +1,10 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_error.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
 #include <game.h>
-#include <iostream>
+#include <logger.h>
 
 Game::Game() {}
 
@@ -11,18 +12,18 @@ Game::~Game() {}
 
 void Game::initialize() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        std::cerr << "Error initializing SDL: " << SDL_GetError() << "\n";
+        Logger::critical("Error initializing SDL: {}", SDL_GetError());
         return;
     }
     window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight,
                               SDL_WINDOW_BORDERLESS);
     if (!window) {
-        std::cerr << "Error creating SDL window: " << SDL_GetError() << "\n";
+        Logger::critical("Error creation SDL window: {}", SDL_GetError());
         return;
     }
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
-        std::cerr << "Error creating SDL renderer: " << SDL_GetError() << "\n";
+        Logger::critical("Error creation SDL renderer: {}", SDL_GetError());
         return;
     }
     isRunning = true;
@@ -61,6 +62,7 @@ void Game::processInput() {
 void Game::update() {}
 
 void Game::render(float frameExtrapolationFactor) {
+    Logger::info(frameExtrapolationFactor);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
