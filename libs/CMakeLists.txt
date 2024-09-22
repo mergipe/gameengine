@@ -16,4 +16,4 @@ add_library(
     ${IMGUI_SRC_DIR}/imgui_demo.cpp
 )
 target_include_directories(imgui SYSTEM PUBLIC imgui/include)
-link_sdl2(imgui)
+target_link_sdl2(imgui)
