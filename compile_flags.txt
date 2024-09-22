@@ -12,4 +12,6 @@
 -I./libs/spdlog/include
 -I./libs/imgui/include
 -I./src
+-I./src/core
+-I./src/scene
 -I/usr/include/SDL2

@@ -1,10 +1,6 @@
+#include <Game.h>
+#include <Logger.h>
 #include <SDL.h>
-#include <game.h>
-#include <logger.h>
-
-Game::Game() {}
-
-Game::~Game() {}
 
 void Game::initialize() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -37,7 +33,7 @@ void Game::run() {
         previousTicks = currentTicks;
         processInput();
         while (lag >= timeStepInMs) {
-            update();
+            update(timeStepInMs);
             lag -= timeStepInMs;
         }
         render(static_cast<float>(lag) / timeStepInMs);
@@ -45,7 +41,7 @@ void Game::run() {
 }
 
 void Game::processInput() {
-    SDL_Event event;
+    SDL_Event event{};
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
         case SDL_QUIT:
@@ -55,7 +51,7 @@ void Game::processInput() {
     }
 }
 
-void Game::update() {}
+void Game::update(int timeStep) { (void)timeStep; }
 
 void Game::render(float frameExtrapolationFactor) {
     (void)frameExtrapolationFactor;
