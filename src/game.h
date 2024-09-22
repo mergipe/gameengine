@@ -1,7 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 constexpr int updateRate{144};
 constexpr int timeStepInMs{1000 / updateRate};
@@ -14,7 +14,9 @@ private:
 
 public:
     Game();
+    Game(const Game &);
     ~Game();
+    Game &operator=(const Game &);
     void initialize();
     void run();
     void processInput();

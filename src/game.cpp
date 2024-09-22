@@ -1,8 +1,4 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_error.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_timer.h>
+#include <SDL.h>
 #include <game.h>
 #include <logger.h>
 
@@ -62,7 +58,7 @@ void Game::processInput() {
 void Game::update() {}
 
 void Game::render(float frameExtrapolationFactor) {
-    Logger::info(frameExtrapolationFactor);
+    (void)frameExtrapolationFactor;
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);

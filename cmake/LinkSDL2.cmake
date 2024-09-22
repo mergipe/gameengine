@@ -1,0 +1,6 @@
+function(link_sdl2 target)
+    if (TARGET SDL2::SDL2main)
+        target_link_libraries(${target} PRIVATE SDL2::SDL2main)
+    endif()
+    target_link_libraries(${target} PRIVATE SDL2::SDL2)
+endfunction()
