@@ -7,7 +7,17 @@
 constexpr unsigned int MAX_COMPONENTS{32};
 using Signature = std::bitset<MAX_COMPONENTS>;
 
-class Component {};
+struct BaseComponent {
+protected:
+    static inline int nextId{};
+};
+
+template <typename T> class Component : public BaseComponent {
+    static int getId() {
+        const static auto id{nextId++};
+        return id;
+    };
+};
 
 class Entity {
 private:
@@ -15,6 +25,7 @@ private:
 
 public:
     Entity(int id) : id{id} {}
+    bool operator==(const Entity &);
     int getId() const { return id; }
 };
 
@@ -30,8 +41,14 @@ public:
     const Signature &getComponentSignature() const { return componentSignature; }
     void addEntity(Entity entity);
     void removeEntity(Entity entity);
+    template <typename T> void requireComponent();
 };
 
 class EntityManager {};
+
+template <typename T> void System::requireComponent() {
+    const auto componentId{Component<T>::getId()};
+    componentSignature.set(componentId);
+}
 
 #endif
