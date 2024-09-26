@@ -2,6 +2,9 @@
 #define ECS_H
 
 #include <bitset>
+#include <set>
+#include <typeindex>
+#include <unordered_map>
 #include <vector>
 
 constexpr unsigned int MAX_COMPONENTS{32};
@@ -69,12 +72,42 @@ public:
 class Registry {
 private:
     int entitiesCount{0};
+    std::set<Entity> entitiesToBeAdded{};
+    std::set<Entity> entitiesToBeKilled{};
     std::vector<IPool *> componentPools{};
+    std::vector<Signature> entityComponentSignatures{};
+    std::unordered_map<std::type_index, System *> systems{};
+
+public:
+    Registry() = default;
+    void update();
+    Entity createEntity();
+    void killEntity(Entity entity);
+    void addEntityToSystems(Entity entity);
+    template <typename T, typename... Args> void addComponent(Entity entity, Args &&...args);
 };
 
 template <typename T> void System::requireComponent() {
     const auto componentId{Component<T>::getId()};
     componentSignature.set(componentId);
+}
+
+template <typename T, typename... Args> void Registry::addComponent(Entity entity, Args &&...args) {
+    const auto componentId{Component<T>::getId()};
+    if (componentId >= componentPools.size()) {
+        componentPools.resize(componentId + 1, nullptr);
+    }
+    if (!componentPools[componentId]) {
+        componentPools[componentId] = new Pool<T>();
+    }
+    Pool<T> *componentPool = componentPools[componentId];
+    const auto entityId{entity.getId()};
+    if (entityId >= componentPool->getSize()) {
+        componentPool->resize(entitiesCount);
+    }
+    T newComponent{std::forward<Args>(args)...};
+    componentPool->set(entityId, newComponent);
+    entityComponentSignatures[entityId].set(componentId);
 }
 
 #endif

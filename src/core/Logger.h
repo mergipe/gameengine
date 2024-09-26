@@ -5,6 +5,12 @@
 
 class Logger {
 public:
+    template <typename T> static void debug(const T &msg) { spdlog::debug(msg); }
+
+    template <typename... Args> static void debug(fmt::format_string<Args...> fmt, Args &&...args) {
+        spdlog::debug(fmt, std::forward<Args>(args)...);
+    }
+
     template <typename T> static void info(const T &msg) { spdlog::info(msg); }
 
     template <typename... Args> static void info(fmt::format_string<Args...> fmt, Args &&...args) {
