@@ -14,6 +14,9 @@ Entity Registry::createEntity() {
     const int entityId{entitiesCount++};
     const Entity entity{entityId};
     entitiesToBeAdded.insert(entity);
+    if (static_cast<unsigned int>(entityId) >= entityComponentSignatures.size()) {
+        entityComponentSignatures.resize(static_cast<size_t>(entityId) + 1);
+    }
     Logger::debug("Entity created with id = {}", entityId);
     return entity;
 }
@@ -31,4 +34,9 @@ void Registry::addEntityToSystems(Entity entity) {
     }
 }
 
-void Registry::update() {}
+void Registry::update() {
+    for (auto entity : entitiesToBeAdded) {
+        addEntityToSystems(entity);
+    }
+    entitiesToBeAdded.clear();
+}

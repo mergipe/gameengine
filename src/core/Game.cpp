@@ -1,8 +1,11 @@
+#include <ECS.h>
 #include <Game.h>
 #include <Logger.h>
 #include <SDL.h>
 
-void Game::initialize() {
+Game::Game() { registry = new Registry{}; }
+
+void Game::init() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         Logger::critical("Error initializing SDL: {}", SDL_GetError());
         return;

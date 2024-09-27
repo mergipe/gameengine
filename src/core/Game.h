@@ -1,20 +1,22 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <ECS.h>
 #include <SDL.h>
 
 class Game {
 private:
     bool isRunning{false};
-    SDL_Window *window{NULL};
-    SDL_Renderer *renderer{NULL};
+    SDL_Window *window{nullptr};
+    SDL_Renderer *renderer{nullptr};
+    Registry *registry{nullptr};
 
 public:
-    Game() = default;
+    Game();
     Game(const Game &) = default;
     ~Game() = default;
     Game &operator=(const Game &);
-    void initialize();
+    void init();
     void run();
     void processInput();
     void update(int timeStep);

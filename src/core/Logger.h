@@ -5,6 +5,8 @@
 
 class Logger {
 public:
+    static void init();
+
     template <typename T> static void debug(const T &msg) { spdlog::debug(msg); }
 
     template <typename... Args> static void debug(fmt::format_string<Args...> fmt, Args &&...args) {

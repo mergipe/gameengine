@@ -1,4 +1,4 @@
-add_executable(gameengine Main.cpp core/Game.cpp scene/ECS.cpp)
+add_executable(gameengine Main.cpp core/Game.cpp core/Logger.cpp scene/ECS.cpp)
 target_compile_features(gameengine PRIVATE cxx_std_23)
 set_target_properties(gameengine PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(gameengine PUBLIC . core scene)
