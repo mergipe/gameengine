@@ -12,4 +12,3 @@ if (ENABLE_DEVELOPER_MODE)
     message("Setting developer mode compiler flags")
     target_compile_options(gameengine PRIVATE -Wall -Wextra -Werror -Wconversion -Wsign-conversion -Weffc++)
 endif()
-

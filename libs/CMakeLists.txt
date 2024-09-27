@@ -17,3 +17,12 @@ add_library(
 )
 target_include_directories(imgui SYSTEM PUBLIC imgui/include)
 target_link_sdl2(imgui)
+
+execute_process(COMMAND ${CMAKE_COMMAND} -S spdlog -B spdlog/build
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+execute_process(COMMAND make -j
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/spdlog/build)
+if (NOT TARGET spdlog)
+    set(spdlog_DIR spdlog/build)
+    find_package(spdlog REQUIRED GLOBAL)
+endif()

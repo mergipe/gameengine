@@ -25,12 +25,7 @@ find_package(SDL2_image REQUIRED CONFIG)
 find_package(SDL2_ttf REQUIRED CONFIG)
 find_package(SDL2_mixer REQUIRED CONFIG)
 include(cmake/LinkSDL2.cmake)
-
 find_package(Lua REQUIRED)
-if (NOT TARGET spdlog)
-    set(spdlog_DIR libs/spdlog/build)
-    find_package(spdlog REQUIRED)
-endif()
 
 add_subdirectory(libs)
 add_subdirectory(src)
