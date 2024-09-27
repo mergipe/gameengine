@@ -43,7 +43,7 @@ public:
     template <typename T> static void critical(const T &msg) { logger->critical(msg); }
 
     template <typename... Args> static void critical(fmt::format_string<Args...> fmt, Args &&...args) {
-        logger->info(fmt, std::forward<Args>(args)...);
+        logger->critical(fmt, std::forward<Args>(args)...);
     }
 };
 
