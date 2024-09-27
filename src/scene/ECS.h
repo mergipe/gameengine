@@ -2,22 +2,23 @@
 #define ECS_H
 
 #include <bitset>
+#include <cstddef>
 #include <memory>
 #include <set>
 #include <typeindex>
 #include <unordered_map>
 #include <vector>
 
-constexpr unsigned int MAX_COMPONENTS{32};
+constexpr size_t MAX_COMPONENTS{32};
 using Signature = std::bitset<MAX_COMPONENTS>;
 
 struct IComponent {
 protected:
-    static inline int nextId{0};
+    static inline size_t nextId{0};
 };
 
 template <typename T> class Component : public IComponent {
-    static int getId() {
+    static size_t getId() {
         const static auto id{nextId++};
         return id;
     };
@@ -25,13 +26,13 @@ template <typename T> class Component : public IComponent {
 
 class Entity {
 private:
-    int id{};
+    size_t id{};
 
 public:
-    Entity(int id) : id{id} {}
+    Entity(size_t id) : id{id} {}
     bool operator==(const Entity &) const;
     bool operator<(const Entity &) const;
-    int getId() const { return id; }
+    size_t getId() const { return id; }
 };
 
 class System {
@@ -59,21 +60,21 @@ private:
     std::vector<T> objects{};
 
 public:
-    Pool(int size = 100) { objects.resize(size); }
+    Pool(size_t size = 100) { objects.resize(size); }
     virtual ~Pool() = default;
     bool isEmpty() const { return objects.empty(); }
-    int getSize() const { return objects.size(); }
+    size_t getSize() const { return objects.size(); }
     void resize() { objects.resize(); }
     void clear() { objects.clear(); }
     void add(T object) { objects.push_back(object); }
-    void set(int index, T object) { object[index] = object; }
-    T &get(int index) { return static_cast<T &>(objects[index]); }
-    T &operator[](unsigned int index) { return objects[index]; }
+    void set(size_t index, T object) { object[index] = object; }
+    T &get(size_t index) { return static_cast<T &>(objects[index]); }
+    T &operator[](size_t index) { return objects[index]; }
 };
 
 class Registry {
 private:
-    int entitiesCount{0};
+    size_t entitiesCount{0};
     std::set<Entity> entitiesToBeAdded{};
     std::set<Entity> entitiesToBeKilled{};
     std::vector<IPool *> componentPools{};

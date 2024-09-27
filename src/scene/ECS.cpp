@@ -11,11 +11,11 @@ void System::addEntity(Entity entity) { entities.push_back(entity); }
 void System::removeEntity(Entity entity) { std::erase(entities, entity); }
 
 Entity Registry::createEntity() {
-    const int entityId{entitiesCount++};
+    const size_t entityId{entitiesCount++};
     const Entity entity{entityId};
     entitiesToBeAdded.insert(entity);
-    if (static_cast<unsigned int>(entityId) >= entityComponentSignatures.size()) {
-        entityComponentSignatures.resize(static_cast<size_t>(entityId) + 1);
+    if (entityId >= entityComponentSignatures.size()) {
+        entityComponentSignatures.resize(entityId + 1);
     }
     Logger::debug("Entity created with id = {}", entityId);
     return entity;
@@ -23,7 +23,7 @@ Entity Registry::createEntity() {
 
 void Registry::addEntityToSystems(Entity entity) {
     const auto entityId{entity.getId()};
-    const auto &entityComponentSignature{entityComponentSignatures[static_cast<unsigned int>(entityId)]};
+    const auto &entityComponentSignature{entityComponentSignatures[entityId]};
     for (auto &system : systems) {
         const auto &systemComponentSignature{system.second->getComponentSignature()};
         bool signaturesMatch{(entityComponentSignature & systemComponentSignature) ==
