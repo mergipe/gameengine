@@ -17,7 +17,7 @@ Entity Registry::createEntity() {
     if (entityId >= entityComponentSignatures.size()) {
         entityComponentSignatures.resize(entityId + 1);
     }
-    Logger::debug("Entity created with id = {}", entityId);
+    Logger::trace("Entity created with id = {}", entityId);
     return entity;
 }
 
@@ -32,6 +32,7 @@ void Registry::addEntityToSystems(Entity entity) {
             system.second->addEntity(entity);
         }
     }
+    Logger::trace("Entity {} added to systems", entityId);
 }
 
 void Registry::update() {

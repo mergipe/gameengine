@@ -3,17 +3,18 @@
 
 #include <ECS.h>
 #include <SDL.h>
+#include <memory>
 
 class Game {
 private:
     bool isRunning{false};
-    SDL_Window *window{nullptr};
-    SDL_Renderer *renderer{nullptr};
-    Registry *registry{nullptr};
+    SDL_Window *window{};
+    SDL_Renderer *renderer{};
+    std::unique_ptr<Registry> registry{};
 
 public:
     Game();
-    Game(const Game &) = default;
+    Game(const Game &);
     ~Game() = default;
     Game &operator=(const Game &);
     void init();

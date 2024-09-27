@@ -3,7 +3,7 @@
 #include <Logger.h>
 #include <SDL.h>
 
-Game::Game() { registry = new Registry{}; }
+Game::Game() { registry = std::make_unique<Registry>(); }
 
 void Game::init() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -13,23 +13,25 @@ void Game::init() {
     window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight,
                               SDL_WINDOW_BORDERLESS);
     if (!window) {
-        Logger::critical("Error creation SDL window: {}", SDL_GetError());
+        Logger::critical("Error creating SDL window: {}", SDL_GetError());
         return;
     }
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
-        Logger::critical("Error creation SDL renderer: {}", SDL_GetError());
+        Logger::critical("Error creating SDL renderer: {}", SDL_GetError());
         return;
     }
-    isRunning = true;
+    Logger::trace("Game initialized");
 }
 
 void setup() {}
 
 void Game::run() {
+    Logger::trace("Game started to run");
     setup();
     std::uint64_t previousTicks{SDL_GetTicks64()};
     int lag{0};
+    isRunning = true;
     while (isRunning) {
         std::uint64_t currentTicks{SDL_GetTicks64()};
         lag += static_cast<int>(currentTicks - previousTicks);
@@ -67,4 +69,5 @@ void Game::destroy() {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    Logger::trace("Game resources destroyed");
 }

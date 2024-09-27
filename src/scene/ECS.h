@@ -1,6 +1,7 @@
 #ifndef ECS_H
 #define ECS_H
 
+#include <Logger.h>
 #include <bitset>
 #include <cstddef>
 #include <memory>
@@ -18,6 +19,7 @@ protected:
 };
 
 template <typename T> class Component : public IComponent {
+public:
     static size_t getId() {
         const static auto id{nextId++};
         return id;
@@ -77,9 +79,9 @@ private:
     size_t entitiesCount{0};
     std::set<Entity> entitiesToBeAdded{};
     std::set<Entity> entitiesToBeKilled{};
-    std::vector<IPool *> componentPools{};
+    std::vector<std::shared_ptr<IPool>> componentPools{};
     std::vector<Signature> entityComponentSignatures{};
-    std::unordered_map<std::type_index, System *> systems{};
+    std::unordered_map<std::type_index, std::shared_ptr<System>> systems{};
 
 public:
     Registry() = default;
@@ -107,9 +109,9 @@ template <typename T, typename... Args> void Registry::addComponent(Entity entit
         componentPools.resize(componentId + 1, nullptr);
     }
     if (!componentPools[componentId]) {
-        componentPools[componentId] = new Pool<T>();
+        componentPools[componentId] = std::make_shared<Pool<T>>();
     }
-    Pool<T> *componentPool = componentPools[componentId];
+    std::shared_ptr<Pool<T>> componentPool = componentPools[componentId];
     const auto entityId{entity.getId()};
     if (entityId >= componentPool->getSize()) {
         componentPool->resize(entitiesCount);
@@ -117,12 +119,14 @@ template <typename T, typename... Args> void Registry::addComponent(Entity entit
     T newComponent{std::forward<Args>(args)...};
     componentPool->set(entityId, newComponent);
     entityComponentSignatures[entityId].set(componentId);
+    Logger::trace("Component {} added to entity {}", componentId, entityId);
 }
 
 template <typename T> void Registry::removeComponent(Entity entity) {
     const auto componentId{Component<T>::getId()};
     const auto entityId{entity.getId()};
     entityComponentSignatures[entityId].set(componentId, false);
+    Logger::trace("Component {} removed from entity {}", componentId, entityId);
 }
 
 template <typename T> bool Registry::hasComponent(Entity entity) const {
@@ -132,13 +136,17 @@ template <typename T> bool Registry::hasComponent(Entity entity) const {
 }
 
 template <typename T, typename... Args> void Registry::addSystem(Args &&...args) {
-    T newSystem{new T{std::forward<T>(args)...}};
-    systems.insert(std::make_pair(std::type_index(typeid(T)), newSystem));
+    std::shared_ptr<T> newSystem{std::make_shared(std::forward<T>(args)...)};
+    const auto systemId{std::type_index(typeid(T))};
+    systems.insert(std::make_pair(systemId, newSystem));
+    Logger::trace("System {} added to registry", systemId.name());
 }
 
 template <typename T> void Registry::removeSystem() {
-    auto system{systems.find(std::type_index(typeid(T)))};
+    const auto systemId{std::type_index(typeid(T))};
+    auto system{systems.find(systemId)};
     systems.erase(system);
+    Logger::trace("System {} removed from registry", systemId.name());
 }
 
 template <typename T> bool Registry::hasSystem() const {
