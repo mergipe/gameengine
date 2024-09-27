@@ -111,7 +111,7 @@ template <typename T, typename... Args> void Registry::addComponent(Entity entit
     if (!componentPools[componentId]) {
         componentPools[componentId] = std::make_shared<Pool<T>>();
     }
-    std::shared_ptr<Pool<T>> componentPool = componentPools[componentId];
+    std::shared_ptr<Pool<T>> componentPool{componentPools[componentId]};
     const auto entityId{entity.getId()};
     if (entityId >= componentPool->getSize()) {
         componentPool->resize(entitiesCount);
