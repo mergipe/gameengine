@@ -2,14 +2,6 @@
 #include <Logger.h>
 #include <vector>
 
-bool Entity::operator==(const Entity &e) const { return getId() == e.getId(); }
-
-bool Entity::operator<(const Entity &e) const { return getId() < e.getId(); }
-
-void System::addEntity(Entity entity) { entities.push_back(entity); }
-
-void System::removeEntity(Entity entity) { std::erase(entities, entity); }
-
 Entity Registry::createEntity() {
     const size_t entityId{entitiesCount++};
     const Entity entity{entityId};

@@ -2,8 +2,7 @@
 #include <Game.h>
 #include <Logger.h>
 #include <SDL.h>
-
-Game::Game() { registry = std::make_unique<Registry>(); }
+#include <Systems.h>
 
 void Game::init() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -24,17 +23,20 @@ void Game::init() {
     Logger::trace("Game initialized");
 }
 
-void setup() {}
+void Game::setup() {
+    registry = std::make_unique<Registry>();
+    registry->addSystem<MovementSystem>();
+}
 
 void Game::run() {
     Logger::trace("Game started to run");
     setup();
     std::uint64_t previousTicks{SDL_GetTicks64()};
-    int lag{0};
+    float lag{0.0f};
     isRunning = true;
     while (isRunning) {
         std::uint64_t currentTicks{SDL_GetTicks64()};
-        lag += static_cast<int>(currentTicks - previousTicks);
+        lag += static_cast<float>(currentTicks - previousTicks);
         previousTicks = currentTicks;
         processInput();
         while (lag >= timeStepInMs) {
@@ -56,7 +58,10 @@ void Game::processInput() {
     }
 }
 
-void Game::update(int timeStep) { (void)timeStep; }
+void Game::update(float timeStep) {
+    registry->update();
+    registry->getSystem<MovementSystem>().update(timeStep);
+}
 
 void Game::render(float frameExtrapolationFactor) {
     (void)frameExtrapolationFactor;

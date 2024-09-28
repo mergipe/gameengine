@@ -11,22 +11,23 @@ private:
     SDL_Window *window{};
     SDL_Renderer *renderer{};
     std::unique_ptr<Registry> registry{};
+    void setup();
+    void processInput();
+    void update(float timeStep);
+    void render(float frameExtrapolationFactor);
+    const int windowWidth{1920};
+    const int windowHeight{1080};
+    static constexpr float updateRate{144.0f};
+    static constexpr float timeStepInMs{1000.0f / updateRate};
 
 public:
-    Game();
+    Game() = default;
     Game(const Game &);
     ~Game() = default;
     Game &operator=(const Game &);
     void init();
     void run();
-    void processInput();
-    void update(int timeStep);
-    void render(float frameExtrapolationFactor);
     void destroy();
-    const int windowWidth{1280};
-    const int windowHeight{720};
-    static constexpr int updateRate{144};
-    static constexpr int timeStepInMs{1000 / updateRate};
 };
 
 #endif

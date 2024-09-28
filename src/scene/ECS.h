@@ -32,8 +32,8 @@ private:
 
 public:
     Entity(size_t id) : id{id} {}
-    bool operator==(const Entity &) const;
-    bool operator<(const Entity &) const;
+    bool operator==(const Entity &e) const { return id != e.id; };
+    bool operator<(const Entity &e) const { return id < e.id; };
     size_t getId() const { return id; }
 };
 
@@ -42,14 +42,19 @@ private:
     Signature componentSignature{};
     std::vector<Entity> entities{};
 
+protected:
+    class Registry *registry{};
+    template <typename T> void requireComponent();
+
 public:
-    System() = default;
+    System(Registry *registry) : registry{registry} {}
+    System(const System &);
     ~System() = default;
+    System &operator=(const System &);
     std::vector<Entity> getEntities() const { return entities; }
     const Signature &getComponentSignature() const { return componentSignature; }
-    void addEntity(Entity entity);
-    void removeEntity(Entity entity);
-    template <typename T> void requireComponent();
+    void addEntity(Entity entity) { entities.push_back(entity); };
+    void removeEntity(Entity entity) { std::erase(entities, entity); };
 };
 
 class IPool {
@@ -66,10 +71,10 @@ public:
     virtual ~Pool() = default;
     bool isEmpty() const { return objects.empty(); }
     size_t getSize() const { return objects.size(); }
-    void resize() { objects.resize(); }
+    void resize(size_t size) { objects.resize(size); }
     void clear() { objects.clear(); }
     void add(T object) { objects.push_back(object); }
-    void set(size_t index, T object) { object[index] = object; }
+    void set(size_t index, T object) { objects[index] = object; }
     T &get(size_t index) { return static_cast<T &>(objects[index]); }
     T &operator[](size_t index) { return objects[index]; }
 };
@@ -92,6 +97,7 @@ public:
     template <typename T, typename... Args> void addComponent(Entity entity, Args &&...args);
     template <typename T> void removeComponent(Entity entity);
     template <typename T> bool hasComponent(Entity entity) const;
+    template <typename T> T &getComponent(Entity entity) const;
     template <typename T, typename... Args> void addSystem(Args &&...args);
     template <typename T> void removeSystem();
     template <typename T> bool hasSystem() const;
@@ -111,7 +117,7 @@ template <typename T, typename... Args> void Registry::addComponent(Entity entit
     if (!componentPools[componentId]) {
         componentPools[componentId] = std::make_shared<Pool<T>>();
     }
-    std::shared_ptr<Pool<T>> componentPool{componentPools[componentId]};
+    std::shared_ptr<Pool<T>> componentPool{std::static_pointer_cast<Pool<T>>(componentPools[componentId])};
     const auto entityId{entity.getId()};
     if (entityId >= componentPool->getSize()) {
         componentPool->resize(entitiesCount);
@@ -130,13 +136,16 @@ template <typename T> void Registry::removeComponent(Entity entity) {
 }
 
 template <typename T> bool Registry::hasComponent(Entity entity) const {
-    const auto componentId{Component<T>::getId()};
-    const auto entityId{entity.getId()};
-    return entityComponentSignatures[entityId].test(componentId);
+    return entityComponentSignatures[entity.getId()].test(Component<T>::getId());
+}
+
+template <typename T> T &Registry::getComponent(Entity entity) const {
+    auto componentPool{std::static_pointer_cast<Pool<T>>(componentPools[Component<T>::getId()])};
+    return componentPool->get(entity.getId());
 }
 
 template <typename T, typename... Args> void Registry::addSystem(Args &&...args) {
-    std::shared_ptr<T> newSystem{std::make_shared(std::forward<T>(args)...)};
+    std::shared_ptr<T> newSystem{std::make_shared<T>(this, std::forward<T>(args)...)};
     const auto systemId{std::type_index(typeid(T))};
     systems.insert(std::make_pair(systemId, newSystem));
     Logger::trace("System {} added to registry", systemId.name());
