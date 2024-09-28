@@ -145,7 +145,7 @@ template <typename T> T &Registry::getComponent(Entity entity) const {
 }
 
 template <typename T, typename... Args> void Registry::addSystem(Args &&...args) {
-    std::shared_ptr<T> newSystem{std::make_shared<T>(this, std::forward<T>(args)...)};
+    std::shared_ptr<T> newSystem{std::make_shared<T>(this, args...)};
     const auto systemId{std::type_index(typeid(T))};
     systems.insert(std::make_pair(systemId, newSystem));
     Logger::trace("System {} added to registry", systemId.name());

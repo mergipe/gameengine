@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <AssetStore.h>
 #include <ECS.h>
 #include <SDL.h>
 #include <memory>
@@ -11,9 +12,10 @@ private:
     SDL_Window *window{};
     SDL_Renderer *renderer{};
     std::unique_ptr<Registry> registry{};
+    std::unique_ptr<AssetStore> assetStore{};
     void setup();
     void processInput();
-    void update(float timeStep);
+    void update();
     void render(float frameExtrapolationFactor);
     const int windowWidth{1920};
     const int windowHeight{1080};

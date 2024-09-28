@@ -3,21 +3,23 @@
 
 #include <Components.h>
 #include <ECS.h>
+#include <SDL.h>
 
 class MovementSystem : public System {
 public:
-    MovementSystem(Registry *registry) : System(registry) {
-        requireComponent<TransformComponent>();
-        requireComponent<RigidBodyComponent>();
-    }
+    MovementSystem(Registry *registry);
+    void update(float timeStep);
+};
 
-    void update(float timeStep) {
-        for (auto entity : getEntities()) {
-            auto &transform{registry->getComponent<TransformComponent>(entity)};
-            const auto rigidBody{registry->getComponent<RigidBodyComponent>(entity)};
-            transform.position += rigidBody.velocity * timeStep;
-        }
-    }
+class RenderSystem : public System {
+private:
+    SDL_Renderer *renderer{};
+
+public:
+    RenderSystem(Registry *registry, SDL_Renderer *renderer);
+    RenderSystem(const RenderSystem &);
+    void operator=(const RenderSystem &);
+    void update(float frameExtrapolationTimeStep);
 };
 
 #endif

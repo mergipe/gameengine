@@ -1,8 +1,10 @@
+#include "Components.h"
 #include <ECS.h>
 #include <Game.h>
 #include <Logger.h>
 #include <SDL.h>
 #include <Systems.h>
+#include <memory>
 
 void Game::init() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -26,6 +28,18 @@ void Game::init() {
 void Game::setup() {
     registry = std::make_unique<Registry>();
     registry->addSystem<MovementSystem>();
+    registry->addSystem<RenderSystem>(renderer);
+    assetStore = std::make_unique<AssetStore>("../../assets/", renderer);
+    assetStore->addTexture("tank-right", "images/tank-panther-right.png");
+    assetStore->addTexture("truck-right", "images/truck-ford-right.png");
+    Entity e1{registry->createEntity()};
+    registry->addComponent<TransformComponent>(e1, glm::vec2(10, 10), glm::vec2(1, 1), 0.0);
+    registry->addComponent<RigidBodyComponent>(e1, glm::vec2(0.1, 0.1));
+    registry->addComponent<SpriteComponent>(e1, "tank-right", 32, 32);
+    Entity e2{registry->createEntity()};
+    registry->addComponent<TransformComponent>(e2, glm::vec2(50, 50), glm::vec2(1, 1), 0.0);
+    registry->addComponent<RigidBodyComponent>(e2, glm::vec2(0.2, 0.1));
+    registry->addComponent<SpriteComponent>(e2, "tank-left", 64, 64);
 }
 
 void Game::run() {
@@ -40,10 +54,10 @@ void Game::run() {
         previousTicks = currentTicks;
         processInput();
         while (lag >= timeStepInMs) {
-            update(timeStepInMs);
+            update();
             lag -= timeStepInMs;
         }
-        render(static_cast<float>(lag) / timeStepInMs);
+        render(lag);
     }
 }
 
@@ -58,15 +72,15 @@ void Game::processInput() {
     }
 }
 
-void Game::update(float timeStep) {
+void Game::update() {
     registry->update();
-    registry->getSystem<MovementSystem>().update(timeStep);
+    registry->getSystem<MovementSystem>().update(timeStepInMs);
 }
 
-void Game::render(float frameExtrapolationFactor) {
-    (void)frameExtrapolationFactor;
+void Game::render(float frameExtrapolationTimeStep) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
+    registry->getSystem<RenderSystem>().update(frameExtrapolationTimeStep);
     SDL_RenderPresent(renderer);
 }
 
