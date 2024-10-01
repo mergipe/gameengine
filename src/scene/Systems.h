@@ -26,9 +26,14 @@ public:
 };
 
 class AnimationSystem : public System {
-private:
 public:
     AnimationSystem(Registry *registry);
+    void update();
+};
+
+class CollisionSystem : public System {
+public:
+    CollisionSystem(Registry *registry);
     void update();
 };
 

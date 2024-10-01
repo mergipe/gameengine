@@ -1,3 +1,4 @@
+#include "Components.h"
 #include <Systems.h>
 #include <algorithm>
 #include <memory>
@@ -54,5 +55,24 @@ void AnimationSystem::update() {
             (static_cast<int>(SDL_GetTicks64() - animation.startTime) * animation.framesPerSecond / 1000) %
             animation.framesCount;
         sprite.sourceRect.x = animation.currentFrame * sprite.width;
+    }
+}
+
+CollisionSystem::CollisionSystem(Registry *registry) : System{registry} {
+    requireComponent<TransformComponent>();
+    requireComponent<BoxColliderComponent>();
+}
+
+void CollisionSystem::update() {
+    const auto entities{getEntities()};
+    for (auto i{entities.begin()}; i != entities.end(); ++i) {
+        const Entity entity{*i};
+        const auto transform{registry->getComponent<TransformComponent>(entity)};
+        const auto boxCollider{registry->getComponent<BoxColliderComponent>(entity)};
+        for (auto j{i + 1}; j != entities.end(); ++j) {
+            const Entity otherEntity{*j};
+            const auto otherTransform{registry->getComponent<TransformComponent>(otherEntity)};
+            const auto otherBoxCollider{registry->getComponent<BoxColliderComponent>(otherEntity)};
+        }
     }
 }

@@ -85,10 +85,12 @@ void Game::loadLevel(int level) {
     registry->addComponent<TransformComponent>(tank, glm::vec2(10, 10));
     registry->addComponent<RigidBodyComponent>(tank, glm::vec2(0.1, 0.1));
     registry->addComponent<SpriteComponent>(tank, "tank-right", 32, 32, 1);
+    registry->addComponent<BoxColliderComponent>(tank, 32, 32);
     Entity truck{registry->createEntity()};
     registry->addComponent<TransformComponent>(truck, glm::vec2(50, 50));
     registry->addComponent<RigidBodyComponent>(truck, glm::vec2(0.05, 0.05));
     registry->addComponent<SpriteComponent>(truck, "truck-right", 32, 32, 1);
+    registry->addComponent<BoxColliderComponent>(truck, 32, 32);
 }
 
 void Game::setup() { loadLevel(1); }
