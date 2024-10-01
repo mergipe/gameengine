@@ -21,6 +21,7 @@ public:
     void clearAssets();
     void addTexture(std::string_view assetId, const std::string &relativeFilepath);
     SDL_Texture *getTexture(std::string_view assetId) const { return textures.at(assetId); };
+    std::string_view getAssetsBasePath() const { return assetsBasePath; };
 };
 
 #endif

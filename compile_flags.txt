@@ -15,4 +15,5 @@
 -I./src/core
 -I./src/scene
 -I./src/resources
+-I./src/util
 -I/usr/include/SDL2

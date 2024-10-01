@@ -1,9 +1,11 @@
 #ifndef SYSTEMS_H
 #define SYSTEMS_H
 
+#include <AssetStore.h>
 #include <Components.h>
 #include <ECS.h>
 #include <SDL.h>
+#include <memory>
 
 class MovementSystem : public System {
 public:
@@ -14,12 +16,20 @@ public:
 class RenderSystem : public System {
 private:
     SDL_Renderer *renderer{};
+    std::unique_ptr<AssetStore> &assetStore;
 
 public:
-    RenderSystem(Registry *registry, SDL_Renderer *renderer);
+    RenderSystem(Registry *registry, SDL_Renderer *renderer, std::unique_ptr<AssetStore> &assetStore);
     RenderSystem(const RenderSystem &);
     void operator=(const RenderSystem &);
     void update(float frameExtrapolationTimeStep);
+};
+
+class AnimationSystem : public System {
+private:
+public:
+    AnimationSystem(Registry *registry);
+    void update();
 };
 
 #endif

@@ -13,6 +13,9 @@ private:
     SDL_Renderer *renderer{};
     std::unique_ptr<Registry> registry{};
     std::unique_ptr<AssetStore> assetStore{};
+    void loadMap(std::string_view tilesetFilename, std::string_view tilemapFilename, int tileWidth,
+                 int tileHeight, int tilesetColumns, float scale);
+    void loadLevel(int level);
     void setup();
     void processInput();
     void update();
