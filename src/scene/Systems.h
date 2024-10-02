@@ -32,9 +32,24 @@ public:
 };
 
 class CollisionSystem : public System {
+private:
+    bool aabbHasCollided(double aX, double aY, double aW, double aH, double bX, double bY, double bW,
+                         double bH);
+
 public:
     CollisionSystem(Registry *registry);
     void update();
+};
+
+class DebugRenderSystem : public System {
+private:
+    SDL_Renderer *renderer{};
+
+public:
+    DebugRenderSystem(Registry *registry, SDL_Renderer *renderer);
+    DebugRenderSystem(const DebugRenderSystem &);
+    void operator=(const DebugRenderSystem &);
+    void update(float frameExtrapolationTimeStep);
 };
 
 #endif

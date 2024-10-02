@@ -1,4 +1,3 @@
-#include "Components.h"
 #include <ECS.h>
 #include <Game.h>
 #include <IO.h>
@@ -8,6 +7,8 @@
 #include <fstream>
 #include <memory>
 #include <string>
+
+Game::Game(bool debugCapability) : debugCapability{debugCapability} {}
 
 void Game::init() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -59,15 +60,7 @@ void Game::loadMap(std::string_view tilesetFilename, std::string_view tilemapFil
     }
 }
 
-void Game::loadLevel(int level) {
-    Logger::trace("Loading level {}", level);
-    registry = std::make_unique<Registry>();
-    registry->addSystem<MovementSystem>();
-    registry->addSystem<RenderSystem>(renderer, assetStore);
-    registry->addSystem<AnimationSystem>();
-    assetStore =
-        std::make_unique<AssetStore>("/home/gustavo/workspaces/gamedev/gameengine/assets/", renderer);
-    loadMap("jungle.png", "jungle.map", 32, 32, 10, 2.0);
+void Game::loadEntities() {
     assetStore->addTexture("chopper", "images/chopper.png");
     assetStore->addTexture("radar", "images/radar.png");
     Entity chopper{registry->createEntity()};
@@ -75,6 +68,7 @@ void Game::loadLevel(int level) {
     registry->addComponent<RigidBodyComponent>(chopper, glm::vec2(0.0, 0.0));
     registry->addComponent<SpriteComponent>(chopper, "chopper", 32, 32, 1);
     registry->addComponent<AnimationComponent>(chopper, 2, 15);
+    registry->addComponent<BoxColliderComponent>(chopper, 32, 32);
     Entity radar{registry->createEntity()};
     registry->addComponent<TransformComponent>(radar, glm::vec2(400, 10));
     registry->addComponent<SpriteComponent>(radar, "radar", 64, 64, 2);
@@ -82,7 +76,7 @@ void Game::loadLevel(int level) {
     assetStore->addTexture("tank-right", "images/tank-panther-right.png");
     assetStore->addTexture("truck-right", "images/truck-ford-right.png");
     Entity tank{registry->createEntity()};
-    registry->addComponent<TransformComponent>(tank, glm::vec2(10, 10));
+    registry->addComponent<TransformComponent>(tank, glm::vec2(10, 10), glm::vec2(2));
     registry->addComponent<RigidBodyComponent>(tank, glm::vec2(0.1, 0.1));
     registry->addComponent<SpriteComponent>(tank, "tank-right", 32, 32, 1);
     registry->addComponent<BoxColliderComponent>(tank, 32, 32);
@@ -91,6 +85,22 @@ void Game::loadLevel(int level) {
     registry->addComponent<RigidBodyComponent>(truck, glm::vec2(0.05, 0.05));
     registry->addComponent<SpriteComponent>(truck, "truck-right", 32, 32, 1);
     registry->addComponent<BoxColliderComponent>(truck, 32, 32);
+}
+
+void Game::loadLevel(int level) {
+    Logger::trace("Loading level {}", level);
+    registry = std::make_unique<Registry>();
+    registry->addSystem<MovementSystem>();
+    registry->addSystem<RenderSystem>(renderer, assetStore);
+    registry->addSystem<AnimationSystem>();
+    registry->addSystem<CollisionSystem>();
+    if (debugCapability) {
+        registry->addSystem<DebugRenderSystem>(renderer);
+    }
+    assetStore =
+        std::make_unique<AssetStore>("/home/gustavo/workspaces/gamedev/gameengine/assets/", renderer);
+    loadMap("jungle.png", "jungle.map", 32, 32, 10, 2.0);
+    loadEntities();
 }
 
 void Game::setup() { loadLevel(1); }
@@ -121,6 +131,11 @@ void Game::processInput() {
         case SDL_QUIT:
             isRunning = false;
             break;
+        case SDL_KEYDOWN:
+            if (event.key.keysym.sym == SDLK_F1 && debugCapability) {
+                debugModeActivated = !debugModeActivated;
+            }
+            break;
         }
     }
 }
@@ -128,6 +143,7 @@ void Game::processInput() {
 void Game::update() {
     registry->update();
     registry->getSystem<MovementSystem>().update(timeStepInMs);
+    registry->getSystem<CollisionSystem>().update();
     registry->getSystem<AnimationSystem>().update();
 }
 
@@ -135,6 +151,9 @@ void Game::render(float frameExtrapolationTimeStep) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     registry->getSystem<RenderSystem>().update(frameExtrapolationTimeStep);
+    if (debugModeActivated) {
+        registry->getSystem<DebugRenderSystem>().update(frameExtrapolationTimeStep);
+    }
     SDL_RenderPresent(renderer);
 }
 

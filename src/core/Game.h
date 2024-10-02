@@ -8,6 +8,8 @@
 
 class Game {
 private:
+    bool debugCapability{false};
+    bool debugModeActivated{false};
     bool isRunning{false};
     SDL_Window *window{};
     SDL_Renderer *renderer{};
@@ -15,6 +17,7 @@ private:
     std::unique_ptr<AssetStore> assetStore{};
     void loadMap(std::string_view tilesetFilename, std::string_view tilemapFilename, int tileWidth,
                  int tileHeight, int tilesetColumns, float scale);
+    void loadEntities();
     void loadLevel(int level);
     void setup();
     void processInput();
@@ -26,7 +29,7 @@ private:
     static constexpr float timeStepInMs{1000.0f / updateRate};
 
 public:
-    Game() = default;
+    Game(bool debugMode);
     Game(const Game &);
     ~Game() = default;
     Game &operator=(const Game &);

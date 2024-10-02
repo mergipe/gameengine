@@ -22,10 +22,10 @@ struct RigidBodyComponent {
 };
 
 struct SpriteComponent {
-    const std::string_view assetId{};
-    const int width{};
-    const int height{};
-    const int zIndex{};
+    std::string_view assetId{};
+    int width{};
+    int height{};
+    int zIndex{};
     SDL_Rect sourceRect{};
 
     SpriteComponent(std::string_view assetId = "", int width = 0, int height = 0, int zIndex = 0,
@@ -35,20 +35,21 @@ struct SpriteComponent {
 };
 
 struct AnimationComponent {
-    const int framesCount{};
+    int framesCount{};
     int currentFrame{0};
-    const int framesPerSecond{};
-    const bool shouldLoop{};
-    const std::uint64_t startTime{SDL_GetTicks64()};
+    int framesPerSecond{};
+    bool shouldLoop{};
+    std::uint64_t startTime{SDL_GetTicks64()};
 
     AnimationComponent(int framesCount = 1, int framesPerSecond = 1, bool shouldLoop = true)
         : framesCount{framesCount}, framesPerSecond{framesPerSecond}, shouldLoop{shouldLoop} {}
 };
 
 struct BoxColliderComponent {
-    const int width{};
-    const int height{};
-    const glm::vec2 offset{};
+    int width{};
+    int height{};
+    glm::vec2 offset{};
+    bool isColliding{};
 
     BoxColliderComponent(int width = 0, int height = 0, glm::vec2 offset = glm::vec2(0))
         : width{width}, height{height}, offset{offset} {}
