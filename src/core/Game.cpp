@@ -85,6 +85,7 @@ void Game::loadEntities() {
     registry->addComponent<RigidBodyComponent>(truck, glm::vec2(0.05, 0.05));
     registry->addComponent<SpriteComponent>(truck, "truck-right", 32, 32, 1);
     registry->addComponent<BoxColliderComponent>(truck, 32, 32);
+    registry->killEntity(truck);
 }
 
 void Game::loadLevel(int level) {

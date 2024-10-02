@@ -4,6 +4,7 @@
 #include <Logger.h>
 #include <bitset>
 #include <cstddef>
+#include <deque>
 #include <memory>
 #include <set>
 #include <typeindex>
@@ -32,7 +33,7 @@ private:
 
 public:
     Entity(size_t id) : id{id} {}
-    bool operator==(const Entity &e) const { return id != e.id; };
+    bool operator==(const Entity &e) const { return id == e.id; };
     bool operator<(const Entity &e) const { return id < e.id; };
     size_t getId() const { return id; }
 };
@@ -87,6 +88,7 @@ private:
     std::vector<std::shared_ptr<IPool>> componentPools{};
     std::vector<Signature> entityComponentSignatures{};
     std::unordered_map<std::type_index, std::shared_ptr<System>> systems{};
+    std::deque<size_t> freeEntityIds{};
 
 public:
     Registry() = default;
@@ -94,6 +96,7 @@ public:
     Entity createEntity();
     void killEntity(Entity entity);
     void addEntityToSystems(Entity entity);
+    void removeEntityFromSystems(Entity entity);
     template <typename T, typename... Args> void addComponent(Entity entity, Args &&...args);
     template <typename T> void removeComponent(Entity entity);
     template <typename T> bool hasComponent(Entity entity) const;
