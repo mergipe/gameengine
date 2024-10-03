@@ -4,6 +4,8 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
+namespace Engine {
+
 void Logger::init() {
     const auto console_sink{std::make_shared<spdlog::sinks::stdout_color_sink_mt>()};
     console_sink->set_level(spdlog::level::trace);
@@ -15,3 +17,5 @@ void Logger::init() {
     spdlog::cfg::load_env_levels();
     Logger::trace("Logger initialized");
 }
+
+} // namespace Engine

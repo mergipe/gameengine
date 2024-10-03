@@ -2,7 +2,8 @@
 
 #include <sstream>
 
-namespace IO {
+namespace Engine::IO {
+
 std::vector<std::vector<int>> parseIntCsvFile(std::ifstream &file) {
     std::vector<std::vector<int>> rows{};
     std::string fileLine{};
@@ -17,4 +18,5 @@ std::vector<std::vector<int>> parseIntCsvFile(std::ifstream &file) {
     }
     return rows;
 }
-} // namespace IO
+
+} // namespace Engine::IO

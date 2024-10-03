@@ -9,6 +9,8 @@
 #include <unordered_map>
 #include <utility>
 
+namespace Engine {
+
 class Event {
 public:
     Event() = default;
@@ -79,5 +81,7 @@ public:
     Entity otherEntity{};
     CollisionEvent(Entity entity, Entity otherEntity) : entity{entity}, otherEntity{otherEntity} {}
 };
+
+} // namespace Engine
 
 #endif

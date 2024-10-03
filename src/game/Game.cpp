@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+namespace Engine {
+
 Game::Game(bool debugCapability) : debugCapability{debugCapability} {}
 
 void Game::init() {
@@ -164,3 +166,5 @@ void Game::destroy() {
     SDL_Quit();
     Logger::trace("Game resources destroyed");
 }
+
+} // namespace Engine

@@ -4,6 +4,8 @@
 #include <SDL_image.h>
 #include <string>
 
+namespace Engine {
+
 void ResourceManager::clearResources() {
     for (auto texture : textures) {
         SDL_DestroyTexture(texture.second);
@@ -16,3 +18,5 @@ void ResourceManager::addTexture(std::string_view resourceId, const std::string 
     textures.emplace(resourceId, texture);
     Logger::trace("Texture {} loaded by the resource manager ({})", resourceId, relativeFilepath);
 }
+
+} // namespace Engine

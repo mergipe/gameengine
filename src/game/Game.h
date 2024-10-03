@@ -7,6 +7,8 @@
 #include <SDL.h>
 #include <memory>
 
+namespace Engine {
+
 class Game {
 private:
     bool debugCapability{false};
@@ -39,5 +41,7 @@ public:
     void run();
     void destroy();
 };
+
+} // namespace Engine
 
 #endif

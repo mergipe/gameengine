@@ -3,6 +3,8 @@
 
 #include <spdlog/spdlog.h>
 
+namespace Engine {
+
 class Logger {
 private:
     static inline std::shared_ptr<spdlog::logger> logger{};
@@ -46,5 +48,7 @@ public:
         logger->critical(fmt, std::forward<Args>(args)...);
     }
 };
+
+} // namespace Engine
 
 #endif

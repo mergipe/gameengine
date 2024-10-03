@@ -2,6 +2,8 @@
 #include <Logger.h>
 #include <vector>
 
+namespace Engine {
+
 Entity Registry::createEntity() {
     size_t entityId{};
     if (freeEntityIds.empty()) {
@@ -57,3 +59,5 @@ void Registry::update() {
     }
     entitiesToBeKilled.clear();
 }
+
+} // namespace Engine

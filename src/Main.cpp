@@ -4,8 +4,8 @@
 int main(int argc, char *argv[]) {
     (void)argc;
     (void)argv;
-    Logger::init();
-    Game game{true};
+    Engine::Logger::init();
+    Engine::Game game{true};
     game.init();
     game.run();
     game.destroy();

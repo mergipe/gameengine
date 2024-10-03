@@ -7,6 +7,8 @@
 #include <SDL.h>
 #include <memory>
 
+namespace Engine {
+
 class MovementSystem : public System {
 public:
     MovementSystem(Registry *registry);
@@ -52,5 +54,7 @@ public:
     void operator=(const DebugRenderSystem &);
     void update(float frameExtrapolationTimeStep);
 };
+
+} // namespace Engine
 
 #endif

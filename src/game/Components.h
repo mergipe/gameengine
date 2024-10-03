@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include <string_view>
 
+namespace Engine {
+
 struct TransformComponent {
     glm::vec2 position{};
     glm::vec2 scale{};
@@ -54,5 +56,7 @@ struct BoxColliderComponent {
     BoxColliderComponent(int width = 0, int height = 0, glm::vec2 offset = glm::vec2(0))
         : width{width}, height{height}, offset{offset} {}
 };
+
+} // namespace Engine
 
 #endif

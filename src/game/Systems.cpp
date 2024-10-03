@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <memory>
 
+namespace Engine {
+
 glm::vec2 getExtrapolatedPosition(glm::vec2 position, glm::vec2 velocity, float extrapolationTimeStep) {
     return glm::vec2{position + velocity * extrapolationTimeStep};
 }
@@ -126,3 +128,5 @@ void DebugRenderSystem::update(float frameExtrapolationTimeStep) {
         SDL_RenderDrawRectF(renderer, &colliderRect);
     }
 }
+
+} // namespace Engine

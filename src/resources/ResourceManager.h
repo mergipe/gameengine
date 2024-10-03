@@ -6,6 +6,8 @@
 #include <string_view>
 #include <unordered_map>
 
+namespace Engine {
+
 class ResourceManager {
 private:
     std::unordered_map<std::string_view, SDL_Texture *> textures{};
@@ -23,5 +25,7 @@ public:
     SDL_Texture *getTexture(std::string_view resourceId) const { return textures.at(resourceId); };
     std::string_view getResourcesBasePath() const { return resourcesBasePath; };
 };
+
+} // namespace Engine
 
 #endif

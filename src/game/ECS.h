@@ -11,6 +11,8 @@
 #include <unordered_map>
 #include <vector>
 
+namespace Engine {
+
 constexpr size_t MAX_COMPONENTS{32};
 using Signature = std::bitset<MAX_COMPONENTS>;
 
@@ -170,5 +172,7 @@ template <typename T> T &Registry::getSystem() const {
     auto system{systems.find(std::type_index(typeid(T)))};
     return *(std::static_pointer_cast<T>(system->second));
 }
+
+} // namespace Engine
 
 #endif
