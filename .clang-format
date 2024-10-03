@@ -1,6 +1,25 @@
 BasedOnStyle: LLVM
-IndentWidth: 4
-ColumnLimit: 110
-#AllowShortBlocksOnASingleLine: Empty
-#AllowShortFunctionsOnASingleLine: Empty
 AccessModifierOffset: -4
+AlignAfterOpenBracket: Align
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: true
+BinPackParameters: true
+BreakBeforeBraces: Linux
+BreakStringLiterals: true
+ColumnLimit: 110
+IncludeBlocks: Merge
+IndentWidth: 4
+InsertNewlineAtEOF: true
+KeepEmptyLinesAtEOF: true
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: All
+PointerAlignment: Left
+QualifierAlignment: Leave
+ReferenceAlignment: Pointer
+SeparateDefinitionBlocks: Leave
+SortIncludes: CaseSensitive
+SpaceAfterCStyleCast: true
+SpacesInLineCommentPrefix:
+  Maximum: 1
+  Minimum: 1
+UseTab: Never

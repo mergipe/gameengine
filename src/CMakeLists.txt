@@ -5,7 +5,7 @@ add_executable(gameengine
                resources/ResourceManager.cpp)
 target_compile_features(gameengine PRIVATE cxx_std_23)
 set_target_properties(gameengine PROPERTIES CXX_EXTENSIONS OFF)
-target_include_directories(gameengine PUBLIC . core game resources)
+target_include_directories(gameengine PUBLIC .)
 target_link_sdl2(gameengine)
 target_link_libraries(gameengine PRIVATE SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf SDL2_mixer::SDL2_mixer)
 target_link_libraries(gameengine PRIVATE glm sol imgui)

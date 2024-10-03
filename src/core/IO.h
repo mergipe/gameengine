@@ -4,10 +4,9 @@
 #include <fstream>
 #include <vector>
 
-namespace Engine::IO {
-
-std::vector<std::vector<int>> parseIntCsvFile(std::ifstream &file);
-
+namespace Engine::IO
+{
+    std::vector<std::vector<int>> parseIntCsvFile(std::ifstream& file);
 }
 
 #endif
