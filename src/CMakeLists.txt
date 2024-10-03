@@ -1,12 +1,11 @@
 add_executable(gameengine
                Main.cpp
-               core/Game.cpp core/Logger.cpp
-               resources/AssetStore.cpp
-               scene/ECS.cpp scene/Systems.cpp
-               util/IO.cpp)
+               core/Logger.cpp core/IO.cpp
+               game/Game.cpp game/ECS.cpp game/Systems.cpp
+               resources/ResourceManager.cpp)
 target_compile_features(gameengine PRIVATE cxx_std_23)
 set_target_properties(gameengine PROPERTIES CXX_EXTENSIONS OFF)
-target_include_directories(gameengine PUBLIC . core resources scene util)
+target_include_directories(gameengine PUBLIC . core game resources)
 target_link_sdl2(gameengine)
 target_link_libraries(gameengine PRIVATE SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf SDL2_mixer::SDL2_mixer)
 target_link_libraries(gameengine PRIVATE glm sol imgui)

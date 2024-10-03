@@ -20,8 +20,8 @@ void MovementSystem::update(float timeStep) {
 };
 
 RenderSystem::RenderSystem(Registry *registry, SDL_Renderer *renderer,
-                           std::unique_ptr<AssetStore> &assetStore)
-    : System{registry}, renderer{renderer}, assetStore{assetStore} {
+                           std::unique_ptr<ResourceManager> &resourceManager)
+    : System{registry}, renderer{renderer}, resourceManager{resourceManager} {
     requireComponent<TransformComponent>();
     requireComponent<SpriteComponent>();
 }
@@ -41,8 +41,8 @@ void RenderSystem::update(float frameExtrapolationTimeStep) {
         SDL_FRect spriteRect = {extrapolatedPosition.x, extrapolatedPosition.y,
                                 static_cast<float>(sprite.width) * transform.scale.x,
                                 static_cast<float>(sprite.height) * transform.scale.y};
-        SDL_RenderCopyExF(renderer, assetStore->getTexture(sprite.assetId), &sprite.sourceRect, &spriteRect,
-                          transform.rotation, NULL, SDL_FLIP_NONE);
+        SDL_RenderCopyExF(renderer, resourceManager->getTexture(sprite.resourceId), &sprite.sourceRect,
+                          &spriteRect, transform.rotation, NULL, SDL_FLIP_NONE);
     }
 }
 

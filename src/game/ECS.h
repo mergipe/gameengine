@@ -32,6 +32,7 @@ private:
     size_t id{};
 
 public:
+    Entity();
     Entity(size_t id) : id{id} {}
     bool operator==(const Entity &e) const { return id == e.id; };
     bool operator<(const Entity &e) const { return id < e.id; };

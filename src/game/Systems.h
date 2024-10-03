@@ -1,9 +1,9 @@
 #ifndef SYSTEMS_H
 #define SYSTEMS_H
 
-#include <AssetStore.h>
 #include <Components.h>
 #include <ECS.h>
+#include <ResourceManager.h>
 #include <SDL.h>
 #include <memory>
 
@@ -16,10 +16,11 @@ public:
 class RenderSystem : public System {
 private:
     SDL_Renderer *renderer{};
-    std::unique_ptr<AssetStore> &assetStore;
+    std::unique_ptr<ResourceManager> &resourceManager;
 
 public:
-    RenderSystem(Registry *registry, SDL_Renderer *renderer, std::unique_ptr<AssetStore> &assetStore);
+    RenderSystem(Registry *registry, SDL_Renderer *renderer,
+                 std::unique_ptr<ResourceManager> &resourceManager);
     RenderSystem(const RenderSystem &);
     void operator=(const RenderSystem &);
     void update(float frameExtrapolationTimeStep);

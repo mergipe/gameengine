@@ -22,15 +22,15 @@ struct RigidBodyComponent {
 };
 
 struct SpriteComponent {
-    std::string_view assetId{};
+    std::string_view resourceId{};
     int width{};
     int height{};
     int zIndex{};
     SDL_Rect sourceRect{};
 
-    SpriteComponent(std::string_view assetId = "", int width = 0, int height = 0, int zIndex = 0,
+    SpriteComponent(std::string_view resourceId = "", int width = 0, int height = 0, int zIndex = 0,
                     int rectX = 0, int rectY = 0)
-        : assetId{assetId}, width{width}, height{height}, zIndex{zIndex},
+        : resourceId{resourceId}, width{width}, height{height}, zIndex{zIndex},
           sourceRect{SDL_Rect{rectX, rectY, width, height}} {}
 };
 

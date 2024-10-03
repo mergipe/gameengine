@@ -1,8 +1,9 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <AssetStore.h>
 #include <ECS.h>
+#include <Events.h>
+#include <ResourceManager.h>
 #include <SDL.h>
 #include <memory>
 
@@ -14,7 +15,8 @@ private:
     SDL_Window *window{};
     SDL_Renderer *renderer{};
     std::unique_ptr<Registry> registry{};
-    std::unique_ptr<AssetStore> assetStore{};
+    std::unique_ptr<ResourceManager> resourceManager{};
+    std::unique_ptr<EventBus> eventBus{};
     void loadMap(std::string_view tilesetFilename, std::string_view tilemapFilename, int tileWidth,
                  int tileHeight, int tilesetColumns, float scale);
     void loadEntities();

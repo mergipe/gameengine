@@ -34,8 +34,8 @@ void Game::loadMap(std::string_view tilesetFilename, std::string_view tilemapFil
     Logger::trace("Loading map {}", tilemapFilename);
     std::string tilemapsFolder{"tilemaps/"};
     std::string tilesetFilepath{tilemapsFolder + std::string{tilesetFilename}};
-    assetStore->addTexture("tileset", std::string{tilesetFilepath});
-    std::string tilemapFilepath{std::string{assetStore->getAssetsBasePath()} + tilemapsFolder +
+    resourceManager->addTexture("tileset", std::string{tilesetFilepath});
+    std::string tilemapFilepath{std::string{resourceManager->getResourcesBasePath()} + tilemapsFolder +
                                 std::string{tilemapFilename}};
     std::ifstream tilemapFile{tilemapFilepath};
     if (!tilemapFile) {
@@ -61,8 +61,8 @@ void Game::loadMap(std::string_view tilesetFilename, std::string_view tilemapFil
 }
 
 void Game::loadEntities() {
-    assetStore->addTexture("chopper", "images/chopper.png");
-    assetStore->addTexture("radar", "images/radar.png");
+    resourceManager->addTexture("chopper", "images/chopper.png");
+    resourceManager->addTexture("radar", "images/radar.png");
     Entity chopper{registry->createEntity()};
     registry->addComponent<TransformComponent>(chopper, glm::vec2(10, 10));
     registry->addComponent<RigidBodyComponent>(chopper, glm::vec2(0.0, 0.0));
@@ -73,8 +73,8 @@ void Game::loadEntities() {
     registry->addComponent<TransformComponent>(radar, glm::vec2(400, 10));
     registry->addComponent<SpriteComponent>(radar, "radar", 64, 64, 2);
     registry->addComponent<AnimationComponent>(radar, 8, 5);
-    assetStore->addTexture("tank-right", "images/tank-panther-right.png");
-    assetStore->addTexture("truck-right", "images/truck-ford-right.png");
+    resourceManager->addTexture("tank-right", "images/tank-panther-right.png");
+    resourceManager->addTexture("truck-right", "images/truck-ford-right.png");
     Entity tank{registry->createEntity()};
     registry->addComponent<TransformComponent>(tank, glm::vec2(10, 10), glm::vec2(2));
     registry->addComponent<RigidBodyComponent>(tank, glm::vec2(0.1, 0.1));
@@ -92,14 +92,14 @@ void Game::loadLevel(int level) {
     Logger::trace("Loading level {}", level);
     registry = std::make_unique<Registry>();
     registry->addSystem<MovementSystem>();
-    registry->addSystem<RenderSystem>(renderer, assetStore);
+    registry->addSystem<RenderSystem>(renderer, resourceManager);
     registry->addSystem<AnimationSystem>();
     registry->addSystem<CollisionSystem>();
     if (debugCapability) {
         registry->addSystem<DebugRenderSystem>(renderer);
     }
-    assetStore =
-        std::make_unique<AssetStore>("/home/gustavo/workspaces/gamedev/gameengine/assets/", renderer);
+    resourceManager =
+        std::make_unique<ResourceManager>("/home/gustavo/workspaces/gamedev/gameengine/resources/", renderer);
     loadMap("jungle.png", "jungle.map", 32, 32, 10, 2.0);
     loadEntities();
 }
