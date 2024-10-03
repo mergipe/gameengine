@@ -11,14 +11,18 @@ namespace Engine {
 
 class Game {
 private:
-    bool debugCapability{false};
-    bool debugModeActivated{false};
-    bool isRunning{false};
-    SDL_Window *window{};
-    SDL_Renderer *renderer{};
-    std::unique_ptr<Registry> registry{};
-    std::unique_ptr<ResourceManager> resourceManager{};
-    std::unique_ptr<EventBus> eventBus{};
+    static constexpr float s_updateRate{144.0f};
+    static constexpr float s_timeStepInMs{1000.0f / s_updateRate};
+    const int m_windowWidth{1920};
+    const int m_windowHeight{1080};
+    bool m_debugCapability{false};
+    bool m_debugModeActivated{false};
+    bool m_isRunning{false};
+    SDL_Window *m_window{};
+    SDL_Renderer *m_renderer{};
+    std::unique_ptr<Registry> m_registry{};
+    std::unique_ptr<ResourceManager> m_resourceManager{};
+    std::unique_ptr<EventBus> m_eventBus{};
     void loadMap(std::string_view tilesetFilename, std::string_view tilemapFilename, int tileWidth,
                  int tileHeight, int tilesetColumns, float scale);
     void loadEntities();
@@ -27,10 +31,6 @@ private:
     void processInput();
     void update();
     void render(float frameExtrapolationFactor);
-    const int windowWidth{1920};
-    const int windowHeight{1080};
-    static constexpr float updateRate{144.0f};
-    static constexpr float timeStepInMs{1000.0f / updateRate};
 
 public:
     Game(bool debugMode);

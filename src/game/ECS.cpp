@@ -6,30 +6,30 @@ namespace Engine {
 
 Entity Registry::createEntity() {
     size_t entityId{};
-    if (freeEntityIds.empty()) {
-        entityId = entitiesCount++;
-        if (entityId >= entityComponentSignatures.size()) {
-            entityComponentSignatures.resize(entityId + 1);
+    if (m_freeEntityIds.empty()) {
+        entityId = m_entitiesCount++;
+        if (entityId >= m_entityComponentSignatures.size()) {
+            m_entityComponentSignatures.resize(entityId + 1);
         }
     } else {
-        entityId = freeEntityIds.front();
-        freeEntityIds.pop_front();
+        entityId = m_freeEntityIds.front();
+        m_freeEntityIds.pop_front();
     }
     const Entity entity{entityId};
-    entitiesToBeAdded.insert(entity);
+    m_entitiesToBeAdded.insert(entity);
     Logger::trace("Entity created with id = {}", entityId);
     return entity;
 }
 
 void Registry::killEntity(Entity entity) {
-    entitiesToBeKilled.insert(entity);
+    m_entitiesToBeKilled.insert(entity);
     Logger::trace("Entity {} killed", entity.getId());
 }
 
 void Registry::addEntityToSystems(Entity entity) {
     const auto entityId{entity.getId()};
-    const auto &entityComponentSignature{entityComponentSignatures[entityId]};
-    for (auto &system : systems) {
+    const auto &entityComponentSignature{m_entityComponentSignatures[entityId]};
+    for (auto &system : m_systems) {
         const auto &systemComponentSignature{system.second->getComponentSignature()};
         const bool signaturesMatch{(entityComponentSignature & systemComponentSignature) ==
                                    systemComponentSignature};
@@ -41,23 +41,23 @@ void Registry::addEntityToSystems(Entity entity) {
 }
 
 void Registry::removeEntityFromSystems(Entity entity) {
-    for (auto system : systems) {
+    for (auto system : m_systems) {
         system.second->removeEntity(entity);
     }
     Logger::trace("Entity {} removed from systems", entity.getId());
 }
 
 void Registry::update() {
-    for (auto entity : entitiesToBeAdded) {
+    for (auto entity : m_entitiesToBeAdded) {
         addEntityToSystems(entity);
     }
-    entitiesToBeAdded.clear();
-    for (auto entity : entitiesToBeKilled) {
+    m_entitiesToBeAdded.clear();
+    for (auto entity : m_entitiesToBeKilled) {
         removeEntityFromSystems(entity);
-        entityComponentSignatures[entity.getId()].reset();
-        freeEntityIds.push_back(entity.getId());
+        m_entityComponentSignatures[entity.getId()].reset();
+        m_freeEntityIds.push_back(entity.getId());
     }
-    entitiesToBeKilled.clear();
+    m_entitiesToBeKilled.clear();
 }
 
 } // namespace Engine

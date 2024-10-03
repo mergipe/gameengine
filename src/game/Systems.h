@@ -17,8 +17,8 @@ public:
 
 class RenderSystem : public System {
 private:
-    SDL_Renderer *renderer{};
-    std::unique_ptr<ResourceManager> &resourceManager;
+    SDL_Renderer *m_renderer{};
+    std::unique_ptr<ResourceManager> &m_resourceManager;
 
 public:
     RenderSystem(Registry *registry, SDL_Renderer *renderer,
@@ -46,7 +46,7 @@ public:
 
 class DebugRenderSystem : public System {
 private:
-    SDL_Renderer *renderer{};
+    SDL_Renderer *m_renderer{};
 
 public:
     DebugRenderSystem(Registry *registry, SDL_Renderer *renderer);

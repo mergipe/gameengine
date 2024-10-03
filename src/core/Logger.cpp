@@ -12,8 +12,8 @@ void Logger::init() {
     const auto file_sink{std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/log.txt", true)};
     file_sink->set_level(spdlog::level::trace);
     const std::vector<spdlog::sink_ptr> sinks{console_sink, file_sink};
-    logger = std::make_shared<spdlog::logger>("logger", sinks.begin(), sinks.end());
-    spdlog::register_logger(logger);
+    s_logger = std::make_shared<spdlog::logger>("logger", sinks.begin(), sinks.end());
+    spdlog::register_logger(s_logger);
     spdlog::cfg::load_env_levels();
     Logger::trace("Logger initialized");
 }

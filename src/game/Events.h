@@ -28,15 +28,15 @@ public:
 template <typename TOwner, typename TEvent> class EventCallback : public IEventCallback {
 private:
     using CallbackFunction = std::function<void(const TOwner &, TEvent &)>;
-    TOwner *ownerInstance{};
-    CallbackFunction callbackFunction{};
+    TOwner *m_ownerInstance{};
+    CallbackFunction m_callbackFunction{};
     virtual void call(Event &e) override {
-        std::invoke(callbackFunction, ownerInstance, static_cast<TEvent &>(e));
+        std::invoke(m_callbackFunction, m_ownerInstance, static_cast<TEvent &>(e));
     }
 
 public:
     EventCallback(TOwner *ownerInstance, CallbackFunction callbackFunction)
-        : ownerInstance{ownerInstance}, callbackFunction{callbackFunction} {}
+        : m_ownerInstance{ownerInstance}, m_callbackFunction{callbackFunction} {}
     virtual ~EventCallback() override = default;
 };
 
@@ -44,7 +44,7 @@ using HandlerList = std::list<std::unique_ptr<IEventCallback>>;
 
 class EventBus {
 private:
-    std::unordered_map<std::type_index, std::unique_ptr<HandlerList>> subscribers;
+    std::unordered_map<std::type_index, std::unique_ptr<HandlerList>> m_subscribers;
 
 public:
     EventBus();
@@ -57,15 +57,15 @@ public:
 template <typename TOwner, typename TEvent>
 void EventBus::subscribeToEvent(TOwner *ownerInstance,
                                 std::function<void(const TOwner &, TEvent &)> callbackFunction) {
-    if (!subscribers[typeid(TEvent)].get()) {
-        subscribers[typeid(TEvent)] = std::make_unique<HandlerList>();
+    if (!m_subscribers[typeid(TEvent)].get()) {
+        m_subscribers[typeid(TEvent)] = std::make_unique<HandlerList>();
     }
     auto subscriber{std::make_unique<EventCallback<TOwner, TEvent>>(ownerInstance, callbackFunction)};
-    subscribers[typeid(TEvent)]->push_back(std::move(subscriber));
+    m_subscribers[typeid(TEvent)]->push_back(std::move(subscriber));
 }
 
 template <typename T, typename... Args> void EventBus::dispatchEvent(Args &&...args) {
-    const auto handlers{subscribers[typeid(T)].get()};
+    const auto handlers{m_subscribers[typeid(T)].get()};
     T event{std::forward<Args>(args)...};
     if (handlers) {
         for (auto it{handlers->begin()}; it != handlers->end(); ++it) {
@@ -77,9 +77,9 @@ template <typename T, typename... Args> void EventBus::dispatchEvent(Args &&...a
 
 class CollisionEvent : public Event {
 public:
-    Entity entity{};
-    Entity otherEntity{};
-    CollisionEvent(Entity entity, Entity otherEntity) : entity{entity}, otherEntity{otherEntity} {}
+    Entity m_entity{};
+    Entity m_otherEntity{};
+    CollisionEvent(Entity entity, Entity otherEntity) : m_entity{entity}, m_otherEntity{otherEntity} {}
 };
 
 } // namespace Engine
