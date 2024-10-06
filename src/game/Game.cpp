@@ -5,6 +5,7 @@
 #include "core/IO.h"
 #include "core/Logger.h"
 #include <SDL.h>
+#include <cstdlib>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -17,18 +18,18 @@ namespace Engine
     {
         if (SDL_Init(SDL_INIT_VIDEO) != 0) {
             Logger::critical("Error initializing SDL: {}", SDL_GetError());
-            return;
+            std::abort();
         }
         m_window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_windowWidth,
                                     m_windowHeight, SDL_WINDOW_BORDERLESS);
         if (!m_window) {
             Logger::critical("Error creating SDL window: {}", SDL_GetError());
-            return;
+            std::abort();
         }
         m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
         if (!m_renderer) {
             Logger::critical("Error creating SDL renderer: {}", SDL_GetError());
-            return;
+            std::abort();
         }
         Logger::trace("Game initialized");
     }
