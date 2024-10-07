@@ -11,20 +11,20 @@ namespace Engine
     class ResourceManager
     {
     private:
-        std::unordered_map<std::string_view, SDL_Texture*> textures{};
-        const std::string resourcesBasePath{};
-        SDL_Renderer* renderer{};
+        std::unordered_map<std::string_view, SDL_Texture*> m_textures{};
+        const std::string m_resourcesBasePath{};
+        SDL_Renderer* m_renderer{};
 
     public:
         ResourceManager(std::string_view resourcesBasePath, SDL_Renderer* renderer)
-            : resourcesBasePath{resourcesBasePath}, renderer{renderer} {};
+            : m_resourcesBasePath{resourcesBasePath}, m_renderer{renderer} {};
         ResourceManager(const ResourceManager&);
         ~ResourceManager() { clearResources(); };
         ResourceManager& operator=(const ResourceManager&);
         void clearResources();
         void addTexture(std::string_view resourceId, const std::string& relativeFilepath);
-        SDL_Texture* getTexture(std::string_view resourceId) const { return textures.at(resourceId); };
-        std::string_view getResourcesBasePath() const { return resourcesBasePath; };
+        SDL_Texture* getTexture(std::string_view resourceId) const { return m_textures.at(resourceId); };
+        std::string_view getResourcesBasePath() const { return m_resourcesBasePath; };
     };
 } // namespace Engine
 
