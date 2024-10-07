@@ -21,15 +21,15 @@ namespace Engine
         static inline size_t s_nextId{0};
     };
 
-    template <typename T>
+    template <typename TComponent>
     class Component : public IComponent
     {
     public:
         static size_t getId();
     };
 
-    template <typename T>
-    size_t Component<T>::getId()
+    template <typename TComponent>
+    size_t Component<TComponent>::getId()
     {
         const static auto s_id{s_nextId++};
         return s_id;
@@ -56,7 +56,7 @@ namespace Engine
 
     protected:
         class Registry* m_registry{};
-        template <typename T>
+        template <typename TComponent>
         void requireComponent();
 
     public:
@@ -113,104 +113,105 @@ namespace Engine
         void killEntity(Entity entity);
         void addEntityToSystems(Entity entity);
         void removeEntityFromSystems(Entity entity);
-        template <typename T, typename... Args>
-        void addComponent(Entity entity, Args&&... args);
-        template <typename T>
+        template <typename TComponent, typename... TArgs>
+        void addComponent(Entity entity, TArgs&&... args);
+        template <typename TComponent>
         void removeComponent(Entity entity);
-        template <typename T>
+        template <typename TComponent>
         bool hasComponent(Entity entity) const;
-        template <typename T>
-        T& getComponent(Entity entity) const;
-        template <typename T, typename... Args>
-        void addSystem(Args&&... args);
-        template <typename T>
+        template <typename TComponent>
+        TComponent& getComponent(Entity entity) const;
+        template <typename TSystem, typename... TArgs>
+        void addSystem(TArgs&&... args);
+        template <typename TSystem>
         void removeSystem();
-        template <typename T>
+        template <typename TSystem>
         bool hasSystem() const;
-        template <typename T>
-        T& getSystem() const;
+        template <typename TSystem>
+        TSystem& getSystem() const;
     };
 
-    template <typename T>
+    template <typename TComponent>
     void System::requireComponent()
     {
-        const auto componentId{Component<T>::getId()};
+        const auto componentId{Component<TComponent>::getId()};
         m_componentSignature.set(componentId);
     }
 
-    template <typename T, typename... Args>
-    void Registry::addComponent(Entity entity, Args&&... args)
+    template <typename TComponent, typename... TArgs>
+    void Registry::addComponent(Entity entity, TArgs&&... args)
     {
-        const auto componentId{Component<T>::getId()};
+        const auto componentId{Component<TComponent>::getId()};
         if (componentId >= m_componentPools.size()) {
             m_componentPools.resize(componentId + 1, nullptr);
         }
         if (!m_componentPools[componentId]) {
-            m_componentPools[componentId] = std::make_shared<Pool<T>>();
+            m_componentPools[componentId] = std::make_shared<Pool<TComponent>>();
         }
-        std::shared_ptr<Pool<T>> componentPool{
-            std::static_pointer_cast<Pool<T>>(m_componentPools[componentId])};
+        std::shared_ptr<Pool<TComponent>> componentPool{
+            std::static_pointer_cast<Pool<TComponent>>(m_componentPools[componentId])};
         const auto entityId{entity.getId()};
         if (entityId >= componentPool->getSize()) {
             componentPool->resize(m_entitiesCount);
         }
-        T newComponent{std::forward<Args>(args)...};
+        TComponent newComponent{std::forward<TArgs>(args)...};
         componentPool->set(entityId, newComponent);
         m_entityComponentSignatures[entityId].set(componentId);
         Logger::trace("Component {} added to entity {}", componentId, entityId);
     }
 
-    template <typename T>
+    template <typename TComponent>
     void Registry::removeComponent(Entity entity)
     {
-        const auto componentId{Component<T>::getId()};
+        const auto componentId{Component<TComponent>::getId()};
         const auto entityId{entity.getId()};
         m_entityComponentSignatures[entityId].set(componentId, false);
         Logger::trace("Component {} removed from entity {}", componentId, entityId);
     }
 
-    template <typename T>
+    template <typename TComponent>
     bool Registry::hasComponent(Entity entity) const
     {
-        return m_entityComponentSignatures[entity.getId()].test(Component<T>::getId());
+        return m_entityComponentSignatures[entity.getId()].test(Component<TComponent>::getId());
     }
 
-    template <typename T>
-    T& Registry::getComponent(Entity entity) const
+    template <typename TComponent>
+    TComponent& Registry::getComponent(Entity entity) const
     {
-        auto componentPool{std::static_pointer_cast<Pool<T>>(m_componentPools[Component<T>::getId()])};
+        auto componentPool{
+            std::static_pointer_cast<Pool<TComponent>>(m_componentPools[Component<TComponent>::getId()])};
         return componentPool->get(entity.getId());
     }
 
-    template <typename T, typename... Args>
-    void Registry::addSystem(Args&&... args)
+    template <typename TSystem, typename... TArgs>
+    void Registry::addSystem(TArgs&&... args)
     {
-        std::shared_ptr<T> newSystem{std::make_shared<T>(this, args...)};
-        const auto systemId{std::type_index(typeid(T))};
+        std::shared_ptr<TSystem> newSystem{std::make_shared<TSystem>(this, args...)};
+        const auto systemId{std::type_index(typeid(TSystem))};
         m_systems.insert(std::make_pair(systemId, newSystem));
         Logger::trace("System {} added to registry", systemId.name());
     }
 
-    template <typename T>
+    template <typename TSystem>
     void Registry::removeSystem()
     {
-        const auto systemId{std::type_index(typeid(T))};
+        const auto systemId{std::type_index(typeid(TSystem))};
         auto system{m_systems.find(systemId)};
         m_systems.erase(system);
         Logger::trace("System {} removed from registry", systemId.name());
     }
 
-    template <typename T>
+    template <typename TSystem>
     bool Registry::hasSystem() const
     {
-        return m_systems.find(std::type_index(typeid(T))) != m_systems.end();
+        return m_systems.find(std::type_index(typeid(TSystem))) != m_systems.end();
     }
 
-    template <typename T>
-    T& Registry::getSystem() const
+    template <typename TSystem>
+    TSystem& Registry::getSystem() const
     {
-        auto system{m_systems.find(std::type_index(typeid(T)))};
-        return *(std::static_pointer_cast<T>(system->second));
+        auto system{m_systems.find(std::type_index(typeid(TSystem)))};
+        return *(std::static_pointer_cast<TSystem>(system->second));
     }
 } // namespace Engine
 

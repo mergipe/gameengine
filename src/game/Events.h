@@ -62,8 +62,8 @@ namespace Engine
         template <typename TOwner, typename TEvent>
         void subscribeToEvent(TOwner* ownerInstance,
                               std::function<void(const TOwner&, TEvent&)> callbackFunction);
-        template <typename T, typename... Args>
-        void dispatchEvent(Args&&... args);
+        template <typename TEvent, typename... TArgs>
+        void dispatchEvent(TArgs&&... args);
     };
 
     template <typename TOwner, typename TEvent>
@@ -77,11 +77,11 @@ namespace Engine
         m_subscribers[typeid(TEvent)]->push_back(std::move(subscriber));
     }
 
-    template <typename T, typename... Args>
-    void EventBus::dispatchEvent(Args&&... args)
+    template <typename TEvent, typename... TArgs>
+    void EventBus::dispatchEvent(TArgs&&... args)
     {
-        const auto handlers{m_subscribers[typeid(T)].get()};
-        T event{std::forward<Args>(args)...};
+        const auto handlers{m_subscribers[typeid(TEvent)].get()};
+        TEvent event{std::forward<TArgs>(args)...};
         if (handlers) {
             for (auto it{handlers->begin()}; it != handlers->end(); ++it) {
                 const auto handler{it->get()};
