@@ -8,7 +8,7 @@ namespace Engine
     class Logger
     {
     private:
-        static inline std::shared_ptr<spdlog::logger> s_logger{};
+        static inline std::shared_ptr<spdlog::logger> s_logger{std::make_shared<spdlog::logger>("empty")};
 
     public:
         static void init();
