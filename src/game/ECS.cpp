@@ -32,7 +32,7 @@ namespace Engine
     {
         const auto entityId{entity.getId()};
         const auto& entityComponentSignature{m_entityComponentSignatures[entityId]};
-        for (auto& system : m_systems) {
+        for (const auto& system : m_systems) {
             const auto& systemComponentSignature{system.second->getComponentSignature()};
             const bool signaturesMatch{(entityComponentSignature & systemComponentSignature) ==
                                        systemComponentSignature};
@@ -45,7 +45,7 @@ namespace Engine
 
     void Registry::removeEntityFromSystems(const Entity& entity)
     {
-        for (auto system : m_systems) {
+        for (const auto& system : m_systems) {
             system.second->removeEntity(entity);
         }
         Logger::trace("Entity {} removed from systems", entity.getId());
@@ -53,11 +53,11 @@ namespace Engine
 
     void Registry::update()
     {
-        for (auto entity : m_entitiesToBeAdded) {
+        for (const auto& entity : m_entitiesToBeAdded) {
             addEntityToSystems(entity);
         }
         m_entitiesToBeAdded.clear();
-        for (auto entity : m_entitiesToBeKilled) {
+        for (const auto& entity : m_entitiesToBeKilled) {
             removeEntityFromSystems(entity);
             m_entityComponentSignatures[entity.getId()].reset();
             m_freeEntityIds.push_back(entity.getId());

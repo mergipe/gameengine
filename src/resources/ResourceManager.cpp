@@ -8,7 +8,7 @@ namespace Engine
 {
     void ResourceManager::clearResources()
     {
-        for (auto texture : m_textures) {
+        for (const auto& texture : m_textures) {
             SDL_DestroyTexture(texture.second);
         }
         m_textures.clear();
