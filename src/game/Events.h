@@ -37,7 +37,7 @@ namespace Engine
         virtual void call(Event& e) override;
 
     public:
-        EventCallback(TOwner* ownerInstance, CallbackFunction callbackFunction)
+        EventCallback(TOwner* ownerInstance, const CallbackFunction& callbackFunction)
             : m_ownerInstance{ownerInstance}, m_callbackFunction{callbackFunction}
         {
         }
@@ -61,14 +61,14 @@ namespace Engine
         EventBus();
         template <typename TOwner, typename TEvent>
         void subscribeToEvent(TOwner* ownerInstance,
-                              std::function<void(const TOwner&, TEvent&)> callbackFunction);
+                              const std::function<void(const TOwner&, TEvent&)>& callbackFunction);
         template <typename TEvent, typename... TArgs>
         void dispatchEvent(TArgs&&... args);
     };
 
     template <typename TOwner, typename TEvent>
     void EventBus::subscribeToEvent(TOwner* ownerInstance,
-                                    std::function<void(const TOwner&, TEvent&)> callbackFunction)
+                                    const std::function<void(const TOwner&, TEvent&)>& callbackFunction)
     {
         if (!m_subscribers[typeid(TEvent)].get()) {
             m_subscribers[typeid(TEvent)] = std::make_unique<HandlerList>();
@@ -96,7 +96,10 @@ namespace Engine
         Entity m_entity{};
         Entity m_otherEntity{};
 
-        CollisionEvent(Entity entity, Entity otherEntity) : m_entity{entity}, m_otherEntity{otherEntity} {}
+        CollisionEvent(const Entity& entity, const Entity& otherEntity)
+            : m_entity{entity}, m_otherEntity{otherEntity}
+        {
+        }
     };
 } // namespace Engine
 

@@ -66,8 +66,8 @@ namespace Engine
         System& operator=(const System&);
         std::vector<Entity> getEntities() const { return m_entities; }
         const Signature& getComponentSignature() const { return m_componentSignature; }
-        void addEntity(Entity entity) { m_entities.push_back(entity); };
-        void removeEntity(Entity entity) { std::erase(m_entities, entity); };
+        void addEntity(const Entity& entity) { m_entities.push_back(entity); };
+        void removeEntity(const Entity& entity) { std::erase(m_entities, entity); };
     };
 
     class IPool
@@ -89,8 +89,8 @@ namespace Engine
         size_t getSize() const { return m_objects.size(); }
         void resize(size_t size) { m_objects.resize(size); }
         void clear() { m_objects.clear(); }
-        void add(T object) { m_objects.push_back(object); }
-        void set(size_t index, T object) { m_objects[index] = object; }
+        void add(const T& object) { m_objects.push_back(object); }
+        void set(size_t index, const T& object) { m_objects[index] = object; }
         T& get(size_t index) { return static_cast<T&>(m_objects[index]); }
         T& operator[](size_t index) { return m_objects[index]; }
     };
@@ -110,17 +110,17 @@ namespace Engine
         Registry() = default;
         void update();
         Entity createEntity();
-        void killEntity(Entity entity);
-        void addEntityToSystems(Entity entity);
-        void removeEntityFromSystems(Entity entity);
+        void killEntity(const Entity& entity);
+        void addEntityToSystems(const Entity& entity);
+        void removeEntityFromSystems(const Entity& entity);
         template <typename TComponent, typename... TArgs>
-        void addComponent(Entity entity, TArgs&&... args);
+        void addComponent(const Entity& entity, TArgs&&... args);
         template <typename TComponent>
-        void removeComponent(Entity entity);
+        void removeComponent(const Entity& entity);
         template <typename TComponent>
-        bool hasComponent(Entity entity) const;
+        bool hasComponent(const Entity& entity) const;
         template <typename TComponent>
-        TComponent& getComponent(Entity entity) const;
+        TComponent& getComponent(const Entity& entity) const;
         template <typename TSystem, typename... TArgs>
         void addSystem(TArgs&&... args);
         template <typename TSystem>
@@ -139,7 +139,7 @@ namespace Engine
     }
 
     template <typename TComponent, typename... TArgs>
-    void Registry::addComponent(Entity entity, TArgs&&... args)
+    void Registry::addComponent(const Entity& entity, TArgs&&... args)
     {
         const auto componentId{Component<TComponent>::getId()};
         if (componentId >= m_componentPools.size()) {
@@ -161,7 +161,7 @@ namespace Engine
     }
 
     template <typename TComponent>
-    void Registry::removeComponent(Entity entity)
+    void Registry::removeComponent(const Entity& entity)
     {
         const auto componentId{Component<TComponent>::getId()};
         const auto entityId{entity.getId()};
@@ -170,13 +170,13 @@ namespace Engine
     }
 
     template <typename TComponent>
-    bool Registry::hasComponent(Entity entity) const
+    bool Registry::hasComponent(const Entity& entity) const
     {
         return m_entityComponentSignatures[entity.getId()].test(Component<TComponent>::getId());
     }
 
     template <typename TComponent>
-    TComponent& Registry::getComponent(Entity entity) const
+    TComponent& Registry::getComponent(const Entity& entity) const
     {
         auto componentPool{
             std::static_pointer_cast<Pool<TComponent>>(m_componentPools[Component<TComponent>::getId()])};

@@ -5,7 +5,8 @@
 
 namespace Engine
 {
-    glm::vec2 getExtrapolatedPosition(glm::vec2 position, glm::vec2 velocity, float extrapolationTimeStep)
+    glm::vec2 getExtrapolatedPosition(const glm::vec2& position, const glm::vec2& velocity,
+                                      float extrapolationTimeStep)
     {
         return glm::vec2{position + velocity * extrapolationTimeStep};
     }
@@ -26,7 +27,7 @@ namespace Engine
     };
 
     RenderSystem::RenderSystem(Registry* registry, SDL_Renderer* renderer,
-                               std::unique_ptr<ResourceManager>& resourceManager)
+                               const std::unique_ptr<ResourceManager>& resourceManager)
         : System{registry}, m_renderer{renderer}, m_resourceManager{resourceManager}
     {
         requireComponent<TransformComponent>();

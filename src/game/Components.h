@@ -12,7 +12,7 @@ namespace Engine
         glm::vec2 scale{};
         double rotation{};
 
-        TransformComponent(glm::vec2 position = glm::vec2(0), glm::vec2 scale = glm::vec2(1),
+        TransformComponent(const glm::vec2& position = glm::vec2(0), const glm::vec2& scale = glm::vec2(1),
                            double rotation = 0.0)
             : position{position}, scale{scale}, rotation{rotation}
         {
@@ -22,7 +22,7 @@ namespace Engine
     struct RigidBodyComponent {
         glm::vec2 velocity{};
 
-        RigidBodyComponent(glm::vec2 velocity = glm::vec2(0)) : velocity{velocity} {}
+        RigidBodyComponent(const glm::vec2& velocity = glm::vec2(0)) : velocity{velocity} {}
     };
 
     struct SpriteComponent {
@@ -59,7 +59,7 @@ namespace Engine
         glm::vec2 offset{};
         bool isColliding{};
 
-        BoxColliderComponent(int width = 0, int height = 0, glm::vec2 offset = glm::vec2(0))
+        BoxColliderComponent(int width = 0, int height = 0, const glm::vec2& offset = glm::vec2(0))
             : width{width}, height{height}, offset{offset}
         {
         }
