@@ -73,7 +73,8 @@ namespace Engine
         if (!m_subscribers[typeid(TEvent)].get()) {
             m_subscribers[typeid(TEvent)] = std::make_unique<HandlerList>();
         }
-        auto subscriber{std::make_unique<EventCallback<TOwner, TEvent>>(ownerInstance, callbackFunction)};
+        const auto subscriber{
+            std::make_unique<EventCallback<TOwner, TEvent>>(ownerInstance, callbackFunction)};
         m_subscribers[typeid(TEvent)]->push_back(std::move(subscriber));
     }
 
@@ -81,7 +82,7 @@ namespace Engine
     void EventBus::dispatchEvent(TArgs&&... args)
     {
         const auto handlers{m_subscribers[typeid(TEvent)].get()};
-        TEvent event{std::forward<TArgs>(args)...};
+        const TEvent event{std::forward<TArgs>(args)...};
         if (handlers) {
             for (auto it{handlers->begin()}; it != handlers->end(); ++it) {
                 const auto handler{it->get()};

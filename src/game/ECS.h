@@ -148,13 +148,13 @@ namespace Engine
         if (!m_componentPools[componentId]) {
             m_componentPools[componentId] = std::make_shared<Pool<TComponent>>();
         }
-        std::shared_ptr<Pool<TComponent>> componentPool{
+        const std::shared_ptr<Pool<TComponent>> componentPool{
             std::static_pointer_cast<Pool<TComponent>>(m_componentPools[componentId])};
         const auto entityId{entity.getId()};
         if (entityId >= componentPool->getSize()) {
             componentPool->resize(m_entitiesCount);
         }
-        TComponent newComponent{std::forward<TArgs>(args)...};
+        const TComponent newComponent{std::forward<TArgs>(args)...};
         componentPool->set(entityId, newComponent);
         m_entityComponentSignatures[entityId].set(componentId);
         Logger::trace("Component {} added to entity {}", componentId, entityId);
@@ -178,7 +178,7 @@ namespace Engine
     template <typename TComponent>
     TComponent& Registry::getComponent(const Entity& entity) const
     {
-        auto componentPool{
+        const auto componentPool{
             std::static_pointer_cast<Pool<TComponent>>(m_componentPools[Component<TComponent>::getId()])};
         return componentPool->get(entity.getId());
     }
@@ -186,7 +186,7 @@ namespace Engine
     template <typename TSystem, typename... TArgs>
     void Registry::addSystem(TArgs&&... args)
     {
-        std::shared_ptr<TSystem> newSystem{std::make_shared<TSystem>(this, args...)};
+        const std::shared_ptr<TSystem> newSystem{std::make_shared<TSystem>(this, args...)};
         const auto systemId{std::type_index(typeid(TSystem))};
         m_systems.insert(std::make_pair(systemId, newSystem));
         Logger::trace("System {} added to registry", systemId.name());
@@ -196,7 +196,7 @@ namespace Engine
     void Registry::removeSystem()
     {
         const auto systemId{std::type_index(typeid(TSystem))};
-        auto system{m_systems.find(systemId)};
+        const auto system{m_systems.find(systemId)};
         m_systems.erase(system);
         Logger::trace("System {} removed from registry", systemId.name());
     }
@@ -210,7 +210,7 @@ namespace Engine
     template <typename TSystem>
     TSystem& Registry::getSystem() const
     {
-        auto system{m_systems.find(std::type_index(typeid(TSystem)))};
+        const auto system{m_systems.find(std::type_index(typeid(TSystem)))};
         return *(std::static_pointer_cast<TSystem>(system->second));
     }
 } // namespace Engine

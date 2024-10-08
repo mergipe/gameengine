@@ -38,27 +38,27 @@ namespace Engine
                        int tileHeight, int tilesetColumns, float scale)
     {
         Logger::trace("Loading map {}", tilemapFilename);
-        std::string tilemapsFolder{"tilemaps/"};
-        std::string tilesetFilepath{tilemapsFolder + std::string{tilesetFilename}};
+        const std::string tilemapsFolder{"tilemaps/"};
+        const std::string tilesetFilepath{tilemapsFolder + std::string{tilesetFilename}};
         m_resourceManager->addTexture("tileset", std::string{tilesetFilepath});
-        std::string tilemapFilepath{std::string{m_resourceManager->getResourcesBasePath()} + tilemapsFolder +
-                                    std::string{tilemapFilename}};
+        const std::string tilemapFilepath{std::string{m_resourceManager->getResourcesBasePath()} +
+                                          tilemapsFolder + std::string{tilemapFilename}};
         std::ifstream tilemapFile{tilemapFilepath};
         if (!tilemapFile) {
             Logger::error("Error opening {} file for reading", tilemapFilepath);
         }
-        std::vector<std::vector<int>> tilemap{IO::parseIntCsvFile(tilemapFile)};
+        const std::vector<std::vector<int>> tilemap{IO::parseIntCsvFile(tilemapFile)};
         tilemapFile.close();
         for (size_t i{0}; i < tilemap.size(); ++i) {
-            std::vector<int> values{tilemap[i]};
+            const std::vector<int> values{tilemap[i]};
             for (size_t j{0}; j < values.size(); ++j) {
-                Entity tile{m_registry->createEntity()};
+                const Entity tile{m_registry->createEntity()};
                 m_registry->addComponent<TransformComponent>(
                     tile,
                     glm::vec2(static_cast<float>(j) * static_cast<float>(tileWidth) * scale,
                               static_cast<float>(i) * static_cast<float>(tileHeight) * scale),
                     glm::vec2(scale, scale));
-                int tileId{values[j]};
+                const int tileId{values[j]};
                 m_registry->addComponent<SpriteComponent>(tile, "tileset", tileWidth, tileHeight, 0,
                                                           tileWidth * (tileId % tilesetColumns),
                                                           tileHeight * (tileId / tilesetColumns));
@@ -70,24 +70,24 @@ namespace Engine
     {
         m_resourceManager->addTexture("chopper", "images/chopper.png");
         m_resourceManager->addTexture("radar", "images/radar.png");
-        Entity chopper{m_registry->createEntity()};
+        const Entity chopper{m_registry->createEntity()};
         m_registry->addComponent<TransformComponent>(chopper, glm::vec2(10, 10));
         m_registry->addComponent<RigidBodyComponent>(chopper, glm::vec2(0.0, 0.0));
         m_registry->addComponent<SpriteComponent>(chopper, "chopper", 32, 32, 1);
         m_registry->addComponent<AnimationComponent>(chopper, 2, 15);
         m_registry->addComponent<BoxColliderComponent>(chopper, 32, 32);
-        Entity radar{m_registry->createEntity()};
+        const Entity radar{m_registry->createEntity()};
         m_registry->addComponent<TransformComponent>(radar, glm::vec2(400, 10));
         m_registry->addComponent<SpriteComponent>(radar, "radar", 64, 64, 2);
         m_registry->addComponent<AnimationComponent>(radar, 8, 5);
         m_resourceManager->addTexture("tank-right", "images/tank-panther-right.png");
         m_resourceManager->addTexture("truck-right", "images/truck-ford-right.png");
-        Entity tank{m_registry->createEntity()};
+        const Entity tank{m_registry->createEntity()};
         m_registry->addComponent<TransformComponent>(tank, glm::vec2(10, 10), glm::vec2(2));
         m_registry->addComponent<RigidBodyComponent>(tank, glm::vec2(0.1, 0.1));
         m_registry->addComponent<SpriteComponent>(tank, "tank-right", 32, 32, 1);
         m_registry->addComponent<BoxColliderComponent>(tank, 32, 32);
-        Entity truck{m_registry->createEntity()};
+        const Entity truck{m_registry->createEntity()};
         m_registry->addComponent<TransformComponent>(truck, glm::vec2(50, 50));
         m_registry->addComponent<RigidBodyComponent>(truck, glm::vec2(0.05, 0.05));
         m_registry->addComponent<SpriteComponent>(truck, "truck-right", 32, 32, 1);
@@ -122,7 +122,7 @@ namespace Engine
         float lag{0.0f};
         m_isRunning = true;
         while (m_isRunning) {
-            std::uint64_t currentTicks{SDL_GetTicks64()};
+            const std::uint64_t currentTicks{SDL_GetTicks64()};
             lag += static_cast<float>(currentTicks - previousTicks);
             previousTicks = currentTicks;
             processInput();

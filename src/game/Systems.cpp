@@ -37,7 +37,7 @@ namespace Engine
     void RenderSystem::update(float frameExtrapolationTimeStep)
     {
         std::vector<Entity> entities{getEntities()};
-        std::sort(entities.begin(), entities.end(), [this](Entity a, Entity b) {
+        std::sort(entities.begin(), entities.end(), [this](const Entity& a, const Entity& b) {
             return m_registry->getComponent<SpriteComponent>(a).zIndex <
                    m_registry->getComponent<SpriteComponent>(b).zIndex;
         });
@@ -45,11 +45,11 @@ namespace Engine
             const auto transform{m_registry->getComponent<TransformComponent>(entity)};
             const auto sprite{m_registry->getComponent<SpriteComponent>(entity)};
             const auto rigidBody{m_registry->getComponent<RigidBodyComponent>(entity)};
-            glm::vec2 extrapolatedPosition{
+            const glm::vec2 extrapolatedPosition{
                 getExtrapolatedPosition(transform.position, rigidBody.velocity, frameExtrapolationTimeStep)};
-            SDL_FRect spriteRect = {extrapolatedPosition.x, extrapolatedPosition.y,
-                                    static_cast<float>(sprite.width) * transform.scale.x,
-                                    static_cast<float>(sprite.height) * transform.scale.y};
+            const SDL_FRect spriteRect = {extrapolatedPosition.x, extrapolatedPosition.y,
+                                          static_cast<float>(sprite.width) * transform.scale.x,
+                                          static_cast<float>(sprite.height) * transform.scale.y};
             SDL_RenderCopyExF(m_renderer, m_resourceManager->getTexture(sprite.resourceId),
                               &sprite.sourceRect, &spriteRect, transform.rotation, NULL, SDL_FLIP_NONE);
         }
@@ -129,12 +129,12 @@ namespace Engine
             const auto transform{m_registry->getComponent<TransformComponent>(entity)};
             const auto boxCollider{m_registry->getComponent<BoxColliderComponent>(entity)};
             const auto rigidBody{m_registry->getComponent<RigidBodyComponent>(entity)};
-            glm::vec2 extrapolatedPosition{
+            const glm::vec2 extrapolatedPosition{
                 getExtrapolatedPosition(transform.position, rigidBody.velocity, frameExtrapolationTimeStep)};
-            SDL_FRect colliderRect = {extrapolatedPosition.x + boxCollider.offset.x,
-                                      extrapolatedPosition.y + boxCollider.offset.y,
-                                      static_cast<float>(boxCollider.width) * transform.scale.x,
-                                      static_cast<float>(boxCollider.height) * transform.scale.y};
+            const SDL_FRect colliderRect = {extrapolatedPosition.x + boxCollider.offset.x,
+                                            extrapolatedPosition.y + boxCollider.offset.y,
+                                            static_cast<float>(boxCollider.width) * transform.scale.x,
+                                            static_cast<float>(boxCollider.height) * transform.scale.y};
             if (boxCollider.isColliding) {
                 SDL_SetRenderDrawColor(m_renderer, 255, 0, 0, 255);
             } else {
