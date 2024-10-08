@@ -51,7 +51,7 @@ namespace Engine
                                           static_cast<float>(sprite.width) * transform.scale.x,
                                           static_cast<float>(sprite.height) * transform.scale.y};
             SDL_RenderCopyExF(m_renderer, m_resourceManager->getTexture(sprite.resourceId),
-                              &sprite.sourceRect, &spriteRect, transform.rotation, NULL, SDL_FLIP_NONE);
+                              &sprite.sourceRect, &spriteRect, transform.rotation, nullptr, SDL_FLIP_NONE);
         }
     }
 

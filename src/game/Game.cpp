@@ -20,7 +20,7 @@ namespace Engine
             Logger::critical("Error initializing SDL: {}", SDL_GetError());
             std::abort();
         }
-        m_window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_windowWidth,
+        m_window = SDL_CreateWindow(nullptr, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_windowWidth,
                                     m_windowHeight, SDL_WINDOW_BORDERLESS);
         if (!m_window) {
             Logger::critical("Error creating SDL window: {}", SDL_GetError());
