@@ -19,11 +19,11 @@ namespace Engine
     {
     private:
         SDL_Renderer* m_renderer{};
-        const std::unique_ptr<ResourceManager>& m_resourceManager;
+        std::unique_ptr<ResourceManager>& m_resourceManager;
 
     public:
         RenderSystem(Registry* registry, SDL_Renderer* renderer,
-                     const std::unique_ptr<ResourceManager>& resourceManager);
+                     std::unique_ptr<ResourceManager>& resourceManager);
         RenderSystem(const RenderSystem&);
         void operator=(const RenderSystem&);
         void update(float frameExtrapolationTimeStep);

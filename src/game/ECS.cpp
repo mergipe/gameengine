@@ -22,13 +22,13 @@ namespace Engine
         return entity;
     }
 
-    void Registry::killEntity(const Entity& entity)
+    void Registry::killEntity(Entity entity)
     {
         m_entitiesToBeKilled.insert(entity);
         Logger::trace("Entity {} killed", entity.getId());
     }
 
-    void Registry::addEntityToSystems(const Entity& entity)
+    void Registry::addEntityToSystems(Entity entity)
     {
         const auto entityId{entity.getId()};
         const auto& entityComponentSignature{m_entityComponentSignatures[entityId]};
@@ -43,7 +43,7 @@ namespace Engine
         Logger::trace("Entity {} added to systems", entityId);
     }
 
-    void Registry::removeEntityFromSystems(const Entity& entity)
+    void Registry::removeEntityFromSystems(Entity entity)
     {
         for (const auto& system : m_systems) {
             system.second->removeEntity(entity);
@@ -53,11 +53,11 @@ namespace Engine
 
     void Registry::update()
     {
-        for (const auto& entity : m_entitiesToBeAdded) {
+        for (const auto entity : m_entitiesToBeAdded) {
             addEntityToSystems(entity);
         }
         m_entitiesToBeAdded.clear();
-        for (const auto& entity : m_entitiesToBeKilled) {
+        for (const auto entity : m_entitiesToBeKilled) {
             removeEntityFromSystems(entity);
             m_entityComponentSignatures[entity.getId()].reset();
             m_freeEntityIds.push_back(entity.getId());

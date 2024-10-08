@@ -19,7 +19,7 @@ namespace Engine
 
     void MovementSystem::update(float timeStep)
     {
-        for (const auto& entity : getEntities()) {
+        for (const auto entity : getEntities()) {
             auto& transform{m_registry->getComponent<TransformComponent>(entity)};
             const auto rigidBody{m_registry->getComponent<RigidBodyComponent>(entity)};
             transform.position += rigidBody.velocity * timeStep;
@@ -27,7 +27,7 @@ namespace Engine
     };
 
     RenderSystem::RenderSystem(Registry* registry, SDL_Renderer* renderer,
-                               const std::unique_ptr<ResourceManager>& resourceManager)
+                               std::unique_ptr<ResourceManager>& resourceManager)
         : System{registry}, m_renderer{renderer}, m_resourceManager{resourceManager}
     {
         requireComponent<TransformComponent>();
@@ -37,11 +37,11 @@ namespace Engine
     void RenderSystem::update(float frameExtrapolationTimeStep)
     {
         std::vector<Entity> entities{getEntities()};
-        std::sort(entities.begin(), entities.end(), [this](const Entity& a, const Entity& b) {
+        std::sort(entities.begin(), entities.end(), [this](Entity a, Entity b) {
             return m_registry->getComponent<SpriteComponent>(a).zIndex <
                    m_registry->getComponent<SpriteComponent>(b).zIndex;
         });
-        for (const auto& entity : entities) {
+        for (const auto entity : entities) {
             const auto transform{m_registry->getComponent<TransformComponent>(entity)};
             const auto sprite{m_registry->getComponent<SpriteComponent>(entity)};
             const auto rigidBody{m_registry->getComponent<RigidBodyComponent>(entity)};
@@ -63,7 +63,7 @@ namespace Engine
 
     void AnimationSystem::update()
     {
-        for (const auto& entity : getEntities()) {
+        for (const auto entity : getEntities()) {
             auto& sprite{m_registry->getComponent<SpriteComponent>(entity)};
             auto& animation{m_registry->getComponent<AnimationComponent>(entity)};
             animation.currentFrame = (static_cast<int>(SDL_GetTicks64() - animation.startTime) *
@@ -82,7 +82,7 @@ namespace Engine
     void CollisionSystem::update()
     {
         const auto entities{getEntities()};
-        for (const auto& entity : entities) {
+        for (const auto entity : entities) {
             m_registry->getComponent<BoxColliderComponent>(entity).isColliding = false;
         }
         for (auto i{entities.begin()}; i != entities.end(); ++i) {
@@ -125,7 +125,7 @@ namespace Engine
 
     void DebugRenderSystem::update(float frameExtrapolationTimeStep)
     {
-        for (const auto& entity : getEntities()) {
+        for (const auto entity : getEntities()) {
             const auto transform{m_registry->getComponent<TransformComponent>(entity)};
             const auto boxCollider{m_registry->getComponent<BoxColliderComponent>(entity)};
             const auto rigidBody{m_registry->getComponent<RigidBodyComponent>(entity)};

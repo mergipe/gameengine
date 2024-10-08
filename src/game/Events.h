@@ -97,10 +97,7 @@ namespace Engine
         Entity m_entity{};
         Entity m_otherEntity{};
 
-        CollisionEvent(const Entity& entity, const Entity& otherEntity)
-            : m_entity{entity}, m_otherEntity{otherEntity}
-        {
-        }
+        CollisionEvent(Entity entity, Entity otherEntity) : m_entity{entity}, m_otherEntity{otherEntity} {}
     };
 } // namespace Engine
 
