@@ -61,9 +61,7 @@ namespace Engine
 
     public:
         System(const Registry& registry) : m_registry{registry} {}
-        System(const System&);
         ~System() = default;
-        System& operator=(const System&);
         std::vector<Entity> getEntities() const { return m_entities; }
         const Signature& getComponentSignature() const { return m_componentSignature; }
         void addEntity(Entity entity) { m_entities.push_back(entity); };

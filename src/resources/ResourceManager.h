@@ -16,11 +16,8 @@ namespace Engine
         SDL_Renderer& m_renderer;
 
     public:
-        ResourceManager(std::string_view resourcesBasePath, SDL_Renderer& renderer)
-            : m_resourcesBasePath{resourcesBasePath}, m_renderer{renderer} {};
-        ResourceManager(const ResourceManager&);
-        ~ResourceManager() { clearResources(); };
-        ResourceManager& operator=(const ResourceManager&);
+        ResourceManager(std::string_view resourcesBasePath, SDL_Renderer& renderer);
+        ~ResourceManager();
         void clearResources();
         void addTexture(std::string_view resourceId, const std::string& relativeFilepath);
         SDL_Texture* getTexture(std::string_view resourceId) const { return m_textures.at(resourceId); };

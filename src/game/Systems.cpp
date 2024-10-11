@@ -1,7 +1,6 @@
 #include "Systems.h"
 #include "Components.h"
 #include <algorithm>
-#include <memory>
 
 namespace Engine
 {

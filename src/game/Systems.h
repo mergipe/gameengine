@@ -4,7 +4,6 @@
 #include "ECS.h"
 #include "resources/ResourceManager.h"
 #include <SDL.h>
-#include <memory>
 
 namespace Engine
 {
@@ -24,8 +23,6 @@ namespace Engine
     public:
         RenderSystem(const Registry& registry, SDL_Renderer& renderer,
                      const ResourceManager& resourceManager);
-        RenderSystem(const RenderSystem&);
-        void operator=(const RenderSystem&);
         void update(float frameExtrapolationTimeStep);
     };
 
@@ -54,8 +51,6 @@ namespace Engine
 
     public:
         DebugRenderSystem(const Registry& registry, SDL_Renderer& renderer);
-        DebugRenderSystem(const DebugRenderSystem&);
-        void operator=(const DebugRenderSystem&);
         void update(float frameExtrapolationTimeStep);
     };
 } // namespace Engine
