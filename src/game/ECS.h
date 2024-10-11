@@ -55,12 +55,12 @@ namespace Engine
         std::vector<Entity> m_entities{};
 
     protected:
-        class Registry* m_registry{};
+        const class Registry& m_registry;
         template <typename TComponent>
         void requireComponent();
 
     public:
-        System(Registry* registry) : m_registry{registry} {}
+        System(const Registry& registry) : m_registry{registry} {}
         System(const System&);
         ~System() = default;
         System& operator=(const System&);
@@ -186,7 +186,8 @@ namespace Engine
     template <typename TSystem, typename... TArgs>
     void Registry::addSystem(TArgs&&... args)
     {
-        const std::shared_ptr<TSystem> newSystem{std::make_shared<TSystem>(this, args...)};
+        const std::shared_ptr<TSystem> newSystem{
+            std::make_shared<TSystem>(*this, std::forward<TArgs>(args)...)};
         const auto systemId{std::type_index(typeid(TSystem))};
         m_systems.insert(std::make_pair(systemId, newSystem));
         Logger::trace("System {} added to registry", systemId.name());

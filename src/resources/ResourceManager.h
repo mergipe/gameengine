@@ -13,10 +13,10 @@ namespace Engine
     private:
         std::unordered_map<std::string_view, SDL_Texture*> m_textures{};
         const std::string m_resourcesBasePath{};
-        SDL_Renderer* m_renderer{};
+        SDL_Renderer& m_renderer;
 
     public:
-        ResourceManager(std::string_view resourcesBasePath, SDL_Renderer* renderer)
+        ResourceManager(std::string_view resourcesBasePath, SDL_Renderer& renderer)
             : m_resourcesBasePath{resourcesBasePath}, m_renderer{renderer} {};
         ResourceManager(const ResourceManager&);
         ~ResourceManager() { clearResources(); };

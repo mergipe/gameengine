@@ -17,18 +17,18 @@ namespace Engine
     void Game::init()
     {
         if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-            Logger::critical("Error initializing SDL: {}", SDL_GetError());
+            Logger::critical("Failed to initialize SDL: {}", SDL_GetError());
             std::abort();
         }
-        m_window = SDL_CreateWindow(nullptr, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_windowWidth,
-                                    m_windowHeight, SDL_WINDOW_BORDERLESS);
+        m_window = SDL_CreateWindow("Game Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                                    m_windowWidth, m_windowHeight, SDL_WINDOW_BORDERLESS);
         if (!m_window) {
-            Logger::critical("Error creating SDL window: {}", SDL_GetError());
+            Logger::critical("Failed to create a SDL window: {}", SDL_GetError());
             std::abort();
         }
         m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
         if (!m_renderer) {
-            Logger::critical("Error creating SDL renderer: {}", SDL_GetError());
+            Logger::critical("Failed to create a SDL renderer: {}", SDL_GetError());
             std::abort();
         }
         Logger::trace("Game initialized");
@@ -100,13 +100,13 @@ namespace Engine
         Logger::trace("Loading level {}", level);
         m_registry = std::make_unique<Registry>();
         m_resourceManager = std::make_unique<ResourceManager>(
-            "/home/gustavo/workspaces/gamedev/gameengine/resources/", m_renderer);
-        m_registry->addSystem<RenderSystem>(m_renderer, m_resourceManager);
+            "/home/gustavo/workspaces/gamedev/gameengine/resources/", *m_renderer);
+        m_registry->addSystem<RenderSystem>(*m_renderer, *m_resourceManager);
         m_registry->addSystem<MovementSystem>();
         m_registry->addSystem<AnimationSystem>();
         m_registry->addSystem<CollisionSystem>();
         if (m_debugCapability) {
-            m_registry->addSystem<DebugRenderSystem>(m_renderer);
+            m_registry->addSystem<DebugRenderSystem>(*m_renderer);
         }
         loadMap("jungle.png", "jungle.map", 32, 32, 10, 2.0);
         loadEntities();
@@ -173,7 +173,9 @@ namespace Engine
     void Game::destroy()
     {
         SDL_DestroyRenderer(m_renderer);
+        m_renderer = nullptr;
         SDL_DestroyWindow(m_window);
+        m_window = nullptr;
         SDL_Quit();
         Logger::trace("Game resources destroyed");
     }

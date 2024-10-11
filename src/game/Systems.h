@@ -11,19 +11,19 @@ namespace Engine
     class MovementSystem : public System
     {
     public:
-        MovementSystem(Registry* registry);
+        MovementSystem(const Registry& registry);
         void update(float timeStep);
     };
 
     class RenderSystem : public System
     {
     private:
-        SDL_Renderer* m_renderer{};
-        std::unique_ptr<ResourceManager>& m_resourceManager;
+        SDL_Renderer& m_renderer;
+        const ResourceManager& m_resourceManager;
 
     public:
-        RenderSystem(Registry* registry, SDL_Renderer* renderer,
-                     std::unique_ptr<ResourceManager>& resourceManager);
+        RenderSystem(const Registry& registry, SDL_Renderer& renderer,
+                     const ResourceManager& resourceManager);
         RenderSystem(const RenderSystem&);
         void operator=(const RenderSystem&);
         void update(float frameExtrapolationTimeStep);
@@ -32,7 +32,7 @@ namespace Engine
     class AnimationSystem : public System
     {
     public:
-        AnimationSystem(Registry* registry);
+        AnimationSystem(const Registry& registry);
         void update();
     };
 
@@ -43,17 +43,17 @@ namespace Engine
                              double bH);
 
     public:
-        CollisionSystem(Registry* registry);
+        CollisionSystem(const Registry& registry);
         void update();
     };
 
     class DebugRenderSystem : public System
     {
     private:
-        SDL_Renderer* m_renderer{};
+        SDL_Renderer& m_renderer;
 
     public:
-        DebugRenderSystem(Registry* registry, SDL_Renderer* renderer);
+        DebugRenderSystem(const Registry& registry, SDL_Renderer& renderer);
         DebugRenderSystem(const DebugRenderSystem&);
         void operator=(const DebugRenderSystem&);
         void update(float frameExtrapolationTimeStep);
