@@ -12,30 +12,18 @@ namespace Engine
 
     public:
         static void init();
-        template <typename T>
-        static void trace(const T& msg);
-        template <typename... TArgs>
-        static void trace(fmt::format_string<TArgs...> fmt, TArgs&&... args);
-        template <typename T>
-        static void debug(const T& msg);
-        template <typename... TArgs>
-        static void debug(fmt::format_string<TArgs...> fmt, TArgs&&... args);
-        template <typename T>
-        static void info(const T& msg);
-        template <typename... TArgs>
-        static void info(fmt::format_string<TArgs...> fmt, TArgs&&... args);
-        template <typename T>
-        static void warn(const T& msg);
-        template <typename... TArgs>
-        static void warn(fmt::format_string<TArgs...> fmt, TArgs&&... args);
-        template <typename T>
-        static void error(const T& msg);
-        template <typename... TArgs>
-        static void error(fmt::format_string<TArgs...> fmt, TArgs&&... args);
-        template <typename T>
-        static void critical(const T& msg);
-        template <typename... TArgs>
-        static void critical(fmt::format_string<TArgs...> fmt, TArgs&&... args);
+        template <typename T> static void trace(const T& msg);
+        template <typename... TArgs> static void trace(fmt::format_string<TArgs...> fmt, TArgs&&... args);
+        template <typename T> static void debug(const T& msg);
+        template <typename... TArgs> static void debug(fmt::format_string<TArgs...> fmt, TArgs&&... args);
+        template <typename T> static void info(const T& msg);
+        template <typename... TArgs> static void info(fmt::format_string<TArgs...> fmt, TArgs&&... args);
+        template <typename T> static void warn(const T& msg);
+        template <typename... TArgs> static void warn(fmt::format_string<TArgs...> fmt, TArgs&&... args);
+        template <typename T> static void error(const T& msg);
+        template <typename... TArgs> static void error(fmt::format_string<TArgs...> fmt, TArgs&&... args);
+        template <typename T> static void critical(const T& msg);
+        template <typename... TArgs> static void critical(fmt::format_string<TArgs...> fmt, TArgs&&... args);
     };
 
     template <typename T>

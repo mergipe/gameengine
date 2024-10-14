@@ -56,8 +56,7 @@ namespace Engine
 
     protected:
         const class Registry& m_registry;
-        template <typename TComponent>
-        void requireComponent();
+        template <typename TComponent> void requireComponent();
 
     public:
         System(const Registry& registry) : m_registry{registry} {}
@@ -111,22 +110,14 @@ namespace Engine
         void killEntity(Entity entity);
         void addEntityToSystems(Entity entity);
         void removeEntityFromSystems(Entity entity);
-        template <typename TComponent, typename... TArgs>
-        void addComponent(Entity entity, TArgs&&... args);
-        template <typename TComponent>
-        void removeComponent(Entity entity);
-        template <typename TComponent>
-        bool hasComponent(Entity entity) const;
-        template <typename TComponent>
-        TComponent& getComponent(Entity entity) const;
-        template <typename TSystem, typename... TArgs>
-        void addSystem(TArgs&&... args);
-        template <typename TSystem>
-        void removeSystem();
-        template <typename TSystem>
-        bool hasSystem() const;
-        template <typename TSystem>
-        TSystem& getSystem() const;
+        template <typename TComponent, typename... TArgs> void addComponent(Entity entity, TArgs&&... args);
+        template <typename TComponent> void removeComponent(Entity entity);
+        template <typename TComponent> bool hasComponent(Entity entity) const;
+        template <typename TComponent> TComponent& getComponent(Entity entity) const;
+        template <typename TSystem, typename... TArgs> void addSystem(TArgs&&... args);
+        template <typename TSystem> void removeSystem();
+        template <typename TSystem> bool hasSystem() const;
+        template <typename TSystem> TSystem& getSystem() const;
     };
 
     template <typename TComponent>

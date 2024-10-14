@@ -1,10 +1,8 @@
 #include "core/Logger.h"
 #include "game/Game.h"
 
-int main(int argc, char* argv[])
+int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
-    (void) argc;
-    (void) argv;
     Engine::Logger::init();
     Engine::Game game{true};
     game.init();
