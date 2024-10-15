@@ -15,6 +15,7 @@ namespace Engine
     {
     public:
         Event() = default;
+        virtual ~Event() = default;
     };
 
     class IEventCallback

@@ -10,7 +10,7 @@ namespace Engine
         return glm::vec2{position + velocity * extrapolationTimeStep};
     }
 
-    MovementSystem::MovementSystem(const Registry& registry) : System{registry}
+    MovementSystem::MovementSystem() : System{}
     {
         requireComponent<TransformComponent>();
         requireComponent<RigidBodyComponent>();
@@ -19,15 +19,14 @@ namespace Engine
     void MovementSystem::update(float timeStep)
     {
         for (const auto entity : getEntities()) {
-            auto& transform{m_registry.getComponent<TransformComponent>(entity)};
-            const auto rigidBody{m_registry.getComponent<RigidBodyComponent>(entity)};
+            auto& transform{entity.getComponent<TransformComponent>()};
+            const auto rigidBody{entity.getComponent<RigidBodyComponent>()};
             transform.position += rigidBody.velocity * timeStep;
         }
     };
 
-    RenderSystem::RenderSystem(const Registry& registry, SDL_Renderer& renderer,
-                               const ResourceManager& resourceManager)
-        : System{registry}, m_renderer{renderer}, m_resourceManager{resourceManager}
+    RenderSystem::RenderSystem(SDL_Renderer& renderer, const ResourceManager& resourceManager)
+        : System{}, m_renderer{renderer}, m_resourceManager{resourceManager}
     {
         requireComponent<TransformComponent>();
         requireComponent<SpriteComponent>();
@@ -36,17 +35,19 @@ namespace Engine
     void RenderSystem::update(float frameExtrapolationTimeStep)
     {
         std::vector<Entity> entities{getEntities()};
-        std::sort(entities.begin(), entities.end(), [this](Entity a, Entity b) {
-            return m_registry.getComponent<SpriteComponent>(a).zIndex <
-                   m_registry.getComponent<SpriteComponent>(b).zIndex;
+        std::sort(entities.begin(), entities.end(), [](Entity a, Entity b) {
+            return a.getComponent<SpriteComponent>().zIndex < b.getComponent<SpriteComponent>().zIndex;
         });
         for (const auto entity : entities) {
-            const auto transform{m_registry.getComponent<TransformComponent>(entity)};
-            const auto sprite{m_registry.getComponent<SpriteComponent>(entity)};
-            const auto rigidBody{m_registry.getComponent<RigidBodyComponent>(entity)};
-            const glm::vec2 extrapolatedPosition{
-                getExtrapolatedPosition(transform.position, rigidBody.velocity, frameExtrapolationTimeStep)};
-            const SDL_FRect spriteRect = {extrapolatedPosition.x, extrapolatedPosition.y,
+            const auto transform{entity.getComponent<TransformComponent>()};
+            const auto sprite{entity.getComponent<SpriteComponent>()};
+            glm::vec2 renderPosition{transform.position};
+            if (entity.hasComponent<RigidBodyComponent>()) {
+                const auto rigidBody{entity.getComponent<RigidBodyComponent>()};
+                renderPosition = getExtrapolatedPosition(transform.position, rigidBody.velocity,
+                                                         frameExtrapolationTimeStep);
+            }
+            const SDL_FRect spriteRect = {renderPosition.x, renderPosition.y,
                                           static_cast<float>(sprite.width) * transform.scale.x,
                                           static_cast<float>(sprite.height) * transform.scale.y};
             SDL_RenderCopyExF(&m_renderer, m_resourceManager.getTexture(sprite.resourceId),
@@ -54,7 +55,7 @@ namespace Engine
         }
     }
 
-    AnimationSystem::AnimationSystem(const Registry& registry) : System{registry}
+    AnimationSystem::AnimationSystem() : System{}
     {
         requireComponent<SpriteComponent>();
         requireComponent<AnimationComponent>();
@@ -63,8 +64,8 @@ namespace Engine
     void AnimationSystem::update()
     {
         for (const auto entity : getEntities()) {
-            auto& sprite{m_registry.getComponent<SpriteComponent>(entity)};
-            auto& animation{m_registry.getComponent<AnimationComponent>(entity)};
+            auto& sprite{entity.getComponent<SpriteComponent>()};
+            auto& animation{entity.getComponent<AnimationComponent>()};
             animation.currentFrame = (static_cast<int>(SDL_GetTicks64() - animation.startTime) *
                                       animation.framesPerSecond / 1000) %
                                      animation.framesCount;
@@ -72,7 +73,7 @@ namespace Engine
         }
     }
 
-    CollisionSystem::CollisionSystem(const Registry& registry) : System{registry}
+    CollisionSystem::CollisionSystem() : System{}
     {
         requireComponent<TransformComponent>();
         requireComponent<BoxColliderComponent>();
@@ -82,16 +83,16 @@ namespace Engine
     {
         const auto entities{getEntities()};
         for (const auto entity : entities) {
-            m_registry.getComponent<BoxColliderComponent>(entity).isColliding = false;
+            entity.getComponent<BoxColliderComponent>().isColliding = false;
         }
         for (auto i{entities.begin()}; i != entities.end(); ++i) {
             const Entity entity{*i};
-            const auto transform{m_registry.getComponent<TransformComponent>(entity)};
-            auto& boxCollider{m_registry.getComponent<BoxColliderComponent>(entity)};
+            const auto transform{entity.getComponent<TransformComponent>()};
+            auto& boxCollider{entity.getComponent<BoxColliderComponent>()};
             for (auto j{i + 1}; j != entities.end(); ++j) {
                 const Entity otherEntity{*j};
-                const auto otherTransform{m_registry.getComponent<TransformComponent>(otherEntity)};
-                auto& otherBoxCollider{m_registry.getComponent<BoxColliderComponent>(otherEntity)};
+                const auto otherTransform{otherEntity.getComponent<TransformComponent>()};
+                auto& otherBoxCollider{otherEntity.getComponent<BoxColliderComponent>()};
                 const bool collisionHappened{aabbHasCollided(
                     transform.position.x + boxCollider.offset.x, transform.position.y + boxCollider.offset.y,
                     static_cast<float>(boxCollider.width) * transform.scale.x,
@@ -115,8 +116,7 @@ namespace Engine
         return (aX < bX + bW && aX + aW > bX && aY < bY + bH && aY + aH > bY);
     }
 
-    DebugRenderSystem::DebugRenderSystem(const Registry& registry, SDL_Renderer& renderer)
-        : System{registry}, m_renderer{renderer}
+    DebugRenderSystem::DebugRenderSystem(SDL_Renderer& renderer) : System{}, m_renderer{renderer}
     {
         requireComponent<TransformComponent>();
         requireComponent<BoxColliderComponent>();
@@ -125,13 +125,16 @@ namespace Engine
     void DebugRenderSystem::update(float frameExtrapolationTimeStep)
     {
         for (const auto entity : getEntities()) {
-            const auto transform{m_registry.getComponent<TransformComponent>(entity)};
-            const auto boxCollider{m_registry.getComponent<BoxColliderComponent>(entity)};
-            const auto rigidBody{m_registry.getComponent<RigidBodyComponent>(entity)};
-            const glm::vec2 extrapolatedPosition{
-                getExtrapolatedPosition(transform.position, rigidBody.velocity, frameExtrapolationTimeStep)};
-            const SDL_FRect colliderRect = {extrapolatedPosition.x + boxCollider.offset.x,
-                                            extrapolatedPosition.y + boxCollider.offset.y,
+            const auto transform{entity.getComponent<TransformComponent>()};
+            const auto boxCollider{entity.getComponent<BoxColliderComponent>()};
+            glm::vec2 renderPosition{transform.position};
+            if (entity.hasComponent<RigidBodyComponent>()) {
+                const auto rigidBody{entity.getComponent<RigidBodyComponent>()};
+                renderPosition = getExtrapolatedPosition(transform.position, rigidBody.velocity,
+                                                         frameExtrapolationTimeStep);
+            }
+            const SDL_FRect colliderRect = {renderPosition.x + boxCollider.offset.x,
+                                            renderPosition.y + boxCollider.offset.y,
                                             static_cast<float>(boxCollider.width) * transform.scale.x,
                                             static_cast<float>(boxCollider.height) * transform.scale.y};
             if (boxCollider.isColliding) {

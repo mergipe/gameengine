@@ -5,9 +5,9 @@
 #include "core/IO.h"
 #include "core/Logger.h"
 #include <SDL.h>
+#include <cstdint>
 #include <cstdlib>
 #include <fstream>
-#include <memory>
 #include <string>
 
 namespace Engine
@@ -70,28 +70,28 @@ namespace Engine
     {
         m_resourceManager->addTexture("chopper", "images/chopper.png");
         m_resourceManager->addTexture("radar", "images/radar.png");
-        const Entity chopper{m_registry->createEntity()};
-        m_registry->addComponent<TransformComponent>(chopper, glm::vec2(10, 10));
-        m_registry->addComponent<RigidBodyComponent>(chopper, glm::vec2(0.0, 0.0));
-        m_registry->addComponent<SpriteComponent>(chopper, "chopper", 32, 32, 1);
-        m_registry->addComponent<AnimationComponent>(chopper, 2, 15);
-        m_registry->addComponent<BoxColliderComponent>(chopper, 32, 32);
-        const Entity radar{m_registry->createEntity()};
-        m_registry->addComponent<TransformComponent>(radar, glm::vec2(400, 10));
-        m_registry->addComponent<SpriteComponent>(radar, "radar", 64, 64, 2);
-        m_registry->addComponent<AnimationComponent>(radar, 8, 5);
         m_resourceManager->addTexture("tank-right", "images/tank-panther-right.png");
         m_resourceManager->addTexture("truck-right", "images/truck-ford-right.png");
-        const Entity tank{m_registry->createEntity()};
-        m_registry->addComponent<TransformComponent>(tank, glm::vec2(10, 10), glm::vec2(2));
-        m_registry->addComponent<RigidBodyComponent>(tank, glm::vec2(0.1, 0.1));
-        m_registry->addComponent<SpriteComponent>(tank, "tank-right", 32, 32, 1);
-        m_registry->addComponent<BoxColliderComponent>(tank, 32, 32);
-        const Entity truck{m_registry->createEntity()};
-        m_registry->addComponent<TransformComponent>(truck, glm::vec2(50, 50));
-        m_registry->addComponent<RigidBodyComponent>(truck, glm::vec2(0.05, 0.05));
-        m_registry->addComponent<SpriteComponent>(truck, "truck-right", 32, 32, 1);
-        m_registry->addComponent<BoxColliderComponent>(truck, 32, 32);
+        Entity chopper{m_registry->createEntity()};
+        chopper.addComponent<TransformComponent>(glm::vec2(10, 10));
+        chopper.addComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
+        chopper.addComponent<SpriteComponent>("chopper", 32, 32, 1);
+        chopper.addComponent<AnimationComponent>(2, 15);
+        chopper.addComponent<BoxColliderComponent>(32, 32);
+        Entity radar{m_registry->createEntity()};
+        radar.addComponent<TransformComponent>(glm::vec2(400, 10));
+        radar.addComponent<SpriteComponent>("radar", 64, 64, 2);
+        radar.addComponent<AnimationComponent>(8, 5);
+        Entity tank{m_registry->createEntity()};
+        tank.addComponent<TransformComponent>(glm::vec2(10, 10), glm::vec2(2));
+        tank.addComponent<RigidBodyComponent>(glm::vec2(0.1, 0.1));
+        tank.addComponent<SpriteComponent>("tank-right", 32, 32, 1);
+        tank.addComponent<BoxColliderComponent>(32, 32);
+        Entity truck{m_registry->createEntity()};
+        truck.addComponent<TransformComponent>(glm::vec2(50, 50));
+        truck.addComponent<RigidBodyComponent>(glm::vec2(0.05, 0.05));
+        truck.addComponent<SpriteComponent>("truck-right", 32, 32, 1);
+        truck.addComponent<BoxColliderComponent>(32, 32);
         m_registry->killEntity(truck);
     }
 

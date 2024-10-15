@@ -6,6 +6,7 @@
 #include "resources/ResourceManager.h"
 #include <SDL.h>
 #include <memory>
+#include <string_view>
 
 namespace Engine
 {

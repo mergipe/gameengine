@@ -10,7 +10,7 @@ namespace Engine
     class MovementSystem : public System
     {
     public:
-        MovementSystem(const Registry& registry);
+        MovementSystem();
         void update(float timeStep);
     };
 
@@ -21,15 +21,14 @@ namespace Engine
         const ResourceManager& m_resourceManager;
 
     public:
-        RenderSystem(const Registry& registry, SDL_Renderer& renderer,
-                     const ResourceManager& resourceManager);
+        RenderSystem(SDL_Renderer& renderer, const ResourceManager& resourceManager);
         void update(float frameExtrapolationTimeStep);
     };
 
     class AnimationSystem : public System
     {
     public:
-        AnimationSystem(const Registry& registry);
+        AnimationSystem();
         void update();
     };
 
@@ -40,7 +39,7 @@ namespace Engine
                              double bH);
 
     public:
-        CollisionSystem(const Registry& registry);
+        CollisionSystem();
         void update();
     };
 
@@ -50,7 +49,7 @@ namespace Engine
         SDL_Renderer& m_renderer;
 
     public:
-        DebugRenderSystem(const Registry& registry, SDL_Renderer& renderer);
+        DebugRenderSystem(SDL_Renderer& renderer);
         void update(float frameExtrapolationTimeStep);
     };
 } // namespace Engine

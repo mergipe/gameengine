@@ -19,6 +19,9 @@ namespace Engine
     struct IComponent {
     protected:
         static inline size_t s_nextId{0};
+
+    public:
+        virtual ~IComponent() = default;
     };
 
     template <typename TComponent>
@@ -39,13 +42,18 @@ namespace Engine
     {
     private:
         size_t m_id{};
+        class Registry* m_registry;
 
     public:
         Entity();
-        Entity(size_t id) : m_id{id} {}
+        Entity(size_t id, Registry* registry) : m_id{id}, m_registry{registry} {}
         bool operator==(const Entity& e) const { return m_id == e.m_id; };
         bool operator<(const Entity& e) const { return m_id < e.m_id; };
         size_t getId() const { return m_id; }
+        template <typename TComponent, typename... TArgs> void addComponent(TArgs&&... args);
+        template <typename TComponent> void removeComponent();
+        template <typename TComponent> bool hasComponent() const;
+        template <typename TComponent> TComponent& getComponent() const;
     };
 
     class System
@@ -55,22 +63,27 @@ namespace Engine
         std::vector<Entity> m_entities{};
 
     protected:
-        const class Registry& m_registry;
         template <typename TComponent> void requireComponent();
 
     public:
-        System(const Registry& registry) : m_registry{registry} {}
-        ~System() = default;
+        System() = default;
+        virtual ~System() = default;
         std::vector<Entity> getEntities() const { return m_entities; }
         const Signature& getComponentSignature() const { return m_componentSignature; }
         void addEntity(Entity entity) { m_entities.push_back(entity); };
         void removeEntity(Entity entity) { std::erase(m_entities, entity); };
     };
 
+    template <typename TComponent>
+    void System::requireComponent()
+    {
+        m_componentSignature.set(Component<TComponent>::getId());
+    }
+
     class IPool
     {
     public:
-        virtual ~IPool() {}
+        virtual ~IPool() = default;
     };
 
     template <typename T>
@@ -120,10 +133,28 @@ namespace Engine
         template <typename TSystem> TSystem& getSystem() const;
     };
 
-    template <typename TComponent>
-    void System::requireComponent()
+    template <typename TComponent, typename... TArgs>
+    void Entity::addComponent(TArgs&&... args)
     {
-        m_componentSignature.set(Component<TComponent>::getId());
+        m_registry->addComponent<TComponent>(*this, std::forward<TArgs>(args)...);
+    }
+
+    template <typename TComponent>
+    void Entity::removeComponent()
+    {
+        m_registry->removeComponent<TComponent>(*this);
+    }
+
+    template <typename TComponent>
+    bool Entity::hasComponent() const
+    {
+        return m_registry->hasComponent<TComponent>(*this);
+    }
+
+    template <typename TComponent>
+    TComponent& Entity::getComponent() const
+    {
+        return m_registry->getComponent<TComponent>(*this);
     }
 
     template <typename TComponent, typename... TArgs>
@@ -174,8 +205,7 @@ namespace Engine
     template <typename TSystem, typename... TArgs>
     void Registry::addSystem(TArgs&&... args)
     {
-        const std::shared_ptr<TSystem> newSystem{
-            std::make_shared<TSystem>(*this, std::forward<TArgs>(args)...)};
+        const std::shared_ptr<TSystem> newSystem{std::make_shared<TSystem>(std::forward<TArgs>(args)...)};
         const auto systemId{std::type_index(typeid(TSystem))};
         m_systems.insert(std::make_pair(systemId, newSystem));
         Logger::trace("System {} added to registry", systemId.name());

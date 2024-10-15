@@ -1,6 +1,5 @@
 #include "ECS.h"
 #include "core/Logger.h"
-#include <vector>
 
 namespace Engine
 {
@@ -16,7 +15,7 @@ namespace Engine
             entityId = m_freeEntityIds.front();
             m_freeEntityIds.pop_front();
         }
-        const Entity entity{entityId};
+        const Entity entity{entityId, this};
         m_entitiesToBeAdded.insert(entity);
         Logger::trace("Entity created with id = {}", entityId);
         return entity;
@@ -34,9 +33,7 @@ namespace Engine
         const auto& entityComponentSignature{m_entityComponentSignatures[entityId]};
         for (const auto& system : m_systems) {
             const auto& systemComponentSignature{system.second->getComponentSignature()};
-            const bool signaturesMatch{(entityComponentSignature & systemComponentSignature) ==
-                                       systemComponentSignature};
-            if (signaturesMatch) {
+            if ((entityComponentSignature & systemComponentSignature) == systemComponentSignature) {
                 system.second->addEntity(entity);
             }
         }

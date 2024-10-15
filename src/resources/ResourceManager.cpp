@@ -1,8 +1,6 @@
 #include "ResourceManager.h"
 #include "core/Logger.h"
-#include <SDL.h>
 #include <SDL_image.h>
-#include <string>
 
 namespace Engine
 {
