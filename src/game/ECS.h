@@ -88,7 +88,7 @@ namespace Engine
         void clear() { m_objects.clear(); }
         void add(const T& object) { m_objects.push_back(object); }
         void set(size_t index, const T& object) { m_objects[index] = object; }
-        T& get(size_t index) { return static_cast<T&>(m_objects[index]); }
+        T& get(size_t index) { return m_objects[index]; }
         T& operator[](size_t index) { return m_objects[index]; }
     };
 
@@ -123,8 +123,7 @@ namespace Engine
     template <typename TComponent>
     void System::requireComponent()
     {
-        const auto componentId{Component<TComponent>::getId()};
-        m_componentSignature.set(componentId);
+        m_componentSignature.set(Component<TComponent>::getId());
     }
 
     template <typename TComponent, typename... TArgs>
