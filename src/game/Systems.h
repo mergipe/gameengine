@@ -16,13 +16,13 @@ namespace Engine
 
     class RenderSystem : public System
     {
-    private:
-        SDL_Renderer& m_renderer;
-        const ResourceManager& m_resourceManager;
-
     public:
         RenderSystem(SDL_Renderer& renderer, const ResourceManager& resourceManager);
         void update(float frameExtrapolationTimeStep);
+
+    private:
+        SDL_Renderer& m_renderer;
+        const ResourceManager& m_resourceManager;
     };
 
     class AnimationSystem : public System
@@ -34,23 +34,23 @@ namespace Engine
 
     class CollisionSystem : public System
     {
-    private:
-        bool aabbHasCollided(double aX, double aY, double aW, double aH, double bX, double bY, double bW,
-                             double bH);
-
     public:
         CollisionSystem();
         void update();
+
+    private:
+        bool aabbHasCollided(double aX, double aY, double aW, double aH, double bX, double bY, double bW,
+                             double bH);
     };
 
     class DebugRenderSystem : public System
     {
-    private:
-        SDL_Renderer& m_renderer;
-
     public:
         DebugRenderSystem(SDL_Renderer& renderer);
         void update(float frameExtrapolationTimeStep);
+
+    private:
+        SDL_Renderer& m_renderer;
     };
 } // namespace Engine
 

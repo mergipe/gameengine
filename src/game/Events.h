@@ -20,29 +20,29 @@ namespace Engine
 
     class IEventCallback
     {
-    private:
-        virtual void call(Event& e) = 0;
-
     public:
         virtual ~IEventCallback() = default;
         void execute(Event& e) { call(e); }
+
+    private:
+        virtual void call(Event& e) = 0;
     };
 
     template <typename TOwner, typename TEvent>
     class EventCallback : public IEventCallback
     {
-    private:
-        using CallbackFunction = std::function<void(const TOwner&, TEvent&)>;
-        TOwner* m_ownerInstance{};
-        CallbackFunction m_callbackFunction{};
-        virtual void call(Event& e) override;
-
     public:
+        using CallbackFunction = std::function<void(const TOwner&, TEvent&)>;
         EventCallback(TOwner* ownerInstance, const CallbackFunction& callbackFunction)
             : m_ownerInstance{ownerInstance}, m_callbackFunction{callbackFunction}
         {
         }
         virtual ~EventCallback() override = default;
+
+    private:
+        virtual void call(Event& e) override;
+        TOwner* m_ownerInstance{};
+        CallbackFunction m_callbackFunction{};
     };
 
     template <typename TOwner, typename TEvent>
@@ -55,15 +55,15 @@ namespace Engine
 
     class EventBus
     {
-    private:
-        std::unordered_map<std::type_index, std::unique_ptr<HandlerList>> m_subscribers;
-
     public:
         EventBus();
         template <typename TOwner, typename TEvent>
         void subscribeToEvent(TOwner* ownerInstance,
                               const std::function<void(const TOwner&, TEvent&)>& callbackFunction);
         template <typename TEvent, typename... TArgs> void dispatchEvent(TArgs&&... args);
+
+    private:
+        std::unordered_map<std::type_index, std::unique_ptr<HandlerList>> m_subscribers;
     };
 
     template <typename TOwner, typename TEvent>
@@ -94,10 +94,9 @@ namespace Engine
     class CollisionEvent : public Event
     {
     public:
+        CollisionEvent(Entity entity, Entity otherEntity) : m_entity{entity}, m_otherEntity{otherEntity} {}
         Entity m_entity{};
         Entity m_otherEntity{};
-
-        CollisionEvent(Entity entity, Entity otherEntity) : m_entity{entity}, m_otherEntity{otherEntity} {}
     };
 } // namespace Engine
 

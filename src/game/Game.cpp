@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Components.h"
 #include "ECS.h"
+#include "SDL_filesystem.h"
 #include "Systems.h"
 #include "core/IO.h"
 #include "core/Logger.h"
@@ -8,7 +9,6 @@
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
-#include <string>
 
 namespace Engine
 {
@@ -16,10 +16,13 @@ namespace Engine
 
     void Game::init()
     {
-        if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        Logger::init();
+        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER) != 0) {
             Logger::critical("Failed to initialize SDL: {}", SDL_GetError());
             std::abort();
         }
+        m_basePath = std::filesystem::path{SDL_GetBasePath()};
+        Logger::addFileSink(m_basePath / ".." / "logs" / "log.txt");
         m_window = SDL_CreateWindow("Game Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                     m_windowWidth, m_windowHeight, SDL_WINDOW_BORDERLESS);
         if (!m_window) {
@@ -38,14 +41,13 @@ namespace Engine
                        int tileHeight, int tilesetColumns, float scale)
     {
         Logger::trace("Loading map {}", tilemapFilename);
-        const std::string tilemapsFolder{"tilemaps/"};
-        const std::string tilesetFilepath{tilemapsFolder + std::string{tilesetFilename}};
-        m_resourceManager->addTexture("tileset", std::string{tilesetFilepath});
-        const std::string tilemapFilepath{std::string{m_resourceManager->getResourcesBasePath()} +
-                                          tilemapsFolder + std::string{tilemapFilename}};
+        const std::filesystem::path tilemapsPath{"tilemaps"};
+        m_resourceManager->addTexture("tileset", tilemapsPath / tilesetFilename);
+        const std::filesystem::path tilemapFilepath{
+            m_resourceManager->getResourceAbsolutePath(tilemapsPath / tilemapFilename)};
         std::ifstream tilemapFile{tilemapFilepath};
         if (!tilemapFile) {
-            Logger::error("Error opening {} file for reading", tilemapFilepath);
+            Logger::error("Error opening {} file for reading", tilemapFilepath.c_str());
         }
         const std::vector<std::vector<int>> tilemap{IO::parseIntCsvFile(tilemapFile)};
         tilemapFile.close();
@@ -68,10 +70,11 @@ namespace Engine
 
     void Game::loadEntities()
     {
-        m_resourceManager->addTexture("chopper", "images/chopper.png");
-        m_resourceManager->addTexture("radar", "images/radar.png");
-        m_resourceManager->addTexture("tank-right", "images/tank-panther-right.png");
-        m_resourceManager->addTexture("truck-right", "images/truck-ford-right.png");
+        std::filesystem::path texturesPath{"textures"};
+        m_resourceManager->addTexture("chopper", texturesPath / "chopper.png");
+        m_resourceManager->addTexture("radar", texturesPath / "radar.png");
+        m_resourceManager->addTexture("tank-right", texturesPath / "tank-panther-right.png");
+        m_resourceManager->addTexture("truck-right", texturesPath / "truck-ford-right.png");
         Entity chopper{m_registry->createEntity()};
         chopper.addComponent<TransformComponent>(glm::vec2(10, 10));
         chopper.addComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
@@ -99,8 +102,7 @@ namespace Engine
     {
         Logger::trace("Loading level {}", level);
         m_registry = std::make_unique<Registry>();
-        m_resourceManager = std::make_unique<ResourceManager>(
-            "/home/gustavo/workspaces/gamedev/gameengine/resources/", *m_renderer);
+        m_resourceManager = std::make_unique<ResourceManager>(m_basePath / ".." / "resources", *m_renderer);
         m_registry->addSystem<RenderSystem>(*m_renderer, *m_resourceManager);
         m_registry->addSystem<MovementSystem>();
         m_registry->addSystem<AnimationSystem>();

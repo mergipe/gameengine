@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-    ResourceManager::ResourceManager(std::string_view resourcesBasePath, SDL_Renderer& renderer)
+    ResourceManager::ResourceManager(const std::filesystem::path& resourcesBasePath, SDL_Renderer& renderer)
         : m_resourcesBasePath{resourcesBasePath}, m_renderer{renderer}
     {
         int flags = IMG_INIT_PNG;
@@ -28,14 +28,21 @@ namespace Engine
         m_textures.clear();
     }
 
-    void ResourceManager::addTexture(std::string_view resourceId, const std::string& relativeFilepath)
+    void ResourceManager::addTexture(std::string_view resourceId,
+                                     const std::filesystem::path& relativeFilepath)
     {
-        const std::string fullPath{(m_resourcesBasePath + relativeFilepath)};
+        const std::filesystem::path fullPath{(m_resourcesBasePath / relativeFilepath)};
         SDL_Texture* texture{IMG_LoadTexture(&m_renderer, fullPath.c_str())};
         if (!texture) {
-            Logger::error("Failed to load texture from {}: {}", fullPath, IMG_GetError());
+            Logger::error("Failed to load texture from {}: {}", fullPath.c_str(), IMG_GetError());
         }
         m_textures.emplace(resourceId, texture);
-        Logger::trace("Texture {} loaded by the resource manager ({})", resourceId, relativeFilepath);
+        Logger::trace("Texture {} loaded by the resource manager ({})", resourceId, relativeFilepath.c_str());
+    }
+
+    std::filesystem::path
+    ResourceManager::getResourceAbsolutePath(const std::filesystem::path& relativeFilepath) const
+    {
+        return m_resourcesBasePath / relativeFilepath;
     }
 } // namespace Engine

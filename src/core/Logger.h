@@ -1,6 +1,8 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#include "spdlog/common.h"
+#include <filesystem>
 #include <memory>
 #include <spdlog/spdlog.h>
 
@@ -8,11 +10,19 @@ namespace Engine
 {
     class Logger
     {
-    private:
-        static inline std::shared_ptr<spdlog::logger> s_logger{std::make_shared<spdlog::logger>("empty")};
-
     public:
-        static void init();
+        enum class Level {
+            trace = spdlog::level::level_enum::trace,
+            debug = spdlog::level::level_enum::debug,
+            info = spdlog::level::level_enum::info,
+            warn = spdlog::level::level_enum::warn,
+            error = spdlog::level::level_enum::err,
+            critical = spdlog::level::level_enum::critical,
+        };
+        static void init(Level level = Level::trace);
+        static void init(std::filesystem::path logFilepath, Level level = Level::trace);
+        static void addFileSink(std::filesystem::path logFilepath);
+        static void setLevel(Level level);
         template <typename T> static void trace(const T& msg);
         template <typename... TArgs> static void trace(fmt::format_string<TArgs...> fmt, TArgs&&... args);
         template <typename T> static void debug(const T& msg);
@@ -25,6 +35,12 @@ namespace Engine
         template <typename... TArgs> static void error(fmt::format_string<TArgs...> fmt, TArgs&&... args);
         template <typename T> static void critical(const T& msg);
         template <typename... TArgs> static void critical(fmt::format_string<TArgs...> fmt, TArgs&&... args);
+
+    private:
+        static constexpr std::optional<Level> getLevelFromString(std::string_view levelStr);
+        static constexpr std::string s_loggerLevelEnvVariableName = "LOGGER_LEVEL";
+        static constexpr std::string s_loggerName = "logger";
+        static inline std::shared_ptr<spdlog::logger> s_logger{std::make_shared<spdlog::logger>("empty")};
     };
 
     template <typename T>

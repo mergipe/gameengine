@@ -4,7 +4,9 @@ add_executable(gameengine
                game/Game.cpp game/ECS.cpp game/Systems.cpp
                resources/ResourceManager.cpp)
 target_compile_features(gameengine PRIVATE cxx_std_23)
-set_target_properties(gameengine PROPERTIES CXX_EXTENSIONS OFF)
+set_target_properties(gameengine PROPERTIES
+                      CXX_EXTENSIONS OFF
+                      RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 target_include_directories(gameengine PUBLIC .)
 target_link_sdl2(gameengine)
 target_link_libraries(gameengine PRIVATE SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf SDL2_mixer::SDL2_mixer)

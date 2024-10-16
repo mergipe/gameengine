@@ -17,11 +17,11 @@ namespace Engine
     using Signature = std::bitset<MAX_COMPONENTS>;
 
     struct IComponent {
-    protected:
-        static inline size_t s_nextId{0};
-
     public:
         virtual ~IComponent() = default;
+
+    protected:
+        static inline size_t s_nextId{0};
     };
 
     template <typename TComponent>
@@ -38,12 +38,10 @@ namespace Engine
         return s_id;
     }
 
+    class Registry;
+
     class Entity
     {
-    private:
-        size_t m_id{};
-        class Registry* m_registry;
-
     public:
         Entity();
         Entity(size_t id, Registry* registry) : m_id{id}, m_registry{registry} {}
@@ -54,17 +52,14 @@ namespace Engine
         template <typename TComponent> void removeComponent();
         template <typename TComponent> bool hasComponent() const;
         template <typename TComponent> TComponent& getComponent() const;
+
+    private:
+        size_t m_id{};
+        Registry* m_registry;
     };
 
     class System
     {
-    private:
-        Signature m_componentSignature{};
-        std::vector<Entity> m_entities{};
-
-    protected:
-        template <typename TComponent> void requireComponent();
-
     public:
         System() = default;
         virtual ~System() = default;
@@ -72,6 +67,13 @@ namespace Engine
         const Signature& getComponentSignature() const { return m_componentSignature; }
         void addEntity(Entity entity) { m_entities.push_back(entity); };
         void removeEntity(Entity entity) { std::erase(m_entities, entity); };
+
+    protected:
+        template <typename TComponent> void requireComponent();
+
+    private:
+        Signature m_componentSignature{};
+        std::vector<Entity> m_entities{};
     };
 
     template <typename TComponent>
@@ -89,12 +91,10 @@ namespace Engine
     template <typename T>
     class Pool : public IPool
     {
-    private:
-        std::vector<T> m_objects{};
-
     public:
         Pool(size_t size = 100) { m_objects.resize(size); }
         virtual ~Pool() = default;
+        T& operator[](size_t index) { return m_objects[index]; }
         bool isEmpty() const { return m_objects.empty(); }
         size_t getSize() const { return m_objects.size(); }
         void resize(size_t size) { m_objects.resize(size); }
@@ -102,20 +102,13 @@ namespace Engine
         void add(const T& object) { m_objects.push_back(object); }
         void set(size_t index, const T& object) { m_objects[index] = object; }
         T& get(size_t index) { return m_objects[index]; }
-        T& operator[](size_t index) { return m_objects[index]; }
+
+    private:
+        std::vector<T> m_objects{};
     };
 
     class Registry
     {
-    private:
-        size_t m_entitiesCount{0};
-        std::set<Entity> m_entitiesToBeAdded{};
-        std::set<Entity> m_entitiesToBeKilled{};
-        std::vector<std::shared_ptr<IPool>> m_componentPools{};
-        std::vector<Signature> m_entityComponentSignatures{};
-        std::unordered_map<std::type_index, std::shared_ptr<System>> m_systems{};
-        std::deque<size_t> m_freeEntityIds{};
-
     public:
         Registry() = default;
         void update();
@@ -131,6 +124,15 @@ namespace Engine
         template <typename TSystem> void removeSystem();
         template <typename TSystem> bool hasSystem() const;
         template <typename TSystem> TSystem& getSystem() const;
+
+    private:
+        size_t m_entitiesCount{0};
+        std::set<Entity> m_entitiesToBeAdded{};
+        std::set<Entity> m_entitiesToBeKilled{};
+        std::vector<std::shared_ptr<IPool>> m_componentPools{};
+        std::vector<Signature> m_entityComponentSignatures{};
+        std::unordered_map<std::type_index, std::shared_ptr<System>> m_systems{};
+        std::deque<size_t> m_freeEntityIds{};
     };
 
     template <typename TComponent, typename... TArgs>

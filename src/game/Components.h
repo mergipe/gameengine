@@ -8,15 +8,15 @@
 namespace Engine
 {
     struct TransformComponent {
-        glm::vec2 position{};
-        glm::vec2 scale{};
-        double rotation{};
-
         TransformComponent(const glm::vec2& position = glm::vec2(0), const glm::vec2& scale = glm::vec2(1),
                            double rotation = 0.0)
             : position{position}, scale{scale}, rotation{rotation}
         {
         }
+
+        glm::vec2 position{};
+        glm::vec2 scale{};
+        double rotation{};
     };
 
     struct RigidBodyComponent {
@@ -26,43 +26,43 @@ namespace Engine
     };
 
     struct SpriteComponent {
-        std::string_view resourceId{};
-        int width{};
-        int height{};
-        int zIndex{};
-        SDL_Rect sourceRect{};
-
         SpriteComponent(std::string_view resourceId = "", int width = 0, int height = 0, int zIndex = 0,
                         int rectX = 0, int rectY = 0)
             : resourceId{resourceId}, width{width}, height{height}, zIndex{zIndex},
               sourceRect{SDL_Rect{rectX, rectY, width, height}}
         {
         }
+
+        std::string_view resourceId{};
+        int width{};
+        int height{};
+        int zIndex{};
+        SDL_Rect sourceRect{};
     };
 
     struct AnimationComponent {
+        AnimationComponent(int framesCount = 1, int framesPerSecond = 1, bool shouldLoop = true)
+            : framesCount{framesCount}, framesPerSecond{framesPerSecond}, shouldLoop{shouldLoop}
+        {
+        }
+
         int framesCount{};
         int currentFrame{0};
         int framesPerSecond{};
         bool shouldLoop{};
         std::uint64_t startTime{SDL_GetTicks64()};
-
-        AnimationComponent(int framesCount = 1, int framesPerSecond = 1, bool shouldLoop = true)
-            : framesCount{framesCount}, framesPerSecond{framesPerSecond}, shouldLoop{shouldLoop}
-        {
-        }
     };
 
     struct BoxColliderComponent {
-        int width{};
-        int height{};
-        glm::vec2 offset{};
-        bool isColliding{};
-
         BoxColliderComponent(int width = 0, int height = 0, const glm::vec2& offset = glm::vec2(0))
             : width{width}, height{height}, offset{offset}
         {
         }
+
+        int width{};
+        int height{};
+        glm::vec2 offset{};
+        bool isColliding{};
     };
 } // namespace Engine
 
