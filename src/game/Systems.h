@@ -14,10 +14,10 @@ namespace Engine
         void update(float timeStep);
     };
 
-    class RenderSystem : public System
+    class SpriteRenderingSystem : public System
     {
     public:
-        RenderSystem(SDL_Renderer& renderer, const ResourceManager& resourceManager);
+        SpriteRenderingSystem(SDL_Renderer& renderer, const ResourceManager& resourceManager);
         void update(float frameExtrapolationTimeStep);
 
     private:
@@ -43,10 +43,10 @@ namespace Engine
                              double bH);
     };
 
-    class DebugRenderSystem : public System
+    class BoxColliderRenderingSystem : public System
     {
     public:
-        DebugRenderSystem(SDL_Renderer& renderer);
+        BoxColliderRenderingSystem(SDL_Renderer& renderer);
         void update(float frameExtrapolationTimeStep);
 
     private:

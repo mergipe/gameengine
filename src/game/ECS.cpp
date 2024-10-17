@@ -61,4 +61,6 @@ namespace Engine
         }
         m_entitiesToBeKilled.clear();
     }
+
+    void Entity::kill() { m_registry->killEntity(*this); }
 } // namespace Engine

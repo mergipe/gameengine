@@ -25,14 +25,15 @@ namespace Engine
         }
     };
 
-    RenderSystem::RenderSystem(SDL_Renderer& renderer, const ResourceManager& resourceManager)
+    SpriteRenderingSystem::SpriteRenderingSystem(SDL_Renderer& renderer,
+                                                 const ResourceManager& resourceManager)
         : System{}, m_renderer{renderer}, m_resourceManager{resourceManager}
     {
         requireComponent<TransformComponent>();
         requireComponent<SpriteComponent>();
     }
 
-    void RenderSystem::update(float frameExtrapolationTimeStep)
+    void SpriteRenderingSystem::update(float frameExtrapolationTimeStep)
     {
         std::vector<Entity> entities{getEntities()};
         std::sort(entities.begin(), entities.end(), [](Entity a, Entity b) {
@@ -117,13 +118,14 @@ namespace Engine
         return (aX < bX + bW && aX + aW > bX && aY < bY + bH && aY + aH > bY);
     }
 
-    DebugRenderSystem::DebugRenderSystem(SDL_Renderer& renderer) : System{}, m_renderer{renderer}
+    BoxColliderRenderingSystem::BoxColliderRenderingSystem(SDL_Renderer& renderer)
+        : System{}, m_renderer{renderer}
     {
         requireComponent<TransformComponent>();
         requireComponent<BoxColliderComponent>();
     }
 
-    void DebugRenderSystem::update(float frameExtrapolationTimeStep)
+    void BoxColliderRenderingSystem::update(float frameExtrapolationTimeStep)
     {
         for (const auto entity : getEntities()) {
             const auto transform{entity.getComponent<TransformComponent>()};

@@ -97,19 +97,19 @@ namespace Engine
         truck.addComponent<RigidBodyComponent>(glm::vec2(0.05, 0.05));
         truck.addComponent<SpriteComponent>("truck-right", 32, 32, 1);
         truck.addComponent<BoxColliderComponent>(32, 32);
-        m_registry->killEntity(truck);
+        truck.kill();
     }
 
     void Game::loadLevel(int level)
     {
         Logger::info("Loading level {}", level);
         m_registry = std::make_unique<Registry>();
-        m_registry->addSystem<RenderSystem>(*m_renderer, *m_resourceManager);
+        m_registry->addSystem<SpriteRenderingSystem>(*m_renderer, *m_resourceManager);
         m_registry->addSystem<MovementSystem>();
         m_registry->addSystem<AnimationSystem>();
         m_registry->addSystem<CollisionSystem>();
         if (m_debugCapability) {
-            m_registry->addSystem<DebugRenderSystem>(*m_renderer);
+            m_registry->addSystem<BoxColliderRenderingSystem>(*m_renderer);
         }
         loadMap("jungle.png", "jungle.map", 32, 32, 10, 3.0);
         loadEntities();
@@ -166,9 +166,9 @@ namespace Engine
     {
         SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
         SDL_RenderClear(m_renderer);
-        m_registry->getSystem<RenderSystem>().update(frameExtrapolationTimeStep);
+        m_registry->getSystem<SpriteRenderingSystem>().update(frameExtrapolationTimeStep);
         if (m_debugModeActivated) {
-            m_registry->getSystem<DebugRenderSystem>().update(frameExtrapolationTimeStep);
+            m_registry->getSystem<BoxColliderRenderingSystem>().update(frameExtrapolationTimeStep);
         }
         SDL_RenderPresent(m_renderer);
     }
