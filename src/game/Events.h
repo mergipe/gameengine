@@ -56,7 +56,7 @@ namespace Engine
     class EventBus
     {
     public:
-        EventBus();
+        EventBus() = default;
         template <typename TOwner, typename TEvent>
         void subscribeToEvent(TOwner* ownerInstance,
                               const std::function<void(const TOwner&, TEvent&)>& callbackFunction);

@@ -43,7 +43,7 @@ namespace Engine
     class Entity
     {
     public:
-        Entity();
+        Entity() = default;
         Entity(size_t id, Registry* registry) : m_id{id}, m_registry{registry} {}
         bool operator==(const Entity& e) const { return m_id == e.m_id; };
         bool operator<(const Entity& e) const { return m_id < e.m_id; };
