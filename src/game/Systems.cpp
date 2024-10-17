@@ -47,11 +47,12 @@ namespace Engine
                 renderPosition = getExtrapolatedPosition(transform.position, rigidBody.velocity,
                                                          frameExtrapolationTimeStep);
             }
-            const SDL_FRect spriteRect = {renderPosition.x, renderPosition.y,
-                                          static_cast<float>(sprite.width) * transform.scale.x,
-                                          static_cast<float>(sprite.height) * transform.scale.y};
+            const SDL_FRect destinationRect = {renderPosition.x, renderPosition.y,
+                                               static_cast<float>(sprite.width) * transform.scale.x,
+                                               static_cast<float>(sprite.height) * transform.scale.y};
             SDL_RenderCopyExF(&m_renderer, m_resourceManager.getTexture(sprite.resourceId),
-                              &sprite.sourceRect, &spriteRect, transform.rotation, nullptr, SDL_FLIP_NONE);
+                              &sprite.sourceRect, &destinationRect, transform.rotation, nullptr,
+                              SDL_FLIP_NONE);
         }
     }
 

@@ -8,6 +8,7 @@
 #include <SDL.h>
 #include <cstdint>
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
 
 namespace Engine
@@ -21,8 +22,8 @@ namespace Engine
             Logger::critical("Failed to initialize SDL: {}", SDL_GetError());
             std::abort();
         }
-        m_basePath = std::filesystem::path{SDL_GetBasePath()};
-        Logger::addFileSink(m_basePath / ".." / "logs" / "log.txt");
+        m_basePath = std::filesystem::canonical(SDL_GetBasePath()).parent_path();
+        Logger::addFileSink(m_basePath / "logs" / "log.txt");
         m_window = SDL_CreateWindow("Game Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                     m_windowWidth, m_windowHeight, SDL_WINDOW_BORDERLESS);
         if (!m_window) {
@@ -34,13 +35,14 @@ namespace Engine
             Logger::critical("Failed to create a SDL renderer: {}", SDL_GetError());
             std::abort();
         }
-        Logger::trace("Game initialized");
+        m_resourceManager = std::make_unique<ResourceManager>(m_basePath / "resources", *m_renderer);
+        Logger::info("Game initialized");
     }
 
     void Game::loadMap(std::string_view tilesetFilename, std::string_view tilemapFilename, int tileWidth,
                        int tileHeight, int tilesetColumns, float scale)
     {
-        Logger::trace("Loading map {}", tilemapFilename);
+        Logger::info("Loading map {}", tilemapFilename);
         const std::filesystem::path tilemapsPath{"tilemaps"};
         m_resourceManager->addTexture("tileset", tilemapsPath / tilesetFilename);
         const std::filesystem::path tilemapFilepath{
@@ -76,7 +78,7 @@ namespace Engine
         m_resourceManager->addTexture("tank-right", texturesPath / "tank-panther-right.png");
         m_resourceManager->addTexture("truck-right", texturesPath / "truck-ford-right.png");
         Entity chopper{m_registry->createEntity()};
-        chopper.addComponent<TransformComponent>(glm::vec2(10, 10));
+        chopper.addComponent<TransformComponent>(glm::vec2(300));
         chopper.addComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
         chopper.addComponent<SpriteComponent>("chopper", 32, 32, 1);
         chopper.addComponent<AnimationComponent>(2, 15);
@@ -86,7 +88,7 @@ namespace Engine
         radar.addComponent<SpriteComponent>("radar", 64, 64, 2);
         radar.addComponent<AnimationComponent>(8, 5);
         Entity tank{m_registry->createEntity()};
-        tank.addComponent<TransformComponent>(glm::vec2(10, 10), glm::vec2(2));
+        tank.addComponent<TransformComponent>(glm::vec2(10), glm::vec2(2));
         tank.addComponent<RigidBodyComponent>(glm::vec2(0.1, 0.1));
         tank.addComponent<SpriteComponent>("tank-right", 32, 32, 1);
         tank.addComponent<BoxColliderComponent>(32, 32);
@@ -100,9 +102,8 @@ namespace Engine
 
     void Game::loadLevel(int level)
     {
-        Logger::trace("Loading level {}", level);
+        Logger::info("Loading level {}", level);
         m_registry = std::make_unique<Registry>();
-        m_resourceManager = std::make_unique<ResourceManager>(m_basePath / ".." / "resources", *m_renderer);
         m_registry->addSystem<RenderSystem>(*m_renderer, *m_resourceManager);
         m_registry->addSystem<MovementSystem>();
         m_registry->addSystem<AnimationSystem>();
@@ -110,7 +111,7 @@ namespace Engine
         if (m_debugCapability) {
             m_registry->addSystem<DebugRenderSystem>(*m_renderer);
         }
-        loadMap("jungle.png", "jungle.map", 32, 32, 10, 2.0);
+        loadMap("jungle.png", "jungle.map", 32, 32, 10, 3.0);
         loadEntities();
     }
 
@@ -118,7 +119,7 @@ namespace Engine
 
     void Game::run()
     {
-        Logger::trace("Game started to run");
+        Logger::info("Game started to run");
         setup();
         std::uint64_t previousTicks{SDL_GetTicks64()};
         float lag{0.0f};
@@ -179,6 +180,6 @@ namespace Engine
         SDL_DestroyWindow(m_window);
         m_window = nullptr;
         SDL_Quit();
-        Logger::trace("Game resources destroyed");
+        Logger::info("Game resources destroyed");
     }
 } // namespace Engine

@@ -27,9 +27,9 @@ namespace Engine
 
     struct SpriteComponent {
         SpriteComponent(std::string_view resourceId = "", int width = 0, int height = 0, int zIndex = 0,
-                        int rectX = 0, int rectY = 0)
+                        int sourceRectX = 0, int sourceRectY = 0)
             : resourceId{resourceId}, width{width}, height{height}, zIndex{zIndex},
-              sourceRect{SDL_Rect{rectX, rectY, width, height}}
+              sourceRect{SDL_Rect{sourceRectX, sourceRectY, width, height}}
         {
         }
 
