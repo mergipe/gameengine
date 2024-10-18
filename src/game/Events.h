@@ -95,8 +95,8 @@ namespace Engine
     {
     public:
         CollisionEvent(Entity entity, Entity otherEntity) : m_entity{entity}, m_otherEntity{otherEntity} {}
-        Entity m_entity{};
-        Entity m_otherEntity{};
+        Entity m_entity;
+        Entity m_otherEntity;
     };
 } // namespace Engine
 

@@ -4,8 +4,8 @@
 
 namespace Engine
 {
-    ResourceManager::ResourceManager(const std::filesystem::path& resourcesBasePath, SDL_Renderer& renderer)
-        : m_resourcesBasePath{resourcesBasePath}, m_renderer{renderer}
+    ResourceManager::ResourceManager(const std::filesystem::path& resourcesBasePath)
+        : m_resourcesBasePath{resourcesBasePath}
     {
         int flags = IMG_INIT_PNG;
         if (!(IMG_Init(flags) & flags)) {
@@ -29,10 +29,10 @@ namespace Engine
     }
 
     void ResourceManager::addTexture(std::string_view resourceId,
-                                     const std::filesystem::path& relativeFilepath)
+                                     const std::filesystem::path& relativeFilepath, SDL_Renderer* renderer)
     {
         const std::filesystem::path fullPath{m_resourcesBasePath / relativeFilepath};
-        SDL_Texture* texture{IMG_LoadTexture(&m_renderer, fullPath.c_str())};
+        SDL_Texture* texture{IMG_LoadTexture(renderer, fullPath.c_str())};
         if (!texture) {
             Logger::error("Failed to load texture from {}: {}", fullPath.c_str(), IMG_GetError());
         }

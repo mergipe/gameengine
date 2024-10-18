@@ -35,7 +35,7 @@ namespace Engine
             Logger::critical("Failed to create a SDL renderer: {}", SDL_GetError());
             std::abort();
         }
-        m_resourceManager = std::make_unique<ResourceManager>(m_basePath / "resources", *m_renderer);
+        m_resourceManager = std::make_unique<ResourceManager>(m_basePath / "resources");
         Logger::info("Game initialized");
     }
 
@@ -44,7 +44,7 @@ namespace Engine
     {
         Logger::info("Loading map {}", tilemapFilename);
         const std::filesystem::path tilemapsPath{"tilemaps"};
-        m_resourceManager->addTexture("tileset", tilemapsPath / tilesetFilename);
+        m_resourceManager->addTexture("tileset", tilemapsPath / tilesetFilename, m_renderer);
         const std::filesystem::path tilemapFilepath{
             m_resourceManager->getResourceAbsolutePath(tilemapsPath / tilemapFilename)};
         std::ifstream tilemapFile{tilemapFilepath};
@@ -73,10 +73,10 @@ namespace Engine
     void Game::loadEntities()
     {
         std::filesystem::path texturesPath{"textures"};
-        m_resourceManager->addTexture("chopper", texturesPath / "chopper.png");
-        m_resourceManager->addTexture("radar", texturesPath / "radar.png");
-        m_resourceManager->addTexture("tank-right", texturesPath / "tank-panther-right.png");
-        m_resourceManager->addTexture("truck-right", texturesPath / "truck-ford-right.png");
+        m_resourceManager->addTexture("chopper", texturesPath / "chopper.png", m_renderer);
+        m_resourceManager->addTexture("radar", texturesPath / "radar.png", m_renderer);
+        m_resourceManager->addTexture("tank-right", texturesPath / "tank-panther-right.png", m_renderer);
+        m_resourceManager->addTexture("truck-right", texturesPath / "truck-ford-right.png", m_renderer);
         Entity chopper{m_registry->createEntity()};
         chopper.addComponent<TransformComponent>(glm::vec2(300));
         chopper.addComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
@@ -104,12 +104,12 @@ namespace Engine
     {
         Logger::info("Loading level {}", level);
         m_registry = std::make_unique<Registry>();
-        m_registry->addSystem<SpriteRenderingSystem>(*m_renderer, *m_resourceManager);
+        m_registry->addSystem<SpriteRenderingSystem>();
         m_registry->addSystem<MovementSystem>();
         m_registry->addSystem<AnimationSystem>();
         m_registry->addSystem<CollisionSystem>();
         if (m_debugCapability) {
-            m_registry->addSystem<BoxColliderRenderingSystem>(*m_renderer);
+            m_registry->addSystem<BoxColliderRenderingSystem>();
         }
         loadMap("jungle.png", "jungle.map", 32, 32, 10, 3.0);
         loadEntities();
@@ -166,9 +166,11 @@ namespace Engine
     {
         SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
         SDL_RenderClear(m_renderer);
-        m_registry->getSystem<SpriteRenderingSystem>().update(frameExtrapolationTimeStep);
+        m_registry->getSystem<SpriteRenderingSystem>().update(m_renderer, *m_resourceManager,
+                                                              frameExtrapolationTimeStep);
         if (m_debugModeActivated) {
-            m_registry->getSystem<BoxColliderRenderingSystem>().update(frameExtrapolationTimeStep);
+            m_registry->getSystem<BoxColliderRenderingSystem>().update(m_renderer,
+                                                                       frameExtrapolationTimeStep);
         }
         SDL_RenderPresent(m_renderer);
     }

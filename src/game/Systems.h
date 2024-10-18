@@ -17,12 +17,9 @@ namespace Engine
     class SpriteRenderingSystem : public System
     {
     public:
-        SpriteRenderingSystem(SDL_Renderer& renderer, const ResourceManager& resourceManager);
-        void update(float frameExtrapolationTimeStep);
-
-    private:
-        SDL_Renderer& m_renderer;
-        const ResourceManager& m_resourceManager;
+        SpriteRenderingSystem();
+        void update(SDL_Renderer* renderer, const ResourceManager& resourceManager,
+                    float frameExtrapolationTimeStep);
     };
 
     class AnimationSystem : public System
@@ -46,11 +43,8 @@ namespace Engine
     class BoxColliderRenderingSystem : public System
     {
     public:
-        BoxColliderRenderingSystem(SDL_Renderer& renderer);
-        void update(float frameExtrapolationTimeStep);
-
-    private:
-        SDL_Renderer& m_renderer;
+        BoxColliderRenderingSystem();
+        void update(SDL_Renderer* renderer, float frameExtrapolationTimeStep);
     };
 } // namespace Engine
 

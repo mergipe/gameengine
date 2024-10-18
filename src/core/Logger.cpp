@@ -38,18 +38,19 @@ namespace Engine
 
     constexpr std::optional<Logger::Level> Logger::getLevelFromString(std::string_view levelStr)
     {
+        using enum Level;
         if (levelStr == "trace")
-            return Level::trace;
+            return trace;
         if (levelStr == "debug")
-            return Level::debug;
+            return debug;
         if (levelStr == "info")
-            return Level::info;
+            return info;
         if (levelStr == "warn")
-            return Level::warn;
+            return warn;
         if (levelStr == "error")
-            return Level::error;
+            return error;
         if (levelStr == "critical")
-            return Level::critical;
+            return critical;
         return {};
     }
 } // namespace Engine

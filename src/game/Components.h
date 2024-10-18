@@ -3,7 +3,7 @@
 
 #include <SDL.h>
 #include <glm/glm.hpp>
-#include <string_view>
+#include <string>
 
 namespace Engine
 {
@@ -13,27 +13,24 @@ namespace Engine
             : position{position}, scale{scale}, rotation{rotation}
         {
         }
-
         glm::vec2 position{};
         glm::vec2 scale{};
         double rotation{};
     };
 
     struct RigidBodyComponent {
-        glm::vec2 velocity{};
-
         RigidBodyComponent(const glm::vec2& velocity = glm::vec2(0)) : velocity{velocity} {}
+        glm::vec2 velocity{};
     };
 
     struct SpriteComponent {
-        SpriteComponent(std::string_view resourceId = "", int width = 0, int height = 0, int zIndex = 0,
+        SpriteComponent(const std::string& resourceId = "", int width = 0, int height = 0, int zIndex = 0,
                         int sourceRectX = 0, int sourceRectY = 0)
             : resourceId{resourceId}, width{width}, height{height}, zIndex{zIndex},
               sourceRect{SDL_Rect{sourceRectX, sourceRectY, width, height}}
         {
         }
-
-        std::string_view resourceId{};
+        std::string resourceId{};
         int width{};
         int height{};
         int zIndex{};
@@ -45,7 +42,6 @@ namespace Engine
             : framesCount{framesCount}, framesPerSecond{framesPerSecond}, shouldLoop{shouldLoop}
         {
         }
-
         int framesCount{};
         int currentFrame{0};
         int framesPerSecond{};
@@ -58,7 +54,6 @@ namespace Engine
             : width{width}, height{height}, offset{offset}
         {
         }
-
         int width{};
         int height{};
         glm::vec2 offset{};

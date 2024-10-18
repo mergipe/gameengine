@@ -25,15 +25,14 @@ namespace Engine
         }
     };
 
-    SpriteRenderingSystem::SpriteRenderingSystem(SDL_Renderer& renderer,
-                                                 const ResourceManager& resourceManager)
-        : System{}, m_renderer{renderer}, m_resourceManager{resourceManager}
+    SpriteRenderingSystem::SpriteRenderingSystem() : System{}
     {
         requireComponent<TransformComponent>();
         requireComponent<SpriteComponent>();
     }
 
-    void SpriteRenderingSystem::update(float frameExtrapolationTimeStep)
+    void SpriteRenderingSystem::update(SDL_Renderer* renderer, const ResourceManager& resourceManager,
+                                       float frameExtrapolationTimeStep)
     {
         std::vector<Entity> entities{getEntities()};
         std::sort(entities.begin(), entities.end(), [](Entity a, Entity b) {
@@ -51,9 +50,8 @@ namespace Engine
             const SDL_FRect destinationRect = {renderPosition.x, renderPosition.y,
                                                static_cast<float>(sprite.width) * transform.scale.x,
                                                static_cast<float>(sprite.height) * transform.scale.y};
-            SDL_RenderCopyExF(&m_renderer, m_resourceManager.getTexture(sprite.resourceId),
-                              &sprite.sourceRect, &destinationRect, transform.rotation, nullptr,
-                              SDL_FLIP_NONE);
+            SDL_RenderCopyExF(renderer, resourceManager.getTexture(sprite.resourceId), &sprite.sourceRect,
+                              &destinationRect, transform.rotation, nullptr, SDL_FLIP_NONE);
         }
     }
 
@@ -118,14 +116,13 @@ namespace Engine
         return (aX < bX + bW && aX + aW > bX && aY < bY + bH && aY + aH > bY);
     }
 
-    BoxColliderRenderingSystem::BoxColliderRenderingSystem(SDL_Renderer& renderer)
-        : System{}, m_renderer{renderer}
+    BoxColliderRenderingSystem::BoxColliderRenderingSystem() : System{}
     {
         requireComponent<TransformComponent>();
         requireComponent<BoxColliderComponent>();
     }
 
-    void BoxColliderRenderingSystem::update(float frameExtrapolationTimeStep)
+    void BoxColliderRenderingSystem::update(SDL_Renderer* renderer, float frameExtrapolationTimeStep)
     {
         for (const auto entity : getEntities()) {
             const auto transform{entity.getComponent<TransformComponent>()};
@@ -141,11 +138,11 @@ namespace Engine
                                             static_cast<float>(boxCollider.width) * transform.scale.x,
                                             static_cast<float>(boxCollider.height) * transform.scale.y};
             if (boxCollider.isColliding) {
-                SDL_SetRenderDrawColor(&m_renderer, 255, 0, 0, 255);
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
             } else {
-                SDL_SetRenderDrawColor(&m_renderer, 255, 255, 0, 255);
+                SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
             }
-            SDL_RenderDrawRectF(&m_renderer, &colliderRect);
+            SDL_RenderDrawRectF(renderer, &colliderRect);
         }
     }
 } // namespace Engine
