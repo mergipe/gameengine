@@ -126,12 +126,12 @@ namespace Engine
         template <typename TSystem> TSystem& getSystem() const;
 
     private:
+        std::deque<size_t> m_freeEntityIds{};
+        std::unordered_map<std::type_index, std::shared_ptr<System>> m_systems{};
         std::set<Entity> m_entitiesToBeAdded{};
         std::set<Entity> m_entitiesToBeKilled{};
         std::vector<std::shared_ptr<IPool>> m_componentPools{};
         std::vector<Signature> m_entityComponentSignatures{};
-        std::unordered_map<std::type_index, std::shared_ptr<System>> m_systems{};
-        std::deque<size_t> m_freeEntityIds{};
         size_t m_entitiesCount{0};
     };
 
