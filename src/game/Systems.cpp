@@ -4,8 +4,8 @@
 
 namespace Engine
 {
-    glm::vec2 getExtrapolatedPosition(const glm::vec2& position, const glm::vec2& velocity,
-                                      float extrapolationTimeStep)
+    constexpr glm::vec2 getExtrapolatedPosition(const glm::vec2& position, const glm::vec2& velocity,
+                                                float extrapolationTimeStep)
     {
         return glm::vec2{position + velocity * extrapolationTimeStep};
     }
@@ -110,8 +110,8 @@ namespace Engine
         }
     }
 
-    bool CollisionSystem::aabbHasCollided(double aX, double aY, double aW, double aH, double bX, double bY,
-                                          double bW, double bH)
+    constexpr bool CollisionSystem::aabbHasCollided(double aX, double aY, double aW, double aH, double bX,
+                                                    double bY, double bW, double bH)
     {
         return (aX < bX + bW && aX + aW > bX && aY < bY + bH && aY + aH > bY);
     }

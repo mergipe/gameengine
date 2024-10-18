@@ -30,6 +30,12 @@ namespace Engine
         void processInput();
         void update();
         void render(float frameExtrapolationFactor);
+        std::filesystem::path m_basePath{};
+        std::unique_ptr<Registry> m_registry{};
+        std::unique_ptr<ResourceManager> m_resourceManager{};
+        std::unique_ptr<EventBus> m_eventBus{};
+        SDL_Window* m_window{};
+        SDL_Renderer* m_renderer{};
         static constexpr float s_updateRate{144.0f};
         static constexpr float s_timeStepInMs{1000.0f / s_updateRate};
         const int m_windowWidth{1920};
@@ -37,12 +43,6 @@ namespace Engine
         bool m_debugCapability{false};
         bool m_debugModeActivated{false};
         bool m_isRunning{false};
-        std::filesystem::path m_basePath{};
-        SDL_Window* m_window{};
-        SDL_Renderer* m_renderer{};
-        std::unique_ptr<Registry> m_registry{};
-        std::unique_ptr<ResourceManager> m_resourceManager{};
-        std::unique_ptr<EventBus> m_eventBus{};
     };
 } // namespace Engine
 

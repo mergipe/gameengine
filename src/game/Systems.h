@@ -36,8 +36,8 @@ namespace Engine
         void update();
 
     private:
-        bool aabbHasCollided(double aX, double aY, double aW, double aH, double bX, double bY, double bW,
-                             double bH);
+        constexpr bool aabbHasCollided(double aX, double aY, double aW, double aH, double bX, double bY,
+                                       double bW, double bH);
     };
 
     class BoxColliderRenderingSystem : public System

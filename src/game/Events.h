@@ -41,8 +41,8 @@ namespace Engine
 
     private:
         virtual void call(Event& e) override;
-        TOwner* m_ownerInstance{};
         CallbackFunction m_callbackFunction{};
+        TOwner* m_ownerInstance{};
     };
 
     template <typename TOwner, typename TEvent>

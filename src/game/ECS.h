@@ -72,8 +72,8 @@ namespace Engine
         template <typename TComponent> void requireComponent();
 
     private:
-        Signature m_componentSignature{};
         std::vector<Entity> m_entities{};
+        Signature m_componentSignature{};
     };
 
     template <typename TComponent>
@@ -126,13 +126,13 @@ namespace Engine
         template <typename TSystem> TSystem& getSystem() const;
 
     private:
-        size_t m_entitiesCount{0};
         std::set<Entity> m_entitiesToBeAdded{};
         std::set<Entity> m_entitiesToBeKilled{};
         std::vector<std::shared_ptr<IPool>> m_componentPools{};
         std::vector<Signature> m_entityComponentSignatures{};
         std::unordered_map<std::type_index, std::shared_ptr<System>> m_systems{};
         std::deque<size_t> m_freeEntityIds{};
+        size_t m_entitiesCount{0};
     };
 
     template <typename TComponent, typename... TArgs>
