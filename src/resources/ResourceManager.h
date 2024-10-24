@@ -16,12 +16,12 @@ namespace Engine
         void clearResources();
         void addTexture(std::string_view resourceId, const std::filesystem::path& relativeFilepath,
                         SDL_Renderer* renderer);
-        SDL_Texture* getTexture(std::string_view resourceId) const { return m_textures.at(resourceId); };
+        SDL_Texture* getTexture(const std::string& resourceId) const { return m_textures.at(resourceId); };
         const std::filesystem::path& getResourcesBasePath() const { return m_resourcesBasePath; };
         std::filesystem::path getResourceAbsolutePath(const std::filesystem::path& relativeFilepath) const;
 
     private:
-        std::unordered_map<std::string_view, SDL_Texture*> m_textures{};
+        std::unordered_map<std::string, SDL_Texture*> m_textures{};
         const std::filesystem::path m_resourcesBasePath{};
     };
 } // namespace Engine
