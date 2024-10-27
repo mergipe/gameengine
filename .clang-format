@@ -14,7 +14,7 @@ InsertNewlineAtEOF: true
 KeepEmptyLinesAtEOF: true
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: All
-PackConstructorInitializers: NextLine
+PackConstructorInitializers: NextLineOnly
 PointerAlignment: Left
 QualifierAlignment: Leave
 ReferenceAlignment: Pointer

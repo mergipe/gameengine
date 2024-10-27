@@ -10,7 +10,8 @@ namespace Engine
         return glm::vec2{position + velocity * extrapolationTimeStep};
     }
 
-    MovementSystem::MovementSystem() : System{}
+    MovementSystem::MovementSystem()
+        : System{}
     {
         requireComponent<TransformComponent>();
         requireComponent<RigidBodyComponent>();
@@ -25,7 +26,8 @@ namespace Engine
         }
     };
 
-    SpriteRenderingSystem::SpriteRenderingSystem() : System{}
+    SpriteRenderingSystem::SpriteRenderingSystem()
+        : System{}
     {
         requireComponent<TransformComponent>();
         requireComponent<SpriteComponent>();
@@ -55,7 +57,8 @@ namespace Engine
         }
     }
 
-    AnimationSystem::AnimationSystem() : System{}
+    AnimationSystem::AnimationSystem()
+        : System{}
     {
         requireComponent<SpriteComponent>();
         requireComponent<AnimationComponent>();
@@ -73,7 +76,8 @@ namespace Engine
         }
     }
 
-    CollisionSystem::CollisionSystem() : System{}
+    CollisionSystem::CollisionSystem()
+        : System{}
     {
         requireComponent<TransformComponent>();
         requireComponent<BoxColliderComponent>();
@@ -116,7 +120,8 @@ namespace Engine
         return (aX < bX + bW && aX + aW > bX && aY < bY + bH && aY + aH > bY);
     }
 
-    BoxColliderRenderingSystem::BoxColliderRenderingSystem() : System{}
+    BoxColliderRenderingSystem::BoxColliderRenderingSystem()
+        : System{}
     {
         requireComponent<TransformComponent>();
         requireComponent<BoxColliderComponent>();

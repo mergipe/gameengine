@@ -19,7 +19,10 @@ namespace Engine
     };
 
     struct RigidBodyComponent {
-        RigidBodyComponent(const glm::vec2& velocity = glm::vec2(0)) : velocity{velocity} {}
+        RigidBodyComponent(const glm::vec2& velocity = glm::vec2(0))
+            : velocity{velocity}
+        {
+        }
         glm::vec2 velocity{};
     };
 
@@ -46,8 +49,8 @@ namespace Engine
         {
         }
         std::uint64_t startTime{SDL_GetTicks64()};
-        int framesCount{};
         int currentFrame{0};
+        int framesCount{};
         int framesPerSecond{};
         bool shouldLoop{};
     };

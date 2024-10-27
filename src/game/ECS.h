@@ -43,7 +43,10 @@ namespace Engine
     class Entity
     {
     public:
-        Entity(size_t id, Registry* registry) : m_id{id}, m_registry{registry} {}
+        Entity(size_t id, Registry* registry)
+            : m_id{id}, m_registry{registry}
+        {
+        }
         bool operator==(const Entity& e) const { return m_id == e.m_id; };
         bool operator<(const Entity& e) const { return m_id < e.m_id; };
         size_t getId() const { return m_id; }
@@ -55,13 +58,12 @@ namespace Engine
 
     private:
         size_t m_id{};
-        Registry* m_registry;
+        Registry* m_registry{};
     };
 
     class System
     {
     public:
-        System() = default;
         virtual ~System() = default;
         std::vector<Entity> getEntities() const { return m_entities; }
         const Signature& getComponentSignature() const { return m_componentSignature; }
@@ -110,7 +112,6 @@ namespace Engine
     class Registry
     {
     public:
-        Registry() = default;
         void update();
         Entity createEntity();
         void killEntity(Entity entity);

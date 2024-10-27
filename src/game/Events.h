@@ -14,7 +14,6 @@ namespace Engine
     class Event
     {
     public:
-        Event() = default;
         virtual ~Event() = default;
     };
 
@@ -34,7 +33,7 @@ namespace Engine
     public:
         using CallbackFunction = std::function<void(const TOwner&, TEvent&)>;
         EventCallback(TOwner* ownerInstance, const CallbackFunction& callbackFunction)
-            : m_ownerInstance{ownerInstance}, m_callbackFunction{callbackFunction}
+            : m_callbackFunction{callbackFunction}, m_ownerInstance{ownerInstance}
         {
         }
         virtual ~EventCallback() override = default;
@@ -56,7 +55,6 @@ namespace Engine
     class EventBus
     {
     public:
-        EventBus() = default;
         template <typename TOwner, typename TEvent>
         void subscribeToEvent(TOwner* ownerInstance,
                               const std::function<void(const TOwner&, TEvent&)>& callbackFunction);
@@ -94,7 +92,10 @@ namespace Engine
     class CollisionEvent : public Event
     {
     public:
-        CollisionEvent(Entity entity, Entity otherEntity) : m_entity{entity}, m_otherEntity{otherEntity} {}
+        CollisionEvent(Entity entity, Entity otherEntity)
+            : m_entity{entity}, m_otherEntity{otherEntity}
+        {
+        }
         Entity m_entity;
         Entity m_otherEntity;
     };

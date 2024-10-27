@@ -15,7 +15,6 @@ namespace Engine
     public:
         Game(bool debugMode);
         Game(const Game&);
-        ~Game() = default;
         Game& operator=(const Game&);
         void init();
         void run();
