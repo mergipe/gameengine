@@ -11,7 +11,7 @@ namespace Engine
     class ResourceManager
     {
     public:
-        ResourceManager(const std::filesystem::path& resourcesBasePath);
+        explicit ResourceManager(const std::filesystem::path& resourcesBasePath);
         ~ResourceManager();
         void clearResources();
         void addTexture(std::string_view resourceId, const std::filesystem::path& relativeFilepath,

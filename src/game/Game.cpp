@@ -13,11 +13,6 @@
 
 namespace Engine
 {
-    Game::Game(bool debugCapability)
-        : m_debugCapability{debugCapability}
-    {
-    }
-
     void Game::init()
     {
         Logger::init();

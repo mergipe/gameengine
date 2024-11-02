@@ -49,9 +49,9 @@ namespace Engine
                 renderPosition = getExtrapolatedPosition(transform.position, rigidBody.velocity,
                                                          frameExtrapolationTimeStep);
             }
-            const SDL_FRect destinationRect = {renderPosition.x, renderPosition.y,
-                                               static_cast<float>(sprite.width) * transform.scale.x,
-                                               static_cast<float>(sprite.height) * transform.scale.y};
+            const SDL_FRect destinationRect{renderPosition.x, renderPosition.y,
+                                            static_cast<float>(sprite.width) * transform.scale.x,
+                                            static_cast<float>(sprite.height) * transform.scale.y};
             SDL_RenderCopyExF(renderer, resourceManager.getTexture(sprite.resourceId), &sprite.sourceRect,
                               &destinationRect, transform.rotation, nullptr, SDL_FLIP_NONE);
         }
@@ -138,10 +138,10 @@ namespace Engine
                 renderPosition = getExtrapolatedPosition(transform.position, rigidBody.velocity,
                                                          frameExtrapolationTimeStep);
             }
-            const SDL_FRect colliderRect = {renderPosition.x + boxCollider.offset.x,
-                                            renderPosition.y + boxCollider.offset.y,
-                                            static_cast<float>(boxCollider.width) * transform.scale.x,
-                                            static_cast<float>(boxCollider.height) * transform.scale.y};
+            const SDL_FRect colliderRect{renderPosition.x + boxCollider.offset.x,
+                                         renderPosition.y + boxCollider.offset.y,
+                                         static_cast<float>(boxCollider.width) * transform.scale.x,
+                                         static_cast<float>(boxCollider.height) * transform.scale.y};
             if (boxCollider.isColliding) {
                 SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
             } else {

@@ -13,7 +13,10 @@ namespace Engine
     class Game
     {
     public:
-        Game(bool debugMode);
+        explicit Game(bool debugCapability)
+            : m_debugCapability{debugCapability}
+        {
+        }
         Game(const Game&);
         Game& operator=(const Game&);
         void init();

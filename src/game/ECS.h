@@ -94,7 +94,7 @@ namespace Engine
     class Pool : public IPool
     {
     public:
-        Pool(size_t size = 100) { m_objects.resize(size); }
+        explicit Pool(size_t size = 100) { m_objects.resize(size); }
         virtual ~Pool() = default;
         T& operator[](size_t index) { return m_objects[index]; }
         bool isEmpty() const { return m_objects.empty(); }

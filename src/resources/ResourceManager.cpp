@@ -7,7 +7,7 @@ namespace Engine
     ResourceManager::ResourceManager(const std::filesystem::path& resourcesBasePath)
         : m_resourcesBasePath{resourcesBasePath}
     {
-        int flags = IMG_INIT_PNG;
+        int flags{IMG_INIT_PNG};
         if (!(IMG_Init(flags) & flags)) {
             Logger::error("Failed to initialize SDL_image: {}", IMG_GetError());
         }
