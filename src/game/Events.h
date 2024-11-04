@@ -50,11 +50,10 @@ namespace Engine
         std::invoke(m_callbackFunction, m_ownerInstance, static_cast<TEvent&>(e));
     }
 
-    using HandlerList = std::list<std::unique_ptr<IEventCallback>>;
-
     class EventBus
     {
     public:
+        using HandlerList = std::list<std::unique_ptr<IEventCallback>>;
         template <typename TOwner, typename TEvent>
         void subscribeToEvent(TOwner* ownerInstance,
                               const std::function<void(const TOwner&, TEvent&)>& callbackFunction);
