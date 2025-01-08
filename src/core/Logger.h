@@ -19,6 +19,7 @@ namespace Engine
             error = spdlog::level::level_enum::err,
             critical = spdlog::level::level_enum::critical,
         };
+        Logger() = delete;
         static void init(Level level = Level::trace);
         static void init(std::filesystem::path logFilepath, Level level = Level::trace);
         static void addFileSink(std::filesystem::path logFilepath);
