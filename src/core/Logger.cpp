@@ -18,16 +18,16 @@ namespace Engine
             }
         }
         setLevel(level);
-        Logger::info("Logger initialized with console sink");
+        Logger::info("Logger initialized with console sink [{}]", getLevelName(level));
     }
 
-    void Logger::init(std::filesystem::path logFilepath, Level level)
+    void Logger::init(const std::filesystem::path& logFilepath, Level level)
     {
         init(level);
         addFileSink(logFilepath);
     }
 
-    void Logger::addFileSink(std::filesystem::path logFilepath)
+    void Logger::addFileSink(const std::filesystem::path& logFilepath)
     {
         const auto file_sink{std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFilepath.c_str(), true)};
         s_logger->sinks().push_back(file_sink);
@@ -52,5 +52,26 @@ namespace Engine
         if (levelStr == "critical")
             return critical;
         return {};
+    }
+
+    constexpr std::string_view Logger::getLevelName(Level level)
+    {
+        using enum Level;
+        switch (level) {
+        case trace:
+            return "trace";
+        case debug:
+            return "debug";
+        case info:
+            return "info";
+        case warn:
+            return "warn";
+        case error:
+            return "error";
+        case critical:
+            return "critical";
+        default:
+            return "";
+        }
     }
 } // namespace Engine

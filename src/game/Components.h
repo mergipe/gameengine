@@ -27,7 +27,7 @@ namespace Engine
     };
 
     struct SpriteComponent {
-        SpriteComponent(const std::string& resourceId = "", int width = 0, int height = 0, int zIndex = 0,
+        SpriteComponent(std::string_view resourceId = "", int width = 0, int height = 0, int zIndex = 0,
                         int sourceRectX = 0, int sourceRectY = 0)
             : resourceId{resourceId}
             , sourceRect{SDL_Rect{sourceRectX, sourceRectY, width, height}}

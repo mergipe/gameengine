@@ -50,11 +50,11 @@ namespace Engine
 
     void Registry::update()
     {
-        for (const auto entity : m_entitiesToBeAdded) {
+        for (const auto& entity : m_entitiesToBeAdded) {
             addEntityToSystems(entity);
         }
         m_entitiesToBeAdded.clear();
-        for (const auto entity : m_entitiesToBeKilled) {
+        for (const auto& entity : m_entitiesToBeKilled) {
             removeEntityFromSystems(entity);
             m_entityComponentSignatures[entity.getId()].reset();
             m_freeEntityIds.push_back(entity.getId());

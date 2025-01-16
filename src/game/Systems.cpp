@@ -19,9 +19,9 @@ namespace Engine
 
     void MovementSystem::update(float timeStep)
     {
-        for (const auto entity : getEntities()) {
+        for (const auto& entity : getEntities()) {
             auto& transform{entity.getComponent<TransformComponent>()};
-            const auto rigidBody{entity.getComponent<RigidBodyComponent>()};
+            const auto& rigidBody{entity.getComponent<RigidBodyComponent>()};
             transform.position += rigidBody.velocity * timeStep;
         }
     };
@@ -40,12 +40,12 @@ namespace Engine
         std::sort(entities.begin(), entities.end(), [](Entity a, Entity b) {
             return a.getComponent<SpriteComponent>().zIndex < b.getComponent<SpriteComponent>().zIndex;
         });
-        for (const auto entity : entities) {
-            const auto transform{entity.getComponent<TransformComponent>()};
-            const auto sprite{entity.getComponent<SpriteComponent>()};
+        for (const auto& entity : entities) {
+            const auto& transform{entity.getComponent<TransformComponent>()};
+            const auto& sprite{entity.getComponent<SpriteComponent>()};
             glm::vec2 renderPosition{transform.position};
             if (entity.hasComponent<RigidBodyComponent>()) {
-                const auto rigidBody{entity.getComponent<RigidBodyComponent>()};
+                const auto& rigidBody{entity.getComponent<RigidBodyComponent>()};
                 renderPosition = getExtrapolatedPosition(transform.position, rigidBody.velocity,
                                                          frameExtrapolationTimeStep);
             }
@@ -66,7 +66,7 @@ namespace Engine
 
     void AnimationSystem::update()
     {
-        for (const auto entity : getEntities()) {
+        for (const auto& entity : getEntities()) {
             auto& sprite{entity.getComponent<SpriteComponent>()};
             auto& animation{entity.getComponent<AnimationComponent>()};
             animation.currentFrame = (static_cast<int>(SDL_GetTicks64() - animation.startTime) *
@@ -86,16 +86,16 @@ namespace Engine
     void CollisionSystem::update()
     {
         const auto entities{getEntities()};
-        for (const auto entity : entities) {
+        for (const auto& entity : entities) {
             entity.getComponent<BoxColliderComponent>().isColliding = false;
         }
         for (auto i{entities.begin()}; i != entities.end(); ++i) {
             const Entity entity{*i};
-            const auto transform{entity.getComponent<TransformComponent>()};
+            const auto& transform{entity.getComponent<TransformComponent>()};
             auto& boxCollider{entity.getComponent<BoxColliderComponent>()};
             for (auto j{i + 1}; j != entities.end(); ++j) {
                 const Entity otherEntity{*j};
-                const auto otherTransform{otherEntity.getComponent<TransformComponent>()};
+                const auto& otherTransform{otherEntity.getComponent<TransformComponent>()};
                 auto& otherBoxCollider{otherEntity.getComponent<BoxColliderComponent>()};
                 const bool collisionHappened{aabbHasCollided(
                     transform.position.x + boxCollider.offset.x, transform.position.y + boxCollider.offset.y,
@@ -129,12 +129,12 @@ namespace Engine
 
     void BoxColliderRenderingSystem::update(SDL_Renderer* renderer, float frameExtrapolationTimeStep)
     {
-        for (const auto entity : getEntities()) {
-            const auto transform{entity.getComponent<TransformComponent>()};
-            const auto boxCollider{entity.getComponent<BoxColliderComponent>()};
+        for (const auto& entity : getEntities()) {
+            const auto& transform{entity.getComponent<TransformComponent>()};
+            const auto& boxCollider{entity.getComponent<BoxColliderComponent>()};
             glm::vec2 renderPosition{transform.position};
             if (entity.hasComponent<RigidBodyComponent>()) {
-                const auto rigidBody{entity.getComponent<RigidBodyComponent>()};
+                const auto& rigidBody{entity.getComponent<RigidBodyComponent>()};
                 renderPosition = getExtrapolatedPosition(transform.position, rigidBody.velocity,
                                                          frameExtrapolationTimeStep);
             }

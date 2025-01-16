@@ -21,8 +21,8 @@ namespace Engine
         };
         Logger() = delete;
         static void init(Level level = Level::trace);
-        static void init(std::filesystem::path logFilepath, Level level = Level::trace);
-        static void addFileSink(std::filesystem::path logFilepath);
+        static void init(const std::filesystem::path& logFilepath, Level level = Level::trace);
+        static void addFileSink(const std::filesystem::path& logFilepath);
         static void setLevel(Level level);
         template <typename T> static void trace(const T& msg);
         template <typename... TArgs> static void trace(fmt::format_string<TArgs...> fmt, TArgs&&... args);
@@ -38,10 +38,11 @@ namespace Engine
         template <typename... TArgs> static void critical(fmt::format_string<TArgs...> fmt, TArgs&&... args);
 
     private:
+        static constexpr std::optional<Level> getLevelFromString(std::string_view levelStr);
+        static constexpr std::string_view getLevelName(Level level);
         static constexpr std::string s_loggerLevelEnvVariableName{"LOGGER_LEVEL"};
         static constexpr std::string s_loggerName{"logger"};
         static inline std::shared_ptr<spdlog::logger> s_logger{std::make_shared<spdlog::logger>("empty")};
-        static constexpr std::optional<Level> getLevelFromString(std::string_view levelStr);
     };
 
     template <typename T>
