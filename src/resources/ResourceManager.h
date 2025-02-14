@@ -8,7 +8,7 @@
 
 namespace Engine
 {
-    class ResourceManager
+    class ResourceManager final
     {
     public:
         explicit ResourceManager(const std::filesystem::path& resourcesBasePath);

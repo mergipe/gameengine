@@ -10,15 +10,15 @@
 
 namespace Engine
 {
-    class Game
+    class Game final
     {
     public:
         explicit Game(bool debugCapability)
             : m_debugCapability{debugCapability}
         {
         }
-        Game(const Game&);
-        Game& operator=(const Game&);
+        Game(const Game&) = delete;
+        Game& operator=(const Game&) = delete;
         void init();
         void run();
         void destroy();
@@ -32,16 +32,16 @@ namespace Engine
         void processInput();
         void update();
         void render(float frameExtrapolationFactor);
+        static constexpr float s_updateRate{144.0f};
+        static constexpr float s_timeStepInMs{1000.0f / s_updateRate};
+        static constexpr int s_windowWidth{1920};
+        static constexpr int s_windowHeight{1080};
         std::filesystem::path m_basePath{};
         std::unique_ptr<Registry> m_registry{};
         std::unique_ptr<ResourceManager> m_resourceManager{};
         std::unique_ptr<EventBus> m_eventBus{};
         SDL_Window* m_window{};
         SDL_Renderer* m_renderer{};
-        static constexpr float s_updateRate{144.0f};
-        static constexpr float s_timeStepInMs{1000.0f / s_updateRate};
-        const int m_windowWidth{1920};
-        const int m_windowHeight{1080};
         bool m_debugCapability{false};
         bool m_debugModeActivated{false};
         bool m_isRunning{false};

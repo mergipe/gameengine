@@ -1,6 +1,6 @@
 #include "game/Game.h"
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
+int main(int, char*[])
 {
     Engine::Game game{true};
     game.init();

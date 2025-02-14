@@ -23,7 +23,7 @@ namespace Engine
         m_basePath = std::filesystem::canonical(SDL_GetBasePath()).parent_path();
         Logger::addFileSink(m_basePath / "logs" / "log.txt");
         m_window = SDL_CreateWindow("Game Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                    m_windowWidth, m_windowHeight, SDL_WINDOW_BORDERLESS);
+                                    s_windowWidth, s_windowHeight, SDL_WINDOW_BORDERLESS);
         if (!m_window) {
             Logger::critical("Failed to create a SDL window: {}", SDL_GetError());
             std::abort();

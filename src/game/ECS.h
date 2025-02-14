@@ -25,7 +25,7 @@ namespace Engine
     };
 
     template <typename TComponent>
-    class Component : public IComponent
+    class Component final : public IComponent
     {
     public:
         static size_t getId();
@@ -40,7 +40,7 @@ namespace Engine
 
     class Registry;
 
-    class Entity
+    class Entity final
     {
     public:
         Entity(size_t id, Registry* registry)
@@ -87,15 +87,17 @@ namespace Engine
     class IPool
     {
     public:
+        IPool() = default;
+        IPool(const IPool&) = delete;
+        IPool& operator=(const IPool&) = delete;
         virtual ~IPool() = default;
     };
 
     template <typename T>
-    class Pool : public IPool
+    class Pool final : public IPool
     {
     public:
         explicit Pool(size_t size = 100) { m_objects.resize(size); }
-        virtual ~Pool() = default;
         T& operator[](size_t index) { return m_objects[index]; }
         bool isEmpty() const { return m_objects.empty(); }
         size_t getSize() const { return m_objects.size(); }
@@ -109,7 +111,7 @@ namespace Engine
         std::vector<T> m_objects{};
     };
 
-    class Registry
+    class Registry final
     {
     public:
         void update();

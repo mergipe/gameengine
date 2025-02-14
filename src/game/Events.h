@@ -20,6 +20,8 @@ namespace Engine
     class IEventCallback
     {
     public:
+        IEventCallback(const IEventCallback&) = delete;
+        IEventCallback& operator=(const IEventCallback&) = delete;
         virtual ~IEventCallback() = default;
         void execute(Event& e) { call(e); }
 
@@ -28,7 +30,7 @@ namespace Engine
     };
 
     template <typename TOwner, typename TEvent>
-    class EventCallback : public IEventCallback
+    class EventCallback final : public IEventCallback
     {
     public:
         using CallbackFunction = std::function<void(const TOwner&, TEvent&)>;
@@ -36,10 +38,10 @@ namespace Engine
             : m_callbackFunction{callbackFunction}, m_ownerInstance{ownerInstance}
         {
         }
-        virtual ~EventCallback() override = default;
+        ~EventCallback() override = default;
 
     private:
-        virtual void call(Event& e) override;
+        void call(Event& e) override;
         CallbackFunction m_callbackFunction{};
         TOwner* m_ownerInstance{};
     };
@@ -50,7 +52,7 @@ namespace Engine
         std::invoke(m_callbackFunction, m_ownerInstance, static_cast<TEvent&>(e));
     }
 
-    class EventBus
+    class EventBus final
     {
     public:
         using HandlerList = std::list<std::unique_ptr<IEventCallback>>;
@@ -88,7 +90,7 @@ namespace Engine
         }
     }
 
-    class CollisionEvent : public Event
+    class CollisionEvent final : public Event
     {
     public:
         CollisionEvent(Entity entity, Entity otherEntity)

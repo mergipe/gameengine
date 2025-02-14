@@ -7,7 +7,7 @@
 
 namespace Engine
 {
-    struct TransformComponent {
+    struct TransformComponent final {
         TransformComponent(const glm::vec2& position = glm::vec2(0), const glm::vec2& scale = glm::vec2(1),
                            double rotation = 0.0)
             : position{position}, scale{scale}, rotation{rotation}
@@ -18,7 +18,7 @@ namespace Engine
         double rotation{};
     };
 
-    struct RigidBodyComponent {
+    struct RigidBodyComponent final {
         RigidBodyComponent(const glm::vec2& velocity = glm::vec2(0))
             : velocity{velocity}
         {
@@ -26,7 +26,7 @@ namespace Engine
         glm::vec2 velocity{};
     };
 
-    struct SpriteComponent {
+    struct SpriteComponent final {
         SpriteComponent(std::string_view resourceId = "", int width = 0, int height = 0, int zIndex = 0,
                         int sourceRectX = 0, int sourceRectY = 0)
             : resourceId{resourceId}
@@ -43,7 +43,7 @@ namespace Engine
         int zIndex{};
     };
 
-    struct AnimationComponent {
+    struct AnimationComponent final {
         AnimationComponent(int framesCount = 1, int framesPerSecond = 1, bool shouldLoop = true)
             : framesCount{framesCount}, framesPerSecond{framesPerSecond}, shouldLoop{shouldLoop}
         {
@@ -55,7 +55,7 @@ namespace Engine
         bool shouldLoop{};
     };
 
-    struct BoxColliderComponent {
+    struct BoxColliderComponent final {
         BoxColliderComponent(int width = 0, int height = 0, const glm::vec2& offset = glm::vec2(0))
             : offset{offset}, width{width}, height{height}
         {

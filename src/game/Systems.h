@@ -7,14 +7,14 @@
 
 namespace Engine
 {
-    class MovementSystem : public System
+    class MovementSystem final : public System
     {
     public:
         MovementSystem();
         void update(float timeStep);
     };
 
-    class SpriteRenderingSystem : public System
+    class SpriteRenderingSystem final : public System
     {
     public:
         SpriteRenderingSystem();
@@ -22,14 +22,14 @@ namespace Engine
                     float frameExtrapolationTimeStep);
     };
 
-    class AnimationSystem : public System
+    class AnimationSystem final : public System
     {
     public:
         AnimationSystem();
         void update();
     };
 
-    class CollisionSystem : public System
+    class CollisionSystem final : public System
     {
     public:
         CollisionSystem();
@@ -40,7 +40,7 @@ namespace Engine
                                        double bW, double bH);
     };
 
-    class BoxColliderRenderingSystem : public System
+    class BoxColliderRenderingSystem final : public System
     {
     public:
         BoxColliderRenderingSystem();
