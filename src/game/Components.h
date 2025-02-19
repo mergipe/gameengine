@@ -1,7 +1,8 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
-#include <SDL.h>
+#include "core/Timer.h"
+#include <SDL_rect.h>
 #include <glm/glm.hpp>
 #include <string>
 
@@ -48,7 +49,7 @@ namespace Engine
             : framesCount{framesCount}, framesPerSecond{framesPerSecond}, shouldLoop{shouldLoop}
         {
         }
-        std::uint64_t startTime{SDL_GetTicks64()};
+        std::uint64_t startTime{Timer::getTicks()};
         int currentFrame{0};
         int framesCount{};
         int framesPerSecond{};

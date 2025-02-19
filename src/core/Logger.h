@@ -1,10 +1,10 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include "spdlog/common.h"
 #include <filesystem>
 #include <memory>
-#include <spdlog/spdlog.h>
+#include <spdlog/common.h>
+#include <spdlog/logger.h>
 
 namespace Engine
 {
@@ -38,8 +38,6 @@ namespace Engine
         template <typename... TArgs> static void critical(fmt::format_string<TArgs...> fmt, TArgs&&... args);
 
     private:
-        static constexpr std::optional<Level> getLevelFromString(std::string_view levelStr);
-        static constexpr std::string_view getLevelName(Level level);
         static constexpr std::string s_loggerLevelEnvVariableName{"LOGGER_LEVEL"};
         static constexpr std::string s_loggerName{"logger"};
         static inline std::shared_ptr<spdlog::logger> s_logger{std::make_shared<spdlog::logger>("empty")};

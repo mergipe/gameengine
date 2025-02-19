@@ -1,12 +1,48 @@
 #include "Logger.h"
-#include "spdlog/common.h"
-#include <cstdlib>
-#include <spdlog/cfg/env.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace Engine
 {
+    constexpr std::optional<Logger::Level> getLevelFromString(std::string_view levelStr)
+    {
+        using enum Logger::Level;
+        if (levelStr == "trace")
+            return trace;
+        if (levelStr == "debug")
+            return debug;
+        if (levelStr == "info")
+            return info;
+        if (levelStr == "warn")
+            return warn;
+        if (levelStr == "error")
+            return error;
+        if (levelStr == "critical")
+            return critical;
+        return {};
+    }
+
+    constexpr std::string_view getLevelName(Logger::Level level)
+    {
+        using enum Logger::Level;
+        switch (level) {
+        case trace:
+            return "trace";
+        case debug:
+            return "debug";
+        case info:
+            return "info";
+        case warn:
+            return "warn";
+        case error:
+            return "error";
+        case critical:
+            return "critical";
+        default:
+            return "";
+        }
+    }
+
     void Logger::init(Level level)
     {
         s_logger = spdlog::stdout_color_mt(s_loggerName);
@@ -35,43 +71,4 @@ namespace Engine
     }
 
     void Logger::setLevel(Level level) { s_logger->set_level(static_cast<spdlog::level::level_enum>(level)); }
-
-    constexpr std::optional<Logger::Level> Logger::getLevelFromString(std::string_view levelStr)
-    {
-        using enum Level;
-        if (levelStr == "trace")
-            return trace;
-        if (levelStr == "debug")
-            return debug;
-        if (levelStr == "info")
-            return info;
-        if (levelStr == "warn")
-            return warn;
-        if (levelStr == "error")
-            return error;
-        if (levelStr == "critical")
-            return critical;
-        return {};
-    }
-
-    constexpr std::string_view Logger::getLevelName(Level level)
-    {
-        using enum Level;
-        switch (level) {
-        case trace:
-            return "trace";
-        case debug:
-            return "debug";
-        case info:
-            return "info";
-        case warn:
-            return "warn";
-        case error:
-            return "error";
-        case critical:
-            return "critical";
-        default:
-            return "";
-        }
-    }
 } // namespace Engine

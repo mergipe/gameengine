@@ -1,15 +1,11 @@
 #include "Game.h"
 #include "Components.h"
 #include "ECS.h"
-#include "SDL_filesystem.h"
 #include "Systems.h"
 #include "core/IO.h"
 #include "core/Logger.h"
+#include "core/Timer.h"
 #include <SDL.h>
-#include <cstdint>
-#include <cstdlib>
-#include <filesystem>
-#include <fstream>
 
 namespace Engine
 {
@@ -22,17 +18,8 @@ namespace Engine
         }
         m_basePath = std::filesystem::canonical(SDL_GetBasePath()).parent_path();
         Logger::addFileSink(m_basePath / "logs" / "log.txt");
-        m_window = SDL_CreateWindow("Game Engine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                    s_windowWidth, s_windowHeight, SDL_WINDOW_BORDERLESS);
-        if (!m_window) {
-            Logger::critical("Failed to create a SDL window: {}", SDL_GetError());
-            std::abort();
-        }
-        m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED);
-        if (!m_renderer) {
-            Logger::critical("Failed to create a SDL renderer: {}", SDL_GetError());
-            std::abort();
-        }
+        m_window = std::make_unique<Window>(s_windowTitle, s_windowWidth, s_windowHeight);
+        m_renderer = std::make_unique<Renderer>(*m_window);
         m_resourceManager = std::make_unique<ResourceManager>(m_basePath / "resources");
         Logger::info("Game initialized");
     }
@@ -42,7 +29,7 @@ namespace Engine
     {
         Logger::info("Loading map {}", tilemapFilename);
         const std::filesystem::path tilemapsPath{"tilemaps"};
-        m_resourceManager->addTexture("tileset", tilemapsPath / tilesetFilename, m_renderer);
+        m_resourceManager->addTexture("tileset", tilemapsPath / tilesetFilename, *m_renderer);
         const std::filesystem::path tilemapFilepath{
             m_resourceManager->getResourceAbsolutePath(tilemapsPath / tilemapFilename)};
         std::ifstream tilemapFile{tilemapFilepath};
@@ -71,10 +58,10 @@ namespace Engine
     void Game::loadEntities()
     {
         std::filesystem::path texturesPath{"textures"};
-        m_resourceManager->addTexture("chopper", texturesPath / "chopper.png", m_renderer);
-        m_resourceManager->addTexture("radar", texturesPath / "radar.png", m_renderer);
-        m_resourceManager->addTexture("tank-right", texturesPath / "tank-panther-right.png", m_renderer);
-        m_resourceManager->addTexture("truck-right", texturesPath / "truck-ford-right.png", m_renderer);
+        m_resourceManager->addTexture("chopper", texturesPath / "chopper.png", *m_renderer);
+        m_resourceManager->addTexture("radar", texturesPath / "radar.png", *m_renderer);
+        m_resourceManager->addTexture("tank-right", texturesPath / "tank-panther-right.png", *m_renderer);
+        m_resourceManager->addTexture("truck-right", texturesPath / "truck-ford-right.png", *m_renderer);
         Entity chopper{m_registry->createEntity()};
         chopper.addComponent<TransformComponent>(glm::vec2(300));
         chopper.addComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
@@ -119,11 +106,11 @@ namespace Engine
     {
         Logger::info("Game started to run");
         setup();
-        std::uint64_t previousTicks{SDL_GetTicks64()};
+        std::uint64_t previousTicks{Timer::getTicks()};
         float lag{0.0f};
         m_isRunning = true;
         while (m_isRunning) {
-            const std::uint64_t currentTicks{SDL_GetTicks64()};
+            const std::uint64_t currentTicks{Timer::getTicks()};
             lag += static_cast<float>(currentTicks - previousTicks);
             previousTicks = currentTicks;
             processInput();
@@ -144,7 +131,7 @@ namespace Engine
                 m_isRunning = false;
                 break;
             case SDL_KEYDOWN:
-                if (event.key.keysym.sym == SDLK_F1 && m_debugCapability) {
+                if (m_debugCapability && event.key.keysym.sym == SDLK_F1) {
                     m_debugModeActivated = !m_debugModeActivated;
                 }
                 break;
@@ -162,24 +149,23 @@ namespace Engine
 
     void Game::render(float frameExtrapolationTimeStep)
     {
-        SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
-        SDL_RenderClear(m_renderer);
-        m_registry->getSystem<SpriteRenderingSystem>().update(m_renderer, *m_resourceManager,
+        m_renderer->setDrawColor(0, 0, 0, 255);
+        m_renderer->clear();
+        m_registry->getSystem<SpriteRenderingSystem>().update(*m_renderer, *m_resourceManager,
                                                               frameExtrapolationTimeStep);
         if (m_debugModeActivated) {
-            m_registry->getSystem<BoxColliderRenderingSystem>().update(m_renderer,
+            m_registry->getSystem<BoxColliderRenderingSystem>().update(*m_renderer,
                                                                        frameExtrapolationTimeStep);
         }
-        SDL_RenderPresent(m_renderer);
+        m_renderer->present();
     }
 
     void Game::destroy()
     {
-        SDL_DestroyRenderer(m_renderer);
-        m_renderer = nullptr;
-        SDL_DestroyWindow(m_window);
-        m_window = nullptr;
-        SDL_Quit();
+        m_resourceManager.reset();
+        m_renderer.reset();
+        m_window.reset();
         Logger::info("Game resources destroyed");
+        SDL_Quit();
     }
 } // namespace Engine

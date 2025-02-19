@@ -1,5 +1,4 @@
 #include "ECS.h"
-#include "core/Logger.h"
 
 namespace Engine
 {

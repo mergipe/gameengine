@@ -2,8 +2,8 @@
 #define SYSTEMS_H
 
 #include "ECS.h"
+#include "core/Renderer.h"
 #include "resources/ResourceManager.h"
-#include <SDL.h>
 
 namespace Engine
 {
@@ -18,7 +18,7 @@ namespace Engine
     {
     public:
         SpriteRenderingSystem();
-        void update(SDL_Renderer* renderer, const ResourceManager& resourceManager,
+        void update(Renderer& renderer, const ResourceManager& resourceManager,
                     float frameExtrapolationTimeStep);
     };
 
@@ -34,17 +34,13 @@ namespace Engine
     public:
         CollisionSystem();
         void update();
-
-    private:
-        constexpr bool aabbHasCollided(double aX, double aY, double aW, double aH, double bX, double bY,
-                                       double bW, double bH);
     };
 
     class BoxColliderRenderingSystem final : public System
     {
     public:
         BoxColliderRenderingSystem();
-        void update(SDL_Renderer* renderer, float frameExtrapolationTimeStep);
+        void update(Renderer& renderer, float frameExtrapolationTimeStep);
     };
 } // namespace Engine
 

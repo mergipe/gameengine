@@ -1,8 +1,9 @@
 #ifndef RESOURCEMANAGER_H
 #define RESOURCEMANAGER_H
 
-#include <SDL.h>
+#include "core/Renderer.h"
 #include <filesystem>
+#include <string>
 #include <string_view>
 #include <unordered_map>
 
@@ -15,13 +16,13 @@ namespace Engine
         ~ResourceManager();
         void clearResources();
         void addTexture(std::string_view resourceId, const std::filesystem::path& relativeFilepath,
-                        SDL_Renderer* renderer);
-        SDL_Texture* getTexture(const std::string& resourceId) const { return m_textures.at(resourceId); };
+                        Renderer& renderer);
+        const Texture& getTexture(const std::string& resourceId) const { return m_textures.at(resourceId); };
         const std::filesystem::path& getResourcesBasePath() const { return m_resourcesBasePath; };
         std::filesystem::path getResourceAbsolutePath(const std::filesystem::path& relativeFilepath) const;
 
     private:
-        std::unordered_map<std::string, SDL_Texture*> m_textures{};
+        std::unordered_map<std::string, Texture> m_textures{};
         const std::filesystem::path m_resourcesBasePath{};
     };
 } // namespace Engine

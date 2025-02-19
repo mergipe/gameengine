@@ -1,8 +1,8 @@
 add_executable(gameengine
                Main.cpp
-               core/Logger.cpp core/IO.cpp
+               core/Logger.cpp core/IO.cpp core/Renderer.cpp core/Timer.cpp core/Window.cpp
                game/Game.cpp game/ECS.cpp game/Systems.cpp
-               resources/ResourceManager.cpp)
+               resources/ResourceManager.cpp resources/Texture.cpp)
 target_compile_features(gameengine PRIVATE cxx_std_23)
 set_target_properties(gameengine PROPERTIES
                       CXX_EXTENSIONS OFF

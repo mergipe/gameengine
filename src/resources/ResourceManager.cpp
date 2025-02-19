@@ -19,24 +19,17 @@ namespace Engine
         IMG_Quit();
     };
 
-    void ResourceManager::clearResources()
-    {
-        for (auto& texture : m_textures) {
-            SDL_DestroyTexture(texture.second);
-            texture.second = nullptr;
-        }
-        m_textures.clear();
-    }
+    void ResourceManager::clearResources() { m_textures.clear(); }
 
     void ResourceManager::addTexture(std::string_view resourceId,
-                                     const std::filesystem::path& relativeFilepath, SDL_Renderer* renderer)
+                                     const std::filesystem::path& relativeFilepath, Renderer& renderer)
     {
         const std::filesystem::path fullPath{m_resourcesBasePath / relativeFilepath};
-        SDL_Texture* texture{IMG_LoadTexture(renderer, fullPath.c_str())};
-        if (!texture) {
+        SDL_Texture* texturePtr{IMG_LoadTexture(renderer.getRendererPtr(), fullPath.c_str())};
+        if (!texturePtr) {
             Logger::error("Failed to load texture from {}: {}", fullPath.c_str(), IMG_GetError());
         }
-        m_textures.emplace(resourceId, texture);
+        m_textures.emplace(resourceId, texturePtr);
         Logger::info("Texture {} loaded by the resource manager ({})", resourceId, relativeFilepath.c_str());
     }
 

@@ -1,9 +1,16 @@
 #include "Systems.h"
 #include "Components.h"
+#include "core/Timer.h"
 #include <algorithm>
 
 namespace Engine
 {
+    constexpr bool aabbHasCollided(double aX, double aY, double aW, double aH, double bX, double bY,
+                                   double bW, double bH)
+    {
+        return (aX < bX + bW && aX + aW > bX && aY < bY + bH && aY + aH > bY);
+    }
+
     constexpr glm::vec2 getExtrapolatedPosition(const glm::vec2& position, const glm::vec2& velocity,
                                                 float extrapolationTimeStep)
     {
@@ -33,7 +40,7 @@ namespace Engine
         requireComponent<SpriteComponent>();
     }
 
-    void SpriteRenderingSystem::update(SDL_Renderer* renderer, const ResourceManager& resourceManager,
+    void SpriteRenderingSystem::update(Renderer& renderer, const ResourceManager& resourceManager,
                                        float frameExtrapolationTimeStep)
     {
         std::vector<Entity> entities{getEntities()};
@@ -52,8 +59,8 @@ namespace Engine
             const SDL_FRect destinationRect{renderPosition.x, renderPosition.y,
                                             static_cast<float>(sprite.width) * transform.scale.x,
                                             static_cast<float>(sprite.height) * transform.scale.y};
-            SDL_RenderCopyExF(renderer, resourceManager.getTexture(sprite.resourceId), &sprite.sourceRect,
-                              &destinationRect, transform.rotation, nullptr, SDL_FLIP_NONE);
+            renderer.drawTexture(resourceManager.getTexture(sprite.resourceId), sprite.sourceRect,
+                                 destinationRect, transform.rotation);
         }
     }
 
@@ -69,7 +76,7 @@ namespace Engine
         for (const auto& entity : getEntities()) {
             auto& sprite{entity.getComponent<SpriteComponent>()};
             auto& animation{entity.getComponent<AnimationComponent>()};
-            animation.currentFrame = (static_cast<int>(SDL_GetTicks64() - animation.startTime) *
+            animation.currentFrame = (static_cast<int>(Timer::getTicks() - animation.startTime) *
                                       animation.framesPerSecond / 1000) %
                                      animation.framesCount;
             sprite.sourceRect.x = animation.currentFrame * sprite.width;
@@ -114,12 +121,6 @@ namespace Engine
         }
     }
 
-    constexpr bool CollisionSystem::aabbHasCollided(double aX, double aY, double aW, double aH, double bX,
-                                                    double bY, double bW, double bH)
-    {
-        return (aX < bX + bW && aX + aW > bX && aY < bY + bH && aY + aH > bY);
-    }
-
     BoxColliderRenderingSystem::BoxColliderRenderingSystem()
         : System{}
     {
@@ -127,7 +128,7 @@ namespace Engine
         requireComponent<BoxColliderComponent>();
     }
 
-    void BoxColliderRenderingSystem::update(SDL_Renderer* renderer, float frameExtrapolationTimeStep)
+    void BoxColliderRenderingSystem::update(Renderer& renderer, float frameExtrapolationTimeStep)
     {
         for (const auto& entity : getEntities()) {
             const auto& transform{entity.getComponent<TransformComponent>()};
@@ -138,16 +139,15 @@ namespace Engine
                 renderPosition = getExtrapolatedPosition(transform.position, rigidBody.velocity,
                                                          frameExtrapolationTimeStep);
             }
-            const SDL_FRect colliderRect{renderPosition.x + boxCollider.offset.x,
-                                         renderPosition.y + boxCollider.offset.y,
-                                         static_cast<float>(boxCollider.width) * transform.scale.x,
-                                         static_cast<float>(boxCollider.height) * transform.scale.y};
             if (boxCollider.isColliding) {
-                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+                renderer.setDrawColor(255, 0, 0, 255);
             } else {
-                SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+                renderer.setDrawColor(255, 255, 0, 255);
             }
-            SDL_RenderDrawRectF(renderer, &colliderRect);
+            renderer.drawRectangle(renderPosition.x + boxCollider.offset.x,
+                                   renderPosition.y + boxCollider.offset.y,
+                                   static_cast<float>(boxCollider.width) * transform.scale.x,
+                                   static_cast<float>(boxCollider.height) * transform.scale.y);
         }
     }
 } // namespace Engine

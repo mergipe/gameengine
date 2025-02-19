@@ -3,7 +3,6 @@
 
 #include "core/Logger.h"
 #include <bitset>
-#include <cstddef>
 #include <deque>
 #include <memory>
 #include <set>
