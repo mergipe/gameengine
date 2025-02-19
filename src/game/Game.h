@@ -34,6 +34,10 @@ namespace Engine
         void processInput();
         void update();
         void render(float frameExtrapolationFactor);
+        static constexpr std::string_view s_logFilepath{"logs/log.txt"};
+        static constexpr std::string_view s_resourcesFolder{"resources"};
+        static constexpr std::string_view s_tilemapsFolder{"tilemaps"};
+        static constexpr std::string_view s_texturesFolder{"textures"};
         static constexpr std::string_view s_windowTitle{"Game Engine"};
         static constexpr float s_updateRate{144.0f};
         static constexpr float s_timeStepInMs{1000.0f / s_updateRate};

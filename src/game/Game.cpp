@@ -6,21 +6,21 @@
 #include "core/Logger.h"
 #include "core/Timer.h"
 #include <SDL.h>
+#include <iostream>
 
 namespace Engine
 {
     void Game::init()
     {
-        Logger::init();
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER) != 0) {
-            Logger::critical("Failed to initialize SDL: {}", SDL_GetError());
+            std::cerr << "Failed to initialize SDL: " << SDL_GetError() << '\n';
             std::abort();
         }
         m_basePath = std::filesystem::canonical(SDL_GetBasePath()).parent_path();
-        Logger::addFileSink(m_basePath / "logs" / "log.txt");
+        Logger::init(m_basePath / s_logFilepath);
         m_window = std::make_unique<Window>(s_windowTitle, s_windowWidth, s_windowHeight);
         m_renderer = std::make_unique<Renderer>(*m_window);
-        m_resourceManager = std::make_unique<ResourceManager>(m_basePath / "resources");
+        m_resourceManager = std::make_unique<ResourceManager>(m_basePath / s_resourcesFolder);
         Logger::info("Game initialized");
     }
 
@@ -28,8 +28,9 @@ namespace Engine
                        int tileHeight, int tilesetColumns, float scale)
     {
         Logger::info("Loading map {}", tilemapFilename);
-        const std::filesystem::path tilemapsPath{"tilemaps"};
-        m_resourceManager->addTexture("tileset", tilemapsPath / tilesetFilename, *m_renderer);
+        const std::filesystem::path tilemapsPath{s_tilemapsFolder};
+        const std::string_view tilesetId{"tileset"};
+        m_resourceManager->addTexture(tilesetId, tilemapsPath / tilesetFilename, *m_renderer);
         const std::filesystem::path tilemapFilepath{
             m_resourceManager->getResourceAbsolutePath(tilemapsPath / tilemapFilename)};
         std::ifstream tilemapFile{tilemapFilepath};
@@ -48,7 +49,7 @@ namespace Engine
                               static_cast<float>(i) * static_cast<float>(tileHeight) * scale),
                     glm::vec2(scale, scale));
                 const int tileId{values[j]};
-                m_registry->addComponent<SpriteComponent>(tile, "tileset", tileWidth, tileHeight, 0,
+                m_registry->addComponent<SpriteComponent>(tile, tilesetId, tileWidth, tileHeight, 0,
                                                           tileWidth * (tileId % tilesetColumns),
                                                           tileHeight * (tileId / tilesetColumns));
             }
@@ -57,7 +58,7 @@ namespace Engine
 
     void Game::loadEntities()
     {
-        std::filesystem::path texturesPath{"textures"};
+        std::filesystem::path texturesPath{s_texturesFolder};
         m_resourceManager->addTexture("chopper", texturesPath / "chopper.png", *m_renderer);
         m_resourceManager->addTexture("radar", texturesPath / "radar.png", *m_renderer);
         m_resourceManager->addTexture("tank-right", texturesPath / "tank-panther-right.png", *m_renderer);
