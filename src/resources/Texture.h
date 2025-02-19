@@ -8,7 +8,7 @@ namespace Engine
     class Texture
     {
     public:
-        Texture(SDL_Texture* texture)
+        explicit Texture(SDL_Texture* texture)
             : m_texture{texture}
         {
         }

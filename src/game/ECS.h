@@ -13,10 +13,15 @@
 namespace Engine
 {
     constexpr size_t MAX_COMPONENTS{32};
+    constexpr size_t DEFAULT_POOL_SIZE{100};
     using Signature = std::bitset<MAX_COMPONENTS>;
 
     struct IComponent {
     public:
+        IComponent(const IComponent&) = delete;
+        IComponent(IComponent&&) = delete;
+        IComponent& operator=(const IComponent&) = delete;
+        IComponent& operator=(IComponent&&) = delete;
         virtual ~IComponent() = default;
 
     protected:
@@ -63,6 +68,10 @@ namespace Engine
     class System
     {
     public:
+        System(const System&) = delete;
+        System(System&&) = delete;
+        System& operator=(const System&) = delete;
+        System& operator=(System&&) = delete;
         virtual ~System() = default;
         std::vector<Entity> getEntities() const { return m_entities; }
         const Signature& getComponentSignature() const { return m_componentSignature; }
@@ -70,6 +79,7 @@ namespace Engine
         void removeEntity(Entity entity) { std::erase(m_entities, entity); };
 
     protected:
+        System() = default;
         template <typename TComponent> void requireComponent();
 
     private:
@@ -86,17 +96,21 @@ namespace Engine
     class IPool
     {
     public:
-        IPool() = default;
         IPool(const IPool&) = delete;
+        IPool(IPool&&) = delete;
         IPool& operator=(const IPool&) = delete;
+        IPool& operator=(IPool&&) = delete;
         virtual ~IPool() = default;
+
+    protected:
+        IPool() = default;
     };
 
     template <typename T>
     class Pool final : public IPool
     {
     public:
-        explicit Pool(size_t size = 100) { m_objects.resize(size); }
+        explicit Pool(size_t size = DEFAULT_POOL_SIZE) { m_objects.resize(size); }
         T& operator[](size_t index) { return m_objects[index]; }
         bool isEmpty() const { return m_objects.empty(); }
         size_t getSize() const { return m_objects.size(); }

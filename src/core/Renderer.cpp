@@ -4,8 +4,8 @@
 namespace Engine
 {
     Renderer::Renderer(const Window& window)
+        : m_renderer(SDL_CreateRenderer(window.getWindowPtr(), -1, SDL_RENDERER_ACCELERATED))
     {
-        m_renderer = SDL_CreateRenderer(window.getWindowPtr(), -1, SDL_RENDERER_ACCELERATED);
         if (!m_renderer) {
             Logger::critical("Failed to initialize the renderer: {}", SDL_GetError());
             std::abort();

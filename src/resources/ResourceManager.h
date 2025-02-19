@@ -13,8 +13,11 @@ namespace Engine
     {
     public:
         explicit ResourceManager(const std::filesystem::path& resourcesBasePath);
+        ResourceManager(const ResourceManager&) = delete;
+        ResourceManager(ResourceManager&&) = delete;
+        ResourceManager& operator=(const ResourceManager&) = delete;
+        ResourceManager& operator=(ResourceManager&&) = delete;
         ~ResourceManager();
-        void clearResources();
         void addTexture(std::string_view resourceId, const std::filesystem::path& relativeFilepath,
                         Renderer& renderer);
         const Texture& getTexture(const std::string& resourceId) const { return m_textures.at(resourceId); };

@@ -11,7 +11,7 @@ namespace Engine
     class Renderer
     {
     public:
-        Renderer(const Window& window);
+        explicit Renderer(const Window& window);
         Renderer(const Renderer&) = delete;
         Renderer(Renderer&&) = delete;
         Renderer& operator=(const Renderer&) = delete;

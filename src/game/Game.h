@@ -20,7 +20,10 @@ namespace Engine
         {
         }
         Game(const Game&) = delete;
+        Game(Game&&) = delete;
         Game& operator=(const Game&) = delete;
+        Game& operator=(Game&&) = delete;
+        ~Game() = default;
         void init();
         void run();
         void destroy();

@@ -13,13 +13,7 @@ namespace Engine
         }
     };
 
-    ResourceManager::~ResourceManager()
-    {
-        clearResources();
-        IMG_Quit();
-    };
-
-    void ResourceManager::clearResources() { m_textures.clear(); }
+    ResourceManager::~ResourceManager() { IMG_Quit(); };
 
     void ResourceManager::addTexture(std::string_view resourceId,
                                      const std::filesystem::path& relativeFilepath, Renderer& renderer)

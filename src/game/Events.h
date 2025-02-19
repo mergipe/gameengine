@@ -14,14 +14,23 @@ namespace Engine
     class Event
     {
     public:
+        Event(const Event&) = delete;
+        Event(Event&&) = delete;
+        Event& operator=(const Event&) = delete;
+        Event& operator=(Event&&) = delete;
         virtual ~Event() = default;
+
+    protected:
+        Event() = default;
     };
 
     class IEventCallback
     {
     public:
         IEventCallback(const IEventCallback&) = delete;
+        IEventCallback(IEventCallback&&) = delete;
         IEventCallback& operator=(const IEventCallback&) = delete;
+        IEventCallback& operator=(IEventCallback&&) = delete;
         virtual ~IEventCallback() = default;
         void execute(Event& e) { call(e); }
 
@@ -38,7 +47,6 @@ namespace Engine
             : m_callbackFunction{callbackFunction}, m_ownerInstance{ownerInstance}
         {
         }
-        ~EventCallback() override = default;
 
     private:
         void call(Event& e) override;

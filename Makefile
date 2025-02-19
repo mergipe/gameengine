@@ -15,5 +15,8 @@ debug:
 release:
 	cmake -DCMAKE_BUILD_TYPE:STRING=$(RELEASE_BUILD_NAME) -S . -B $(RELEASE_BUILD_DIR) && cmake --build $(RELEASE_BUILD_DIR)
 
+check:
+	find . -maxdepth 1 -type d -name 'build*' -exec run-clang-tidy -p {} -header-filter=src/ src/ ';' -quit
+
 clean:
 	rm -rf $(RELWITHDEBUGINFO_BUILD_DIR) $(DEBUG_BUILD_DIR) $(RELEASE_BUILD_DIR)

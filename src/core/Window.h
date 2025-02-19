@@ -20,9 +20,9 @@ namespace Engine
 
     private:
         std::string m_title{};
-        SDL_Window* m_window{};
         int m_width{};
         int m_height{};
+        SDL_Window* m_window{};
     };
 } // namespace Engine
 
