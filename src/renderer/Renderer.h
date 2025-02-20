@@ -1,10 +1,10 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include "Color.h"
+#include "Texture.h"
 #include "core/Window.h"
-#include "resources/Texture.h"
 #include <SDL_render.h>
-#include <cstdint>
 
 namespace Engine
 {
@@ -18,7 +18,7 @@ namespace Engine
         Renderer& operator=(Renderer&&) = delete;
         ~Renderer();
         SDL_Renderer* getRendererPtr() { return m_renderer; }
-        void setDrawColor(std::uint8_t red, std::uint8_t gree, std::uint8_t blue, std::uint8_t alpha);
+        void setDrawColor(const Color& color);
         void drawRectangle(float x, float y, float width, float height);
         void drawTexture(const Texture& texture, const SDL_Rect& sourceRect, const SDL_FRect& destinationRect,
                          double rotationAngle);

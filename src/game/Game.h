@@ -3,8 +3,8 @@
 
 #include "ECS.h"
 #include "Events.h"
-#include "core/Renderer.h"
 #include "core/Window.h"
+#include "renderer/Renderer.h"
 #include "resources/ResourceManager.h"
 #include <filesystem>
 #include <memory>

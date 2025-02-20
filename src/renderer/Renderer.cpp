@@ -1,5 +1,5 @@
 #include "Renderer.h"
-#include "Logger.h"
+#include "core/Logger.h"
 
 namespace Engine
 {
@@ -20,9 +20,9 @@ namespace Engine
         Logger::info("Renderer destroyed");
     }
 
-    void Renderer::setDrawColor(std::uint8_t red, std::uint8_t green, std::uint8_t blue, std::uint8_t alpha)
+    void Renderer::setDrawColor(const Color& color)
     {
-        SDL_SetRenderDrawColor(m_renderer, red, green, blue, alpha);
+        SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
     }
 
     void Renderer::drawRectangle(float x, float y, float width, float height)

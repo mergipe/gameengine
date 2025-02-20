@@ -1,7 +1,8 @@
 #ifndef RESOURCEMANAGER_H
 #define RESOURCEMANAGER_H
 
-#include "core/Renderer.h"
+#include "renderer/Renderer.h"
+#include "renderer/Texture.h"
 #include <filesystem>
 #include <string>
 #include <string_view>

@@ -5,6 +5,8 @@
 #include "core/IO.h"
 #include "core/Logger.h"
 #include "core/Timer.h"
+#include "renderer/Color.h"
+#include "renderer/Renderer.h"
 #include <SDL.h>
 #include <iostream>
 
@@ -150,7 +152,7 @@ namespace Engine
 
     void Game::render(float frameExtrapolationTimeStep)
     {
-        m_renderer->setDrawColor(0, 0, 0, 255);
+        m_renderer->setDrawColor(Color{0, 0, 0, 255});
         m_renderer->clear();
         m_registry->getSystem<SpriteRenderingSystem>().update(*m_renderer, *m_resourceManager,
                                                               frameExtrapolationTimeStep);

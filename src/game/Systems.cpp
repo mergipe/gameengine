@@ -1,6 +1,8 @@
 #include "Systems.h"
 #include "Components.h"
 #include "core/Timer.h"
+#include "renderer/Color.h"
+#include "renderer/Renderer.h"
 #include <algorithm>
 
 namespace Engine
@@ -140,9 +142,9 @@ namespace Engine
                                                          frameExtrapolationTimeStep);
             }
             if (boxCollider.isColliding) {
-                renderer.setDrawColor(255, 0, 0, 255);
+                renderer.setDrawColor(Color{255, 0, 0, 255});
             } else {
-                renderer.setDrawColor(255, 255, 0, 255);
+                renderer.setDrawColor(Color{255, 255, 0, 255});
             }
             renderer.drawRectangle(renderPosition.x + boxCollider.offset.x,
                                    renderPosition.y + boxCollider.offset.y,

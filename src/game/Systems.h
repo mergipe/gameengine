@@ -2,7 +2,7 @@
 #define SYSTEMS_H
 
 #include "ECS.h"
-#include "core/Renderer.h"
+#include "renderer/Renderer.h"
 #include "resources/ResourceManager.h"
 
 namespace Engine
