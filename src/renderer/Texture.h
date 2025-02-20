@@ -2,14 +2,15 @@
 #define TEXTURE_H
 
 #include <SDL_render.h>
+#include <filesystem>
 
 namespace Engine
 {
     class Texture
     {
     public:
-        explicit Texture(SDL_Texture* texture)
-            : m_texture{texture}
+        Texture(const std::filesystem::path& filepath, SDL_Texture* texture)
+            : m_filepath{filepath}, m_texture{texture}
         {
         }
         Texture(const Texture&) = delete;
@@ -17,9 +18,11 @@ namespace Engine
         Texture& operator=(const Texture&) = delete;
         Texture& operator=(Texture&&) = delete;
         ~Texture();
+        const std::filesystem::path& getFilepath() { return m_filepath; }
         SDL_Texture* getTexturePtr() const { return m_texture; }
 
     private:
+        const std::filesystem::path m_filepath{};
         SDL_Texture* m_texture{};
     };
 } // namespace Engine

@@ -8,6 +8,7 @@
 #include "renderer/Color.h"
 #include "renderer/Renderer.h"
 #include <SDL.h>
+#include <SDL_image.h>
 #include <iostream>
 
 namespace Engine
@@ -17,6 +18,10 @@ namespace Engine
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER) != 0) {
             std::cerr << "Failed to initialize SDL: " << SDL_GetError() << '\n';
             std::abort();
+        }
+        int flags{IMG_INIT_PNG};
+        if (!(IMG_Init(flags) & flags)) {
+            Logger::error("Failed to initialize SDL_image: {}", IMG_GetError());
         }
         m_basePath = std::filesystem::canonical(SDL_GetBasePath()).parent_path();
         Logger::init(m_basePath / s_logFilepath);
@@ -30,11 +35,11 @@ namespace Engine
                        int tileHeight, int tilesetColumns, float scale)
     {
         Logger::info("Loading map {}", tilemapFilename);
-        const std::filesystem::path tilemapsPath{s_tilemapsFolder};
+        const std::filesystem::path tilemapsPath{m_resourceManager->getResourcePath(s_tilemapsFolder)};
         const std::string_view tilesetId{"tileset"};
-        m_resourceManager->addTexture(tilesetId, tilemapsPath / tilesetFilename, *m_renderer);
+        m_resourceManager->addTexture(tilesetId, m_renderer->loadTexture(tilemapsPath / tilesetFilename));
         const std::filesystem::path tilemapFilepath{
-            m_resourceManager->getResourceAbsolutePath(tilemapsPath / tilemapFilename)};
+            m_resourceManager->getResourcePath(tilemapsPath / tilemapFilename)};
         std::ifstream tilemapFile{tilemapFilepath};
         if (!tilemapFile) {
             Logger::error("Error opening {} file for reading", tilemapFilepath.c_str());
@@ -60,11 +65,13 @@ namespace Engine
 
     void Game::loadEntities()
     {
-        std::filesystem::path texturesPath{s_texturesFolder};
-        m_resourceManager->addTexture("chopper", texturesPath / "chopper.png", *m_renderer);
-        m_resourceManager->addTexture("radar", texturesPath / "radar.png", *m_renderer);
-        m_resourceManager->addTexture("tank-right", texturesPath / "tank-panther-right.png", *m_renderer);
-        m_resourceManager->addTexture("truck-right", texturesPath / "truck-ford-right.png", *m_renderer);
+        std::filesystem::path texturesPath{m_resourceManager->getResourcePath(s_texturesFolder)};
+        m_resourceManager->addTexture("chopper", m_renderer->loadTexture(texturesPath / "chopper.png"));
+        m_resourceManager->addTexture("radar", m_renderer->loadTexture(texturesPath / "radar.png"));
+        m_resourceManager->addTexture("tank-right",
+                                      m_renderer->loadTexture(texturesPath / "tank-panther-right.png"));
+        m_resourceManager->addTexture("truck-right",
+                                      m_renderer->loadTexture(texturesPath / "truck-ford-right.png"));
         Entity chopper{m_registry->createEntity()};
         chopper.addComponent<TransformComponent>(glm::vec2(300));
         chopper.addComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
@@ -169,6 +176,7 @@ namespace Engine
         m_renderer.reset();
         m_window.reset();
         Logger::info("Game resources destroyed");
+        IMG_Quit();
         SDL_Quit();
     }
 } // namespace Engine

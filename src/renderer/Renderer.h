@@ -5,6 +5,8 @@
 #include "Texture.h"
 #include "core/Window.h"
 #include <SDL_render.h>
+#include <filesystem>
+#include <memory>
 
 namespace Engine
 {
@@ -17,7 +19,7 @@ namespace Engine
         Renderer& operator=(const Renderer&) = delete;
         Renderer& operator=(Renderer&&) = delete;
         ~Renderer();
-        SDL_Renderer* getRendererPtr() { return m_renderer; }
+        std::unique_ptr<Texture> loadTexture(const std::filesystem::path& filepath);
         void setDrawColor(const Color& color);
         void drawRectangle(float x, float y, float width, float height);
         void drawTexture(const Texture& texture, const SDL_Rect& sourceRect, const SDL_FRect& destinationRect,

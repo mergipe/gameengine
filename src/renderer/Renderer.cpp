@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "core/Logger.h"
+#include <SDL_image.h>
 
 namespace Engine
 {
@@ -18,6 +19,17 @@ namespace Engine
         SDL_DestroyRenderer(m_renderer);
         m_renderer = nullptr;
         Logger::info("Renderer destroyed");
+    }
+
+    std::unique_ptr<Texture> Renderer::loadTexture(const std::filesystem::path& filepath)
+    {
+        const char* filepathStr{filepath.c_str()};
+        SDL_Texture* texture{IMG_LoadTexture(m_renderer, filepathStr)};
+        if (!texture) {
+            Logger::error("Failed to load texture from {}: {}", filepath.c_str(), IMG_GetError());
+        }
+        Logger::info("Texture loaded from {}", filepathStr);
+        return std::make_unique<Texture>(filepathStr, texture);
     }
 
     void Renderer::setDrawColor(const Color& color)
