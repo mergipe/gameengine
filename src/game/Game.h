@@ -2,8 +2,8 @@
 #define GAME_H
 
 #include "ECS.h"
-#include "Events.h"
 #include "core/Window.h"
+#include "events/Events.h"
 #include "renderer/Renderer.h"
 #include "resources/ResourceManager.h"
 #include <filesystem>

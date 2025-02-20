@@ -1,7 +1,7 @@
 #ifndef EVENTS_H
 #define EVENTS_H
 
-#include "ECS.h"
+#include "game/ECS.h"
 #include <functional>
 #include <list>
 #include <memory>

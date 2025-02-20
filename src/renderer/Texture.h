@@ -18,7 +18,7 @@ namespace Engine
         Texture& operator=(const Texture&) = delete;
         Texture& operator=(Texture&&) = delete;
         ~Texture();
-        const std::filesystem::path& getFilepath() { return m_filepath; }
+        const std::filesystem::path& getFilepath() const { return m_filepath; }
         SDL_Texture* getTexturePtr() const { return m_texture; }
 
     private:
