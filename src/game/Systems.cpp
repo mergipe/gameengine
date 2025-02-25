@@ -1,6 +1,7 @@
 #include "Systems.h"
 #include "Components.h"
 #include "core/Timer.h"
+#include "events/Events.h"
 #include "renderer/Color.h"
 #include "renderer/Renderer.h"
 #include <algorithm>
@@ -92,7 +93,7 @@ namespace Engine
         requireComponent<BoxColliderComponent>();
     }
 
-    void CollisionSystem::update()
+    void CollisionSystem::update(EventBus& eventBus)
     {
         const auto entities{getEntities()};
         for (const auto& entity : entities) {
@@ -116,8 +117,7 @@ namespace Engine
                     static_cast<float>(otherBoxCollider.height) * otherTransform.scale.y)};
                 if (collisionHappened) {
                     boxCollider.isColliding = otherBoxCollider.isColliding = true;
-                    Logger::trace("Entity {} is colliding with entity {}", entity.getId(),
-                                  otherEntity.getId());
+                    eventBus.dispatchEvent<CollisionEvent>(entity, otherEntity);
                 }
             }
         }
@@ -152,4 +152,25 @@ namespace Engine
                                    static_cast<float>(boxCollider.height) * transform.scale.y);
         }
     }
+
+    DamageSystem::DamageSystem()
+        : System{}
+    {
+        requireComponent<BoxColliderComponent>();
+    }
+
+    void DamageSystem::subscribeToEvents(EventBus& eventBus)
+    {
+        eventBus.subscribeToEvent<CollisionEvent, DamageSystem>(this, &DamageSystem::onCollision);
+    }
+
+    void DamageSystem::onCollision(CollisionEvent& event)
+    {
+        Logger::trace("The damage system received an event collision between entities {} and {}",
+                      event.entity.getId(), event.otherEntity.getId());
+        event.entity.kill();
+        event.otherEntity.kill();
+    }
+
+    void DamageSystem::update() {}
 } // namespace Engine

@@ -3,7 +3,7 @@
 
 #include "ECS.h"
 #include "core/Window.h"
-#include "events/Events.h"
+#include "events/EventBus.h"
 #include "renderer/Renderer.h"
 #include "resources/ResourceManager.h"
 #include <filesystem>

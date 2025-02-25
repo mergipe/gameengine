@@ -2,6 +2,7 @@
 #define SYSTEMS_H
 
 #include "ECS.h"
+#include "events/EventBus.h"
 #include "renderer/Renderer.h"
 #include "resources/ResourceManager.h"
 
@@ -33,7 +34,7 @@ namespace Engine
     {
     public:
         CollisionSystem();
-        void update();
+        void update(EventBus& eventBus);
     };
 
     class BoxColliderRenderingSystem final : public System
@@ -41,6 +42,15 @@ namespace Engine
     public:
         BoxColliderRenderingSystem();
         void update(Renderer& renderer, float frameExtrapolationTimeStep);
+    };
+
+    class DamageSystem final : public System
+    {
+    public:
+        DamageSystem();
+        void subscribeToEvents(EventBus& eventBus);
+        void onCollision(CollisionEvent& event);
+        void update();
     };
 } // namespace Engine
 

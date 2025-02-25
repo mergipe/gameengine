@@ -28,6 +28,7 @@ namespace Engine
         m_window = std::make_unique<Window>(s_windowTitle, s_windowWidth, s_windowHeight);
         m_renderer = std::make_unique<Renderer>(*m_window);
         m_resourceManager = std::make_unique<ResourceManager>(m_basePath / s_resourcesFolder);
+        m_eventBus = std::make_unique<EventBus>();
         Logger::info("Game initialized");
     }
 
@@ -103,6 +104,7 @@ namespace Engine
         m_registry->addSystem<MovementSystem>();
         m_registry->addSystem<AnimationSystem>();
         m_registry->addSystem<CollisionSystem>();
+        m_registry->addSystem<DamageSystem>();
         if (m_debugCapability) {
             m_registry->addSystem<BoxColliderRenderingSystem>();
         }
@@ -151,9 +153,11 @@ namespace Engine
 
     void Game::update()
     {
+        m_eventBus->reset();
+        m_registry->getSystem<DamageSystem>().subscribeToEvents(*m_eventBus);
         m_registry->update();
         m_registry->getSystem<MovementSystem>().update(s_timeStepInMs);
-        m_registry->getSystem<CollisionSystem>().update();
+        m_registry->getSystem<CollisionSystem>().update(*m_eventBus);
         m_registry->getSystem<AnimationSystem>().update();
     }
 
