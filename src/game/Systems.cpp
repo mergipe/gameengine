@@ -4,6 +4,7 @@
 #include "events/Events.h"
 #include "renderer/Color.h"
 #include "renderer/Renderer.h"
+#include <SDL_keyboard.h>
 #include <algorithm>
 
 namespace Engine
@@ -173,4 +174,51 @@ namespace Engine
     }
 
     void DamageSystem::update() {}
+
+    KeyboardControlSystem::KeyboardControlSystem()
+        : System{}
+    {
+        requireComponent<KeyboardControlComponent>();
+        requireComponent<SpriteComponent>();
+        requireComponent<RigidBodyComponent>();
+    }
+
+    void KeyboardControlSystem::subscribeToEvents(EventBus& eventBus)
+    {
+        eventBus.subscribeToEvent<KeyPressedEvent, KeyboardControlSystem>(
+            this, &KeyboardControlSystem::onKeyPressed);
+    }
+
+    void KeyboardControlSystem::onKeyPressed(KeyPressedEvent& event)
+    {
+        for (const auto& entity : getEntities()) {
+            const auto& keyboardControl{entity.getComponent<KeyboardControlComponent>()};
+            auto& sprite{entity.getComponent<SpriteComponent>()};
+            auto& rigidBody{entity.getComponent<RigidBodyComponent>()};
+            switch (event.keyCode) {
+            case SDLK_UP:
+            case SDLK_w:
+                rigidBody.velocity = keyboardControl.upVelocity;
+                sprite.sourceRect.y = sprite.height * 0;
+                break;
+            case SDLK_RIGHT:
+            case SDLK_d:
+                rigidBody.velocity = keyboardControl.rightVelocity;
+                sprite.sourceRect.y = sprite.height * 1;
+                break;
+            case SDLK_DOWN:
+            case SDLK_s:
+                rigidBody.velocity = keyboardControl.downVelocity;
+                sprite.sourceRect.y = sprite.height * 2;
+                break;
+            case SDLK_LEFT:
+            case SDLK_a:
+                rigidBody.velocity = keyboardControl.leftVelocity;
+                sprite.sourceRect.y = sprite.height * 3;
+                break;
+            }
+        }
+    }
+
+    void KeyboardControlSystem::update() {}
 } // namespace Engine

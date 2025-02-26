@@ -52,6 +52,15 @@ namespace Engine
         void onCollision(CollisionEvent& event);
         void update();
     };
+
+    class KeyboardControlSystem final : public System
+    {
+    public:
+        KeyboardControlSystem();
+        void subscribeToEvents(EventBus& eventBus);
+        void onKeyPressed(KeyPressedEvent& event);
+        void update();
+    };
 } // namespace Engine
 
 #endif

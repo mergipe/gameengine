@@ -19,13 +19,10 @@ namespace Engine
         IEventCallback& operator=(const IEventCallback&) = delete;
         IEventCallback& operator=(IEventCallback&&) noexcept = default;
         virtual ~IEventCallback() = default;
-        void execute(Event& e) { call(e); }
+        virtual void execute(Event& e) = 0;
 
     protected:
         IEventCallback() = default;
-
-    private:
-        virtual void call(Event& e) = 0;
     };
 
     template <typename TOwner, typename TEvent>
@@ -44,15 +41,15 @@ namespace Engine
         EventCallback& operator=(const EventCallback&) = delete;
         EventCallback& operator=(EventCallback&&) noexcept = default;
         ~EventCallback() override = default;
+        void execute(Event& e) override;
 
     private:
-        void call(Event& e) override;
         CallbackFunction<TOwner, TEvent> m_callbackFunction{};
         TOwner* m_ownerInstance{};
     };
 
     template <typename TOwner, typename TEvent>
-    void EventCallback<TOwner, TEvent>::call(Event& e)
+    void EventCallback<TOwner, TEvent>::execute(Event& e)
     {
         m_callbackFunction(*m_ownerInstance, static_cast<TEvent&>(e));
     }

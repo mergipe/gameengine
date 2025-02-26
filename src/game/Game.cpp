@@ -67,7 +67,8 @@ namespace Engine
     void Game::loadEntities()
     {
         std::filesystem::path texturesPath{m_resourceManager->getResourcePath(s_texturesFolder)};
-        m_resourceManager->addTexture("chopper", m_renderer->loadTexture(texturesPath / "chopper.png"));
+        m_resourceManager->addTexture("chopper",
+                                      m_renderer->loadTexture(texturesPath / "chopper-spritesheet.png"));
         m_resourceManager->addTexture("radar", m_renderer->loadTexture(texturesPath / "radar.png"));
         m_resourceManager->addTexture("tank-right",
                                       m_renderer->loadTexture(texturesPath / "tank-panther-right.png"));
@@ -79,6 +80,8 @@ namespace Engine
         chopper.addComponent<SpriteComponent>("chopper", 32, 32, 1);
         chopper.addComponent<AnimationComponent>(2, 15);
         chopper.addComponent<BoxColliderComponent>(32, 32);
+        chopper.addComponent<KeyboardControlComponent>(glm::vec2(0, -0.1), glm::vec2(0.1, 0),
+                                                       glm::vec2(0, 0.1), glm::vec2(-0.1, 0));
         Entity radar{m_registry->createEntity()};
         radar.addComponent<TransformComponent>(glm::vec2(400, 10));
         radar.addComponent<SpriteComponent>("radar", 64, 64, 2);
@@ -105,6 +108,7 @@ namespace Engine
         m_registry->addSystem<AnimationSystem>();
         m_registry->addSystem<CollisionSystem>();
         m_registry->addSystem<DamageSystem>();
+        m_registry->addSystem<KeyboardControlSystem>();
         if (m_debugCapability) {
             m_registry->addSystem<BoxColliderRenderingSystem>();
         }
@@ -146,6 +150,7 @@ namespace Engine
                 if (m_debugCapability && event.key.keysym.sym == SDLK_F1) {
                     m_debugModeActivated = !m_debugModeActivated;
                 }
+                m_eventBus->dispatchEvent<KeyPressedEvent>(event.key.keysym.sym);
                 break;
             }
         }
@@ -155,6 +160,7 @@ namespace Engine
     {
         m_eventBus->reset();
         m_registry->getSystem<DamageSystem>().subscribeToEvents(*m_eventBus);
+        m_registry->getSystem<KeyboardControlSystem>().subscribeToEvents(*m_eventBus);
         m_registry->update();
         m_registry->getSystem<MovementSystem>().update(s_timeStepInMs);
         m_registry->getSystem<CollisionSystem>().update(*m_eventBus);

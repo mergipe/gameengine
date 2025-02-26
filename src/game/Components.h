@@ -9,22 +9,13 @@
 namespace Engine
 {
     struct TransformComponent final {
-        TransformComponent(const glm::vec2& position = glm::vec2(0), const glm::vec2& scale = glm::vec2(1),
-                           double rotation = 0.0)
-            : position{position}, scale{scale}, rotation{rotation}
-        {
-        }
-        glm::vec2 position{};
-        glm::vec2 scale{};
-        double rotation{};
+        glm::vec2 position{0};
+        glm::vec2 scale{1};
+        double rotation{0.0};
     };
 
     struct RigidBodyComponent final {
-        RigidBodyComponent(const glm::vec2& velocity = glm::vec2(0))
-            : velocity{velocity}
-        {
-        }
-        glm::vec2 velocity{};
+        glm::vec2 velocity{0};
     };
 
     struct SpriteComponent final {
@@ -65,6 +56,13 @@ namespace Engine
         int width{};
         int height{};
         bool isColliding{};
+    };
+
+    struct KeyboardControlComponent final {
+        glm::vec2 upVelocity{0};
+        glm::vec2 rightVelocity{0};
+        glm::vec2 downVelocity{0};
+        glm::vec2 leftVelocity{0};
     };
 } // namespace Engine
 
