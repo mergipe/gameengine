@@ -3,6 +3,7 @@
 
 #include "ECS.h"
 #include "events/EventBus.h"
+#include "renderer/Camera.h"
 #include "renderer/Renderer.h"
 #include "resources/ResourceManager.h"
 
@@ -19,7 +20,7 @@ namespace Engine
     {
     public:
         SpriteRenderingSystem();
-        void update(Renderer& renderer, const ResourceManager& resourceManager,
+        void update(Renderer& renderer, const ResourceManager& resourceManager, const Camera& camera,
                     float frameExtrapolationTimeStep);
     };
 
@@ -41,7 +42,7 @@ namespace Engine
     {
     public:
         BoxColliderRenderingSystem();
-        void update(Renderer& renderer, float frameExtrapolationTimeStep);
+        void update(Renderer& renderer, const Camera& camera, float frameExtrapolationTimeStep);
     };
 
     class DamageSystem final : public System
@@ -50,7 +51,6 @@ namespace Engine
         DamageSystem();
         void subscribeToEvents(EventBus& eventBus);
         void onCollision(CollisionEvent& event);
-        void update();
     };
 
     class KeyboardControlSystem final : public System
@@ -59,7 +59,13 @@ namespace Engine
         KeyboardControlSystem();
         void subscribeToEvents(EventBus& eventBus);
         void onKeyPressed(KeyPressedEvent& event);
-        void update();
+    };
+
+    class CameraMovementSystem final : public System
+    {
+    public:
+        CameraMovementSystem();
+        void update(Camera& camera);
     };
 } // namespace Engine
 

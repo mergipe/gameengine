@@ -2,6 +2,7 @@
 #define RENDERER_H
 
 #include "Color.h"
+#include "Rect.h"
 #include "Texture.h"
 #include "core/Window.h"
 #include <SDL_render.h>
@@ -22,13 +23,13 @@ namespace Engine
         std::unique_ptr<Texture> loadTexture(const std::filesystem::path& filepath);
         void setDrawColor(const Color& color);
         void drawRectangle(float x, float y, float width, float height);
-        void drawTexture(const Texture& texture, const SDL_Rect& sourceRect, const SDL_FRect& destinationRect,
+        void drawTexture(const Texture& texture, const Rect& sourceRect, const FRect& destinationRect,
                          double rotationAngle);
         void clear();
         void present();
 
     private:
-        SDL_Renderer* m_renderer{};
+        SDL_Renderer* m_renderingContext{};
     };
 } // namespace Engine
 

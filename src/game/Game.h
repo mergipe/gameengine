@@ -4,6 +4,7 @@
 #include "ECS.h"
 #include "core/Window.h"
 #include "events/EventBus.h"
+#include "renderer/Camera.h"
 #include "renderer/Renderer.h"
 #include "resources/ResourceManager.h"
 #include <filesystem>
@@ -47,6 +48,7 @@ namespace Engine
         static constexpr int s_windowWidth{1920};
         static constexpr int s_windowHeight{1080};
         std::filesystem::path m_basePath{};
+        Camera m_camera{};
         std::unique_ptr<Registry> m_registry{};
         std::unique_ptr<ResourceManager> m_resourceManager{};
         std::unique_ptr<EventBus> m_eventBus{};

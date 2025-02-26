@@ -29,6 +29,7 @@ namespace Engine
         m_renderer = std::make_unique<Renderer>(*m_window);
         m_resourceManager = std::make_unique<ResourceManager>(m_basePath / s_resourcesFolder);
         m_eventBus = std::make_unique<EventBus>();
+        m_camera = {0, 0, m_window->getWidth(), m_window->getHeight()};
         Logger::info("Game initialized");
     }
 
@@ -80,8 +81,9 @@ namespace Engine
         chopper.addComponent<SpriteComponent>("chopper", 32, 32, 1);
         chopper.addComponent<AnimationComponent>(2, 15);
         chopper.addComponent<BoxColliderComponent>(32, 32);
-        chopper.addComponent<KeyboardControlComponent>(glm::vec2(0, -0.1), glm::vec2(0.1, 0),
-                                                       glm::vec2(0, 0.1), glm::vec2(-0.1, 0));
+        chopper.addComponent<KeyboardControlComponent>(glm::vec2(0, -0.2), glm::vec2(0.2, 0),
+                                                       glm::vec2(0, 0.2), glm::vec2(-0.2, 0));
+        chopper.addComponent<CameraFollowComponent>();
         Entity radar{m_registry->createEntity()};
         radar.addComponent<TransformComponent>(glm::vec2(400, 10));
         radar.addComponent<SpriteComponent>("radar", 64, 64, 2);
@@ -109,6 +111,7 @@ namespace Engine
         m_registry->addSystem<CollisionSystem>();
         m_registry->addSystem<DamageSystem>();
         m_registry->addSystem<KeyboardControlSystem>();
+        m_registry->addSystem<CameraMovementSystem>();
         if (m_debugCapability) {
             m_registry->addSystem<BoxColliderRenderingSystem>();
         }
@@ -165,16 +168,17 @@ namespace Engine
         m_registry->getSystem<MovementSystem>().update(s_timeStepInMs);
         m_registry->getSystem<CollisionSystem>().update(*m_eventBus);
         m_registry->getSystem<AnimationSystem>().update();
+        m_registry->getSystem<CameraMovementSystem>().update(m_camera);
     }
 
     void Game::render(float frameExtrapolationTimeStep)
     {
         m_renderer->setDrawColor(Color{0, 0, 0, 255});
         m_renderer->clear();
-        m_registry->getSystem<SpriteRenderingSystem>().update(*m_renderer, *m_resourceManager,
+        m_registry->getSystem<SpriteRenderingSystem>().update(*m_renderer, *m_resourceManager, m_camera,
                                                               frameExtrapolationTimeStep);
         if (m_debugModeActivated) {
-            m_registry->getSystem<BoxColliderRenderingSystem>().update(*m_renderer,
+            m_registry->getSystem<BoxColliderRenderingSystem>().update(*m_renderer, m_camera,
                                                                        frameExtrapolationTimeStep);
         }
         m_renderer->present();

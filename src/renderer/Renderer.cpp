@@ -5,9 +5,9 @@
 namespace Engine
 {
     Renderer::Renderer(const Window& window)
-        : m_renderer(SDL_CreateRenderer(window.getWindowPtr(), -1, SDL_RENDERER_ACCELERATED))
+        : m_renderingContext(SDL_CreateRenderer(window.getWindowPtr(), -1, SDL_RENDERER_ACCELERATED))
     {
-        if (!m_renderer) {
+        if (!m_renderingContext) {
             Logger::critical("Failed to initialize the renderer: {}", SDL_GetError());
             std::abort();
         }
@@ -16,15 +16,15 @@ namespace Engine
 
     Renderer::~Renderer()
     {
-        SDL_DestroyRenderer(m_renderer);
-        m_renderer = nullptr;
+        SDL_DestroyRenderer(m_renderingContext);
+        m_renderingContext = nullptr;
         Logger::info("Renderer destroyed");
     }
 
     std::unique_ptr<Texture> Renderer::loadTexture(const std::filesystem::path& filepath)
     {
         const char* filepathStr{filepath.c_str()};
-        SDL_Texture* texture{IMG_LoadTexture(m_renderer, filepathStr)};
+        SDL_Texture* texture{IMG_LoadTexture(m_renderingContext, filepathStr)};
         if (!texture) {
             Logger::error("Failed to load texture from {}: {}", filepath.c_str(), IMG_GetError());
         }
@@ -34,23 +34,23 @@ namespace Engine
 
     void Renderer::setDrawColor(const Color& color)
     {
-        SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
+        SDL_SetRenderDrawColor(m_renderingContext, color.r, color.g, color.b, color.a);
     }
 
     void Renderer::drawRectangle(float x, float y, float width, float height)
     {
-        const SDL_FRect rect{x, y, width, height};
-        SDL_RenderDrawRectF(m_renderer, &rect);
+        const FRect rect{x, y, width, height};
+        SDL_RenderDrawRectF(m_renderingContext, &rect);
     }
 
-    void Renderer::drawTexture(const Texture& texture, const SDL_Rect& sourceRect,
-                               const SDL_FRect& destinationRect, double rotationAngle)
+    void Renderer::drawTexture(const Texture& texture, const Rect& sourceRect, const FRect& destinationRect,
+                               double rotationAngle)
     {
-        SDL_RenderCopyExF(m_renderer, texture.getTexturePtr(), &sourceRect, &destinationRect, rotationAngle,
+        SDL_RenderCopyExF(m_renderingContext, texture.getData(), &sourceRect, &destinationRect, rotationAngle,
                           nullptr, SDL_FLIP_NONE);
     }
 
-    void Renderer::clear() { SDL_RenderClear(m_renderer); }
+    void Renderer::clear() { SDL_RenderClear(m_renderingContext); }
 
-    void Renderer::present() { SDL_RenderPresent(m_renderer); }
+    void Renderer::present() { SDL_RenderPresent(m_renderingContext); }
 } // namespace Engine

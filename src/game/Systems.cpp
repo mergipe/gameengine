@@ -3,6 +3,7 @@
 #include "core/Timer.h"
 #include "events/Events.h"
 #include "renderer/Color.h"
+#include "renderer/Rect.h"
 #include "renderer/Renderer.h"
 #include <SDL_keyboard.h>
 #include <algorithm>
@@ -19,6 +20,12 @@ namespace Engine
                                                 float extrapolationTimeStep)
     {
         return glm::vec2{position + velocity * extrapolationTimeStep};
+    }
+
+    constexpr glm::vec2 getRenderPosition(const glm::vec2& position, const Camera& camera)
+    {
+        return glm::vec2{position.x - static_cast<float>(camera.display.x),
+                         position.y - static_cast<float>(camera.display.y)};
     }
 
     MovementSystem::MovementSystem()
@@ -45,7 +52,7 @@ namespace Engine
     }
 
     void SpriteRenderingSystem::update(Renderer& renderer, const ResourceManager& resourceManager,
-                                       float frameExtrapolationTimeStep)
+                                       const Camera& camera, float frameExtrapolationTimeStep)
     {
         std::vector<Entity> entities{getEntities()};
         std::sort(entities.begin(), entities.end(), [](Entity a, Entity b) {
@@ -60,9 +67,10 @@ namespace Engine
                 renderPosition = getExtrapolatedPosition(transform.position, rigidBody.velocity,
                                                          frameExtrapolationTimeStep);
             }
-            const SDL_FRect destinationRect{renderPosition.x, renderPosition.y,
-                                            static_cast<float>(sprite.width) * transform.scale.x,
-                                            static_cast<float>(sprite.height) * transform.scale.y};
+            renderPosition = getRenderPosition(renderPosition, camera);
+            const FRect destinationRect{renderPosition.x, renderPosition.y,
+                                        static_cast<float>(sprite.width) * transform.scale.x,
+                                        static_cast<float>(sprite.height) * transform.scale.y};
             renderer.drawTexture(resourceManager.getTexture(sprite.resourceId), sprite.sourceRect,
                                  destinationRect, transform.rotation);
         }
@@ -131,7 +139,8 @@ namespace Engine
         requireComponent<BoxColliderComponent>();
     }
 
-    void BoxColliderRenderingSystem::update(Renderer& renderer, float frameExtrapolationTimeStep)
+    void BoxColliderRenderingSystem::update(Renderer& renderer, const Camera& camera,
+                                            float frameExtrapolationTimeStep)
     {
         for (const auto& entity : getEntities()) {
             const auto& transform{entity.getComponent<TransformComponent>()};
@@ -147,6 +156,7 @@ namespace Engine
             } else {
                 renderer.setDrawColor(Color{255, 255, 0, 255});
             }
+            renderPosition = getRenderPosition(renderPosition, camera);
             renderer.drawRectangle(renderPosition.x + boxCollider.offset.x,
                                    renderPosition.y + boxCollider.offset.y,
                                    static_cast<float>(boxCollider.width) * transform.scale.x,
@@ -172,8 +182,6 @@ namespace Engine
         event.entity.kill();
         event.otherEntity.kill();
     }
-
-    void DamageSystem::update() {}
 
     KeyboardControlSystem::KeyboardControlSystem()
         : System{}
@@ -220,5 +228,19 @@ namespace Engine
         }
     }
 
-    void KeyboardControlSystem::update() {}
+    CameraMovementSystem::CameraMovementSystem()
+        : System{}
+    {
+        requireComponent<CameraFollowComponent>();
+        requireComponent<TransformComponent>();
+    }
+
+    void CameraMovementSystem::update(Camera& camera)
+    {
+        for (const auto& entity : getEntities()) {
+            const auto& transform{entity.getComponent<TransformComponent>()};
+            camera.display.x = static_cast<int>(transform.position.x);
+            camera.display.y = static_cast<int>(transform.position.y);
+        }
+    }
 } // namespace Engine

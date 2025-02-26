@@ -2,7 +2,7 @@
 #define COMPONENTS_H
 
 #include "core/Timer.h"
-#include <SDL_rect.h>
+#include "renderer/Rect.h"
 #include <glm/glm.hpp>
 #include <string>
 
@@ -22,14 +22,14 @@ namespace Engine
         SpriteComponent(std::string_view resourceId = "", int width = 0, int height = 0, int zIndex = 0,
                         int sourceRectX = 0, int sourceRectY = 0)
             : resourceId{resourceId}
-            , sourceRect{SDL_Rect{sourceRectX, sourceRectY, width, height}}
+            , sourceRect{Rect{sourceRectX, sourceRectY, width, height}}
             , width{width}
             , height{height}
             , zIndex{zIndex}
         {
         }
         std::string resourceId{};
-        SDL_Rect sourceRect{};
+        Rect sourceRect{};
         int width{};
         int height{};
         int zIndex{};
@@ -63,6 +63,9 @@ namespace Engine
         glm::vec2 rightVelocity{0};
         glm::vec2 downVelocity{0};
         glm::vec2 leftVelocity{0};
+    };
+
+    struct CameraFollowComponent final {
     };
 } // namespace Engine
 
