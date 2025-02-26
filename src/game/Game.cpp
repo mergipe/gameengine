@@ -182,6 +182,7 @@ namespace Engine
 
     void Game::destroy()
     {
+        m_eventBus.reset();
         m_resourceManager.reset();
         m_renderer.reset();
         m_window.reset();

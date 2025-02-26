@@ -143,10 +143,10 @@ namespace Engine
 
     private:
         std::deque<size_t> m_freeEntityIds{};
-        std::unordered_map<std::type_index, std::shared_ptr<System>> m_systems{};
+        std::unordered_map<std::type_index, std::unique_ptr<System>> m_systems{};
         std::set<Entity> m_entitiesToBeAdded{};
         std::set<Entity> m_entitiesToBeKilled{};
-        std::vector<std::shared_ptr<IPool>> m_componentPools{};
+        std::vector<std::unique_ptr<IPool>> m_componentPools{};
         std::vector<Signature> m_entityComponentSignatures{};
         size_t m_entitiesCount{0};
     };
@@ -180,13 +180,12 @@ namespace Engine
     {
         const auto componentId{Component<TComponent>::getId()};
         if (componentId >= m_componentPools.size()) {
-            m_componentPools.resize(componentId + 1, nullptr);
+            m_componentPools.resize(componentId + 1);
         }
         if (!m_componentPools[componentId]) {
-            m_componentPools[componentId] = std::make_shared<Pool<TComponent>>();
+            m_componentPools[componentId] = std::make_unique<Pool<TComponent>>();
         }
-        const std::shared_ptr<Pool<TComponent>> componentPool{
-            std::static_pointer_cast<Pool<TComponent>>(m_componentPools[componentId])};
+        Pool<TComponent>* componentPool{static_cast<Pool<TComponent>*>(m_componentPools[componentId].get())};
         const auto entityId{entity.getId()};
         if (entityId >= componentPool->getSize()) {
             componentPool->resize(m_entitiesCount);
@@ -215,17 +214,16 @@ namespace Engine
     template <typename TComponent>
     TComponent& Registry::getComponent(Entity entity) const
     {
-        const auto componentPool{
-            std::static_pointer_cast<Pool<TComponent>>(m_componentPools[Component<TComponent>::getId()])};
+        Pool<TComponent>* componentPool{
+            static_cast<Pool<TComponent>*>(m_componentPools[Component<TComponent>::getId()].get())};
         return componentPool->get(entity.getId());
     }
 
     template <typename TSystem, typename... TArgs>
     void Registry::addSystem(TArgs&&... args)
     {
-        const std::shared_ptr<TSystem> newSystem{std::make_shared<TSystem>(std::forward<TArgs>(args)...)};
         const auto systemId{std::type_index(typeid(TSystem))};
-        m_systems.insert(std::make_pair(systemId, newSystem));
+        m_systems.insert(std::make_pair(systemId, std::make_unique<TSystem>(std::forward<TArgs>(args)...)));
         Logger::trace("System {} added to registry", systemId.name());
     }
 
@@ -248,7 +246,7 @@ namespace Engine
     TSystem& Registry::getSystem() const
     {
         const auto system{m_systems.find(std::type_index(typeid(TSystem)))};
-        return *(std::static_pointer_cast<TSystem>(system->second));
+        return *(static_cast<TSystem*>(system->second.get()));
     }
 } // namespace Engine
 

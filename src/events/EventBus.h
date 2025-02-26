@@ -58,8 +58,7 @@ namespace Engine
     {
     public:
         template <typename TEvent, typename TOwner>
-        void subscribeToEvent(TOwner* ownerInstance,
-                              const CallbackFunction<TOwner, TEvent>& callbackFunction);
+        void addSubscriber(TOwner* ownerInstance, const CallbackFunction<TOwner, TEvent>& callbackFunction);
         template <typename TEvent, typename... TArgs> void dispatchEvent(TArgs&&... args);
         void reset() { m_subscribers.clear(); }
 
@@ -69,8 +68,8 @@ namespace Engine
     };
 
     template <typename TEvent, typename TOwner>
-    void EventBus::subscribeToEvent(TOwner* ownerInstance,
-                                    const CallbackFunction<TOwner, TEvent>& callbackFunction)
+    void EventBus::addSubscriber(TOwner* ownerInstance,
+                                 const CallbackFunction<TOwner, TEvent>& callbackFunction)
     {
         if (!m_subscribers[typeid(TEvent)].get()) {
             m_subscribers[typeid(TEvent)] = std::make_unique<HandlerList>();

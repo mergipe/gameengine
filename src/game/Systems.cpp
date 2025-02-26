@@ -162,7 +162,7 @@ namespace Engine
 
     void DamageSystem::subscribeToEvents(EventBus& eventBus)
     {
-        eventBus.subscribeToEvent<CollisionEvent, DamageSystem>(this, &DamageSystem::onCollision);
+        eventBus.addSubscriber<CollisionEvent, DamageSystem>(this, &DamageSystem::onCollision);
     }
 
     void DamageSystem::onCollision(CollisionEvent& event)
@@ -185,8 +185,8 @@ namespace Engine
 
     void KeyboardControlSystem::subscribeToEvents(EventBus& eventBus)
     {
-        eventBus.subscribeToEvent<KeyPressedEvent, KeyboardControlSystem>(
-            this, &KeyboardControlSystem::onKeyPressed);
+        eventBus.addSubscriber<KeyPressedEvent, KeyboardControlSystem>(this,
+                                                                       &KeyboardControlSystem::onKeyPressed);
     }
 
     void KeyboardControlSystem::onKeyPressed(KeyPressedEvent& event)
