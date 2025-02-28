@@ -3,7 +3,10 @@
 
 #include <SDL_rect.h>
 
-using Rect = SDL_Rect;
-using FRect = SDL_FRect;
+namespace Engine
+{
+    using Rect = SDL_Rect;
+    using FRect = SDL_FRect;
+} // namespace Engine
 
 #endif

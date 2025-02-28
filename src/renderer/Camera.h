@@ -3,8 +3,11 @@
 
 #include "Rect.h"
 
-struct Camera {
-    Rect display;
-};
+namespace Engine
+{
+    struct Camera {
+        Rect display;
+    };
+} // namespace Engine
 
 #endif

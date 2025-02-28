@@ -22,6 +22,7 @@ namespace Engine
         ResourceManager& operator=(const ResourceManager&) = delete;
         ResourceManager& operator=(ResourceManager&&) = delete;
         ~ResourceManager() = default;
+        void clearResources() { m_textures.clear(); }
         void addTexture(std::string_view resourceId, std::unique_ptr<Texture> texture);
         const Texture& getTexture(const std::string& resourceId) const
         {

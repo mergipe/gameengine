@@ -3,6 +3,7 @@
 
 #include "ECS.h"
 #include "events/EventBus.h"
+#include "game/Scene.h"
 #include "renderer/Camera.h"
 #include "renderer/Renderer.h"
 #include "resources/ResourceManager.h"
@@ -65,7 +66,7 @@ namespace Engine
     {
     public:
         CameraMovementSystem();
-        void update(Camera& camera);
+        void update(SceneData& sceneData);
     };
 } // namespace Engine
 

@@ -1,5 +1,6 @@
 #include "Systems.h"
 #include "Components.h"
+#include "Game.h"
 #include "core/Timer.h"
 #include "events/Events.h"
 #include "renderer/Color.h"
@@ -235,12 +236,15 @@ namespace Engine
         requireComponent<TransformComponent>();
     }
 
-    void CameraMovementSystem::update(Camera& camera)
+    void CameraMovementSystem::update(SceneData& sceneData)
     {
         for (const auto& entity : getEntities()) {
             const auto& transform{entity.getComponent<TransformComponent>()};
-            camera.display.x = static_cast<int>(transform.position.x);
-            camera.display.y = static_cast<int>(transform.position.y);
+            Rect& cameraDisplay{sceneData.camera.display};
+            cameraDisplay.x = static_cast<int>(transform.position.x - (cameraDisplay.w / 2.0));
+            cameraDisplay.y = static_cast<int>(transform.position.y - (cameraDisplay.h / 2.0));
+            cameraDisplay.x = std::clamp(cameraDisplay.x, 0, sceneData.mapWidth - cameraDisplay.w);
+            cameraDisplay.y = std::clamp(cameraDisplay.y, 0, sceneData.mapHeight - cameraDisplay.h);
         }
     }
 } // namespace Engine

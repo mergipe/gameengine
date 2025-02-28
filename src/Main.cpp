@@ -2,9 +2,9 @@
 
 int main(int, char*[])
 {
-    Engine::Game game{true};
+    Engine::Game& game{Engine::Game::instance()};
     game.init();
     game.run();
-    game.destroy();
+    game.shutDown();
     return 0;
 }
