@@ -68,7 +68,9 @@ namespace Engine
                 renderPosition = getExtrapolatedPosition(transform.position, rigidBody.velocity,
                                                          frameExtrapolationTimeStep);
             }
-            renderPosition = getRenderPosition(renderPosition, camera);
+            if (!sprite.hasFixedPosition) {
+                renderPosition = getRenderPosition(renderPosition, camera);
+            }
             const FRect destinationRect{renderPosition.x, renderPosition.y,
                                         static_cast<float>(sprite.width) * transform.scale.x,
                                         static_cast<float>(sprite.height) * transform.scale.y};
@@ -180,8 +182,8 @@ namespace Engine
     {
         Logger::trace("The damage system received an event collision between entities {} and {}",
                       event.entity.getId(), event.otherEntity.getId());
-        event.entity.kill();
-        event.otherEntity.kill();
+        // event.entity.kill();
+        // event.otherEntity.kill();
     }
 
     KeyboardControlSystem::KeyboardControlSystem()
@@ -245,6 +247,36 @@ namespace Engine
             cameraDisplay.y = static_cast<int>(transform.position.y - (cameraDisplay.h / 2.0));
             cameraDisplay.x = std::clamp(cameraDisplay.x, 0, sceneData.mapWidth - cameraDisplay.w);
             cameraDisplay.y = std::clamp(cameraDisplay.y, 0, sceneData.mapHeight - cameraDisplay.h);
+        }
+    }
+
+    ProjectileEmitSystem::ProjectileEmitSystem()
+        : System{}
+    {
+        requireComponent<ProjectileEmitterComponent>();
+        requireComponent<TransformComponent>();
+    }
+
+    void ProjectileEmitSystem::update(Registry& registry)
+    {
+        for (const auto& entity : getEntities()) {
+            auto& projectileEmitter{entity.getComponent<ProjectileEmitterComponent>()};
+            const auto& transform{entity.getComponent<TransformComponent>()};
+            if (static_cast<int>(Timer::getTicks() - projectileEmitter.lastEmissionTime) >
+                projectileEmitter.repeatFrequency) {
+                glm::vec2 projectilePosition{transform.position};
+                if (entity.hasComponent<SpriteComponent>()) {
+                    const auto& sprite{entity.getComponent<SpriteComponent>()};
+                    projectilePosition.x += static_cast<float>(sprite.width) * transform.scale.x / 2.0f;
+                    projectilePosition.y += static_cast<float>(sprite.height) * transform.scale.y / 2.0f;
+                }
+                Entity projectile{registry.createEntity()};
+                projectile.addComponent<TransformComponent>(projectilePosition);
+                projectile.addComponent<RigidBodyComponent>(projectileEmitter.projectileVelocity);
+                projectile.addComponent<SpriteComponent>("bullet", 4, 4, 4);
+                projectile.addComponent<BoxColliderComponent>(4, 4);
+                projectileEmitter.lastEmissionTime = Timer::getTicks();
+            }
         }
     }
 } // namespace Engine

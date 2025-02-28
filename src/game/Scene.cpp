@@ -25,6 +25,7 @@ namespace Engine
         m_registry->getSystem<MovementSystem>().update(timeStep);
         m_registry->getSystem<CollisionSystem>().update(eventBus);
         m_registry->getSystem<AnimationSystem>().update();
+        m_registry->getSystem<ProjectileEmitSystem>().update(*m_registry);
         m_registry->getSystem<CameraMovementSystem>().update(m_sceneData);
     }
 
@@ -68,7 +69,7 @@ namespace Engine
                               static_cast<float>(i) * static_cast<float>(tileHeight) * scale),
                     glm::vec2(scale, scale));
                 const int tileId{values[j]};
-                m_registry->addComponent<SpriteComponent>(tile, tilesetId, tileWidth, tileHeight, 0,
+                m_registry->addComponent<SpriteComponent>(tile, tilesetId, tileWidth, tileHeight, 0, false,
                                                           tileWidth * (tileId % tilesetColumns),
                                                           tileHeight * (tileId / tilesetColumns));
             }
@@ -87,6 +88,7 @@ namespace Engine
                                       m_renderer->loadTexture(texturesPath / "tank-panther-right.png"));
         m_resourceManager->addTexture("truck-right",
                                       m_renderer->loadTexture(texturesPath / "truck-ford-right.png"));
+        m_resourceManager->addTexture("bullet", m_renderer->loadTexture(texturesPath / "bullet.png"));
         Entity chopper{m_registry->createEntity()};
         chopper.addComponent<TransformComponent>(glm::vec2(300), glm::vec2(2));
         chopper.addComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
@@ -96,21 +98,25 @@ namespace Engine
         chopper.addComponent<KeyboardControlComponent>(glm::vec2(0, -0.4), glm::vec2(0.4, 0),
                                                        glm::vec2(0, 0.4), glm::vec2(-0.4, 0));
         chopper.addComponent<CameraFollowComponent>();
+        chopper.addComponent<HealthComponent>();
         Entity radar{m_registry->createEntity()};
         radar.addComponent<TransformComponent>(glm::vec2(400, 10), glm::vec2(2));
-        radar.addComponent<SpriteComponent>("radar", 64, 64, 2);
+        radar.addComponent<SpriteComponent>("radar", 64, 64, 2, true);
         radar.addComponent<AnimationComponent>(8, 5);
         Entity tank{m_registry->createEntity()};
-        tank.addComponent<TransformComponent>(glm::vec2(10), glm::vec2(2));
-        tank.addComponent<RigidBodyComponent>(glm::vec2(0.1, 0.1));
+        tank.addComponent<TransformComponent>(glm::vec2(500, 50), glm::vec2(2));
+        tank.addComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
         tank.addComponent<SpriteComponent>("tank-right", 32, 32, 1);
         tank.addComponent<BoxColliderComponent>(32, 32);
+        tank.addComponent<ProjectileEmitterComponent>(glm::vec2(0.1, 0), 5000, 10000, 0, false);
+        tank.addComponent<HealthComponent>();
         Entity truck{m_registry->createEntity()};
         truck.addComponent<TransformComponent>(glm::vec2(50, 50), glm::vec2(2));
-        truck.addComponent<RigidBodyComponent>(glm::vec2(0.05, 0.05));
+        truck.addComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
         truck.addComponent<SpriteComponent>("truck-right", 32, 32, 1);
         truck.addComponent<BoxColliderComponent>(32, 32);
-        truck.kill();
+        truck.addComponent<ProjectileEmitterComponent>(glm::vec2(0, 0.1), 2000, 10000, 0, false);
+        truck.addComponent<HealthComponent>();
     }
 
     void Scene::loadLevel(int level)
@@ -123,6 +129,7 @@ namespace Engine
         m_registry->addSystem<CollisionSystem>();
         m_registry->addSystem<DamageSystem>();
         m_registry->addSystem<KeyboardControlSystem>();
+        m_registry->addSystem<ProjectileEmitSystem>();
         m_registry->addSystem<CameraMovementSystem>();
         if (Game::instance().hasDebugCapability()) {
             m_registry->addSystem<BoxColliderRenderingSystem>();

@@ -68,6 +68,13 @@ namespace Engine
         CameraMovementSystem();
         void update(SceneData& sceneData);
     };
+
+    class ProjectileEmitSystem final : public System
+    {
+    public:
+        ProjectileEmitSystem();
+        void update(Registry& registry);
+    };
 } // namespace Engine
 
 #endif

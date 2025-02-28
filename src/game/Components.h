@@ -20,12 +20,13 @@ namespace Engine
 
     struct SpriteComponent final {
         SpriteComponent(std::string_view resourceId = "", int width = 0, int height = 0, int zIndex = 0,
-                        int sourceRectX = 0, int sourceRectY = 0)
+                        bool isPositionFixed = false, int sourceRectX = 0, int sourceRectY = 0)
             : resourceId{resourceId}
             , sourceRect{Rect{sourceRectX, sourceRectY, width, height}}
             , width{width}
             , height{height}
             , zIndex{zIndex}
+            , hasFixedPosition{isPositionFixed}
         {
         }
         std::string resourceId{};
@@ -33,6 +34,7 @@ namespace Engine
         int width{};
         int height{};
         int zIndex{};
+        bool hasFixedPosition{};
     };
 
     struct AnimationComponent final {
@@ -66,6 +68,29 @@ namespace Engine
     };
 
     struct CameraFollowComponent final {
+    };
+
+    struct ProjectileEmitterComponent final {
+        ProjectileEmitterComponent(glm::vec2 projectileVelocity = glm::vec2(0), int repeatFrequency = 0,
+                                   int projectileDuration = 10000, int hitPercentDamage = 10,
+                                   bool isProjectileFriendly = false)
+            : projectileVelocity{projectileVelocity}
+            , repeatFrequency{repeatFrequency}
+            , projectileDuration{projectileDuration}
+            , hitPercentDamage{hitPercentDamage}
+            , isProjectileFriendly{isProjectileFriendly}
+        {
+        }
+        glm::vec2 projectileVelocity{};
+        std::uint64_t lastEmissionTime{Timer::getTicks()};
+        int repeatFrequency{};
+        int projectileDuration{};
+        int hitPercentDamage{};
+        bool isProjectileFriendly{};
+    };
+
+    struct HealthComponent final {
+        int healthPercentage{100};
     };
 } // namespace Engine
 

@@ -1,2 +1,2 @@
 Checks:
-  cppcoreguidelines-*
+  cppcoreguidelines-*,-cppcoreguidelines-pro-type-union-access
