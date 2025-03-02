@@ -183,10 +183,29 @@ namespace Engine
 
     void DamageSystem::onCollision(CollisionEvent& event)
     {
-        Logger::trace("The damage system received an event collision between entities {} and {}",
-                      event.entity.getId(), event.otherEntity.getId());
-        // event.entity.kill();
-        // event.otherEntity.kill();
+        Logger::trace("Collision between entities {} and {}", event.entity.getId(),
+                      event.otherEntity.getId());
+        if (event.entity.belongsToGroup("enemy-projectiles") && event.otherEntity.hasTag("player")) {
+            onProjectileHitsEntity(event.entity, event.otherEntity);
+        } else if (event.entity.hasTag("player") && event.otherEntity.belongsToGroup("enemy-projectiles")) {
+            onProjectileHitsEntity(event.otherEntity, event.entity);
+        } else if (event.entity.belongsToGroup("player-projectiles") &&
+                   event.otherEntity.belongsToGroup("enemies")) {
+            onProjectileHitsEntity(event.entity, event.otherEntity);
+        } else if (event.entity.belongsToGroup("enemies") &&
+                   event.otherEntity.belongsToGroup("player-projectiles")) {
+            onProjectileHitsEntity(event.otherEntity, event.entity);
+        }
+    }
+
+    void DamageSystem::onProjectileHitsEntity(Entity& projectile, Entity& entity)
+    {
+        auto& health{entity.getComponent<HealthComponent>()};
+        const auto& damage{projectile.getComponent<DamageComponent>()};
+        health.healthPercentage -= damage.value;
+        if (health.healthPercentage <= 0)
+            entity.kill();
+        projectile.kill();
     }
 
     PlayerInputSystem::PlayerInputSystem()
@@ -232,7 +251,8 @@ namespace Engine
                                 glm::rotate(projectileVelocity, glm::radians(transform.rotation));
                         }
                         Game::instance().getEventBus().dispatchEvent<ProjectileEmitEvent>(
-                            entity, projectileVelocity, projectileEmitter.projectileDuration);
+                            entity, projectileVelocity, projectileEmitter.projectileDuration,
+                            projectileEmitter.hitPercentDamage, true);
                     }
                 }
                 break;
@@ -294,12 +314,14 @@ namespace Engine
             auto& projectileEmitter{entity.getComponent<ProjectileEmitterComponent>()};
             if (projectileEmitter.isAutoShoot && projectileEmitter.canShoot()) {
                 emitProjectile(entity, projectileEmitter.projectileVelocity,
-                               projectileEmitter.projectileDuration);
+                               projectileEmitter.projectileDuration, projectileEmitter.hitPercentDamage,
+                               projectileEmitter.isProjectileFriendly);
             }
         }
     }
 
-    void ProjectileEmitSystem::emitProjectile(const Entity& entity, glm::vec2 velocity, int duration)
+    void ProjectileEmitSystem::emitProjectile(const Entity& entity, glm::vec2 velocity, int duration,
+                                              int damage, bool isFriendly)
     {
         const auto& transform{entity.getComponent<TransformComponent>()};
         glm::vec2 projectilePosition{transform.position};
@@ -309,18 +331,22 @@ namespace Engine
             projectilePosition.y += static_cast<float>(sprite.height) * transform.scale.y / 2.0f;
         }
         Entity projectile{entity.getRegistry().createEntity()};
+        std::string group{isFriendly ? "player-projectiles" : "enemy-projectiles"};
+        projectile.group(group);
         projectile.addComponent<TransformComponent>(projectilePosition);
         projectile.addComponent<RigidBodyComponent>(velocity);
         projectile.addComponent<SpriteComponent>("bullet", 4, 4, 4);
         projectile.addComponent<BoxColliderComponent>(4, 4);
         projectile.addComponent<LifecycleComponent>(duration);
+        projectile.addComponent<DamageComponent>(damage);
         auto& projectileEmitter{entity.getComponent<ProjectileEmitterComponent>()};
         projectileEmitter.lastEmissionTime = Timer::getTicks();
     }
 
     void ProjectileEmitSystem::onEmitProjectile(ProjectileEmitEvent& event)
     {
-        emitProjectile(event.entity, event.velocity, event.duration);
+        emitProjectile(event.entity, event.velocity, event.projectileDuration, event.projectileDamage,
+                       event.isProjectileFriendly);
     }
 
     LifecycleSystem::LifecycleSystem()

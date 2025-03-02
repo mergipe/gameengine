@@ -64,7 +64,8 @@ namespace Engine
         for (size_t i{0}; i < tilemap.size(); ++i) {
             const std::vector<int> values{tilemap[i]};
             for (size_t j{0}; j < values.size(); ++j) {
-                const Entity tile{m_registry->createEntity()};
+                Entity tile{m_registry->createEntity()};
+                tile.group("tiles");
                 m_registry->addComponent<TransformComponent>(
                     tile,
                     glm::vec2(static_cast<float>(j) * static_cast<float>(tileWidth) * scale,
@@ -92,6 +93,7 @@ namespace Engine
                                       m_renderer->loadTexture(texturesPath / "truck-ford-right.png"));
         m_resourceManager->addTexture("bullet", m_renderer->loadTexture(texturesPath / "bullet.png"));
         Entity chopper{m_registry->createEntity()};
+        chopper.tag("player");
         chopper.addComponent<TransformComponent>(glm::vec2(300), glm::vec2(2));
         chopper.addComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
         chopper.addComponent<SpriteComponent>("chopper", 32, 32, 1);
@@ -100,24 +102,26 @@ namespace Engine
         chopper.addComponent<PlayerInputComponent>();
         chopper.addComponent<CameraFollowComponent>();
         chopper.addComponent<HealthComponent>();
-        chopper.addComponent<ProjectileEmitterComponent>(glm::vec2(0.4, 0.4), 200, 10000, 0, true, false);
+        chopper.addComponent<ProjectileEmitterComponent>(glm::vec2(0.4, 0.4), 200, 10000, 10, true, false);
         Entity radar{m_registry->createEntity()};
         radar.addComponent<TransformComponent>(glm::vec2(400, 10), glm::vec2(2));
         radar.addComponent<SpriteComponent>("radar", 64, 64, 2, true);
         radar.addComponent<AnimationComponent>(8, 5);
         Entity tank{m_registry->createEntity()};
+        tank.group("enemies");
         tank.addComponent<TransformComponent>(glm::vec2(500, 50), glm::vec2(2));
         tank.addComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
         tank.addComponent<SpriteComponent>("tank-right", 32, 32, 1);
         tank.addComponent<BoxColliderComponent>(32, 32);
-        tank.addComponent<ProjectileEmitterComponent>(glm::vec2(0.1, 0), 5000, 3000, 0, false);
+        tank.addComponent<ProjectileEmitterComponent>(glm::vec2(0.1, 0), 5000, 3000, 10, false);
         tank.addComponent<HealthComponent>();
         Entity truck{m_registry->createEntity()};
+        truck.group("enemies");
         truck.addComponent<TransformComponent>(glm::vec2(50, 50), glm::vec2(2));
         truck.addComponent<RigidBodyComponent>(glm::vec2(0.0, 0.0));
         truck.addComponent<SpriteComponent>("truck-right", 32, 32, 1);
         truck.addComponent<BoxColliderComponent>(32, 32);
-        truck.addComponent<ProjectileEmitterComponent>(glm::vec2(0, 0.1), 2000, 5000, 0, false);
+        truck.addComponent<ProjectileEmitterComponent>(glm::vec2(0, 0.1), 2000, 5000, 10, false);
         truck.addComponent<HealthComponent>();
     }
 

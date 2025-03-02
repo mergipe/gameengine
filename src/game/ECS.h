@@ -55,6 +55,10 @@ namespace Engine
         bool operator<(const Entity& e) const { return m_id < e.m_id; };
         size_t getId() const { return m_id; }
         void kill();
+        void tag(const std::string& tag);
+        bool hasTag(const std::string& tag) const;
+        void group(const std::string& group);
+        bool belongsToGroup(const std::string& group) const;
         Registry& getRegistry() const { return *m_registry; }
         template <typename TComponent, typename... TArgs> void addComponent(TArgs&&... args);
         template <typename TComponent> void removeComponent();
@@ -133,6 +137,14 @@ namespace Engine
         void killEntity(Entity entity);
         void addEntityToSystems(Entity entity);
         void removeEntityFromSystems(Entity entity);
+        void tagEntity(Entity entity, const std::string& tag);
+        bool hasTag(Entity entity, const std::string& tag) const;
+        Entity getEntityByTag(const std::string& tag) const;
+        void removeTag(Entity entity);
+        void groupEntity(Entity entity, const std::string& group);
+        bool belongsToGroup(Entity entity, const std::string& group) const;
+        std::vector<Entity> getEntitiesByGroup(const std::string& group) const;
+        void removeGroup(Entity entity);
         template <typename TComponent, typename... TArgs> void addComponent(Entity entity, TArgs&&... args);
         template <typename TComponent> void removeComponent(Entity entity);
         template <typename TComponent> bool hasComponent(Entity entity) const;
@@ -145,6 +157,10 @@ namespace Engine
     private:
         std::deque<size_t> m_freeEntityIds{};
         std::unordered_map<std::type_index, std::unique_ptr<System>> m_systems{};
+        std::unordered_map<std::string, Entity> m_entityPerTag{};
+        std::unordered_map<size_t, std::string> m_tagPerEntity{};
+        std::unordered_map<std::string, std::set<Entity>> m_entitiesPerGroup{};
+        std::unordered_map<size_t, std::string> m_groupPerEntity{};
         std::set<Entity> m_entitiesToBeAdded{};
         std::set<Entity> m_entitiesToBeKilled{};
         std::vector<std::unique_ptr<IPool>> m_componentPools{};

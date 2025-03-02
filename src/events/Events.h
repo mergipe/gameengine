@@ -38,13 +38,20 @@ namespace Engine
     };
 
     struct ProjectileEmitEvent final : public Event {
-        ProjectileEmitEvent(const Entity& entity, glm::vec2 velocity, int duration)
-            : entity{entity}, velocity{velocity}, duration{duration}
+        ProjectileEmitEvent(const Entity& entity, glm::vec2 velocity, int projectileDuration,
+                            int projectileDamage, bool isProjectileFriendly)
+            : entity{entity}
+            , velocity{velocity}
+            , projectileDuration{projectileDuration}
+            , projectileDamage{projectileDamage}
+            , isProjectileFriendly{isProjectileFriendly}
         {
         }
         Entity entity;
-        glm::vec2 velocity;
-        int duration;
+        glm::vec2 velocity{};
+        int projectileDuration{};
+        int projectileDamage{};
+        bool isProjectileFriendly{};
     };
 } // namespace Engine
 

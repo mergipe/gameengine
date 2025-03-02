@@ -57,9 +57,85 @@ namespace Engine
             removeEntityFromSystems(entity);
             m_entityComponentSignatures[entity.getId()].reset();
             m_freeEntityIds.push_back(entity.getId());
+            removeTag(entity);
+            removeGroup(entity);
         }
         m_entitiesToBeKilled.clear();
     }
 
+    void Registry::tagEntity(Entity entity, const std::string& tag)
+    {
+        m_entityPerTag.emplace(tag, entity);
+        m_tagPerEntity.emplace(entity.getId(), tag);
+    }
+
+    bool Registry::hasTag(Entity entity, const std::string& tag) const
+    {
+        if (m_tagPerEntity.find(entity.getId()) == m_tagPerEntity.end()) {
+            return false;
+        }
+        return m_entityPerTag.find(tag)->second == entity;
+    }
+
+    Entity Registry::getEntityByTag(const std::string& tag) const { return m_entityPerTag.at(tag); }
+
+    void Registry::removeTag(Entity entity)
+    {
+        const auto taggedEntity{m_tagPerEntity.find(entity.getId())};
+        if (taggedEntity != m_tagPerEntity.end()) {
+            const auto& tag{taggedEntity->second};
+            m_entityPerTag.erase(tag);
+            m_tagPerEntity.erase(taggedEntity);
+        }
+    }
+
+    void Registry::groupEntity(Entity entity, const std::string& group)
+    {
+        m_entitiesPerGroup.emplace(group, std::set<Entity>());
+        m_entitiesPerGroup[group].emplace(entity);
+        m_groupPerEntity.emplace(entity.getId(), group);
+    }
+
+    bool Registry::belongsToGroup(Entity entity, const std::string& group) const
+    {
+        if (m_entitiesPerGroup.find(group) == m_entitiesPerGroup.end()) {
+            return false;
+        }
+        const auto& groupEntities{m_entitiesPerGroup.at(group)};
+        return groupEntities.find(entity) != groupEntities.end();
+    }
+
+    std::vector<Entity> Registry::getEntitiesByGroup(const std::string& group) const
+    {
+        const auto& entities{m_entitiesPerGroup.at(group)};
+        return std::vector<Entity>(entities.begin(), entities.end());
+    }
+
+    void Registry::removeGroup(Entity entity)
+    {
+        const auto groupedEntity{m_groupPerEntity.find(entity.getId())};
+        if (groupedEntity != m_groupPerEntity.end()) {
+            const auto entitiesInGroup{m_entitiesPerGroup.find(groupedEntity->second)};
+            if (entitiesInGroup != m_entitiesPerGroup.end()) {
+                const auto entityInGroup{entitiesInGroup->second.find(entity)};
+                if (entityInGroup != entitiesInGroup->second.end()) {
+                    entitiesInGroup->second.erase(entityInGroup);
+                }
+            }
+            m_groupPerEntity.erase(groupedEntity);
+        }
+    }
+
     void Entity::kill() { m_registry->killEntity(*this); }
+
+    void Entity::tag(const std::string& tag) { m_registry->tagEntity(*this, tag); }
+
+    bool Entity::hasTag(const std::string& tag) const { return m_registry->hasTag(*this, tag); }
+
+    void Entity::group(const std::string& group) { m_registry->groupEntity(*this, group); }
+
+    bool Entity::belongsToGroup(const std::string& group) const
+    {
+        return m_registry->belongsToGroup(*this, group);
+    }
 } // namespace Engine

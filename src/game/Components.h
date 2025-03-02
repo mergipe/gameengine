@@ -93,6 +93,10 @@ namespace Engine
         int healthPercentage{100};
     };
 
+    struct DamageComponent final {
+        int value{0};
+    };
+
     struct LifecycleComponent final {
         LifecycleComponent(int duration = 0)
             : duration{duration}

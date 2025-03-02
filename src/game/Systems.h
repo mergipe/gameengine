@@ -53,6 +53,9 @@ namespace Engine
         DamageSystem();
         void subscribeToEvents(EventBus& eventBus);
         void onCollision(CollisionEvent& event);
+
+    private:
+        void onProjectileHitsEntity(Entity& projectile, Entity& entity);
     };
 
     class PlayerInputSystem final : public System
@@ -83,7 +86,8 @@ namespace Engine
         void onEmitProjectile(ProjectileEmitEvent& event);
 
     private:
-        void emitProjectile(const Entity& entity, glm::vec2 velocity, int duration);
+        void emitProjectile(const Entity& entity, glm::vec2 velocity, int duration, int damage,
+                            bool isFriendly);
     };
 
     class LifecycleSystem final : public System
