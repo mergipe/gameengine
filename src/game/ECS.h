@@ -55,6 +55,7 @@ namespace Engine
         bool operator<(const Entity& e) const { return m_id < e.m_id; };
         size_t getId() const { return m_id; }
         void kill();
+        Registry& getRegistry() const { return *m_registry; }
         template <typename TComponent, typename... TArgs> void addComponent(TArgs&&... args);
         template <typename TComponent> void removeComponent();
         template <typename TComponent> bool hasComponent() const;

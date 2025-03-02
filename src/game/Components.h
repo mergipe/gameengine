@@ -11,7 +11,7 @@ namespace Engine
     struct TransformComponent final {
         glm::vec2 position{0};
         glm::vec2 scale{1};
-        double rotation{0.0};
+        float rotation{0.0};
     };
 
     struct RigidBodyComponent final {
@@ -60,37 +60,46 @@ namespace Engine
         bool isColliding{};
     };
 
-    struct KeyboardControlComponent final {
-        glm::vec2 upVelocity{0};
-        glm::vec2 rightVelocity{0};
-        glm::vec2 downVelocity{0};
-        glm::vec2 leftVelocity{0};
+    struct PlayerInputComponent final {
     };
 
     struct CameraFollowComponent final {
     };
 
+    // this and ProjectileEmitSystem should become a script in the future
     struct ProjectileEmitterComponent final {
         ProjectileEmitterComponent(glm::vec2 projectileVelocity = glm::vec2(0), int repeatFrequency = 0,
                                    int projectileDuration = 10000, int hitPercentDamage = 10,
-                                   bool isProjectileFriendly = false)
+                                   bool isProjectileFriendly = false, bool isAutoShoot = true)
             : projectileVelocity{projectileVelocity}
-            , repeatFrequency{repeatFrequency}
+            , cooldown{repeatFrequency}
             , projectileDuration{projectileDuration}
             , hitPercentDamage{hitPercentDamage}
             , isProjectileFriendly{isProjectileFriendly}
+            , isAutoShoot{isAutoShoot}
         {
         }
+        bool canShoot() { return static_cast<int>(Timer::getTicks() - lastEmissionTime) > cooldown; }
         glm::vec2 projectileVelocity{};
         std::uint64_t lastEmissionTime{Timer::getTicks()};
-        int repeatFrequency{};
+        int cooldown{};
         int projectileDuration{};
         int hitPercentDamage{};
         bool isProjectileFriendly{};
+        bool isAutoShoot{};
     };
 
     struct HealthComponent final {
         int healthPercentage{100};
+    };
+
+    struct LifecycleComponent final {
+        LifecycleComponent(int duration = 0)
+            : duration{duration}
+        {
+        }
+        int duration{};
+        std::uint64_t startTime{Timer::getTicks()};
     };
 } // namespace Engine
 

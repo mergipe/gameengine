@@ -7,6 +7,7 @@
 #include "renderer/Camera.h"
 #include "renderer/Renderer.h"
 #include "resources/ResourceManager.h"
+#include <glm/glm.hpp>
 
 namespace Engine
 {
@@ -54,12 +55,15 @@ namespace Engine
         void onCollision(CollisionEvent& event);
     };
 
-    class KeyboardControlSystem final : public System
+    class PlayerInputSystem final : public System
     {
     public:
-        KeyboardControlSystem();
+        PlayerInputSystem();
         void subscribeToEvents(EventBus& eventBus);
         void onKeyPressed(KeyPressedEvent& event);
+
+    private:
+        void move(const Entity& entity, glm::vec2 velocity, int spriteIndex);
     };
 
     class CameraMovementSystem final : public System
@@ -69,11 +73,24 @@ namespace Engine
         void update(SceneData& sceneData);
     };
 
+    // this and ProjectileEmmiterComponent should become a script in the future
     class ProjectileEmitSystem final : public System
     {
     public:
         ProjectileEmitSystem();
-        void update(Registry& registry);
+        void subscribeToEvents(EventBus& eventBus);
+        void update();
+        void onEmitProjectile(ProjectileEmitEvent& event);
+
+    private:
+        void emitProjectile(const Entity& entity, glm::vec2 velocity, int duration);
+    };
+
+    class LifecycleSystem final : public System
+    {
+    public:
+        LifecycleSystem();
+        void update();
     };
 } // namespace Engine
 

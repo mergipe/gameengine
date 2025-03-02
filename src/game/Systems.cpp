@@ -9,6 +9,9 @@
 #include <SDL_keyboard.h>
 #include <algorithm>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/rotate_vector.hpp>
+
 namespace Engine
 {
     constexpr bool aabbHasCollided(double aX, double aY, double aW, double aH, double bX, double bY,
@@ -75,7 +78,7 @@ namespace Engine
                                         static_cast<float>(sprite.width) * transform.scale.x,
                                         static_cast<float>(sprite.height) * transform.scale.y};
             renderer.drawTexture(resourceManager.getTexture(sprite.resourceId), sprite.sourceRect,
-                                 destinationRect, transform.rotation);
+                                 destinationRect, 0.0);
         }
     }
 
@@ -186,48 +189,70 @@ namespace Engine
         // event.otherEntity.kill();
     }
 
-    KeyboardControlSystem::KeyboardControlSystem()
+    PlayerInputSystem::PlayerInputSystem()
         : System{}
     {
-        requireComponent<KeyboardControlComponent>();
-        requireComponent<SpriteComponent>();
-        requireComponent<RigidBodyComponent>();
+        requireComponent<PlayerInputComponent>();
     }
 
-    void KeyboardControlSystem::subscribeToEvents(EventBus& eventBus)
+    void PlayerInputSystem::subscribeToEvents(EventBus& eventBus)
     {
-        eventBus.addSubscriber<KeyPressedEvent, KeyboardControlSystem>(this,
-                                                                       &KeyboardControlSystem::onKeyPressed);
+        eventBus.addSubscriber<KeyPressedEvent, PlayerInputSystem>(this, &PlayerInputSystem::onKeyPressed);
     }
 
-    void KeyboardControlSystem::onKeyPressed(KeyPressedEvent& event)
+    void PlayerInputSystem::onKeyPressed(KeyPressedEvent& event)
     {
+        float velocityMagnitude{0.2f};
         for (const auto& entity : getEntities()) {
-            const auto& keyboardControl{entity.getComponent<KeyboardControlComponent>()};
-            auto& sprite{entity.getComponent<SpriteComponent>()};
-            auto& rigidBody{entity.getComponent<RigidBodyComponent>()};
             switch (event.keyCode) {
             case SDLK_UP:
             case SDLK_w:
-                rigidBody.velocity = keyboardControl.upVelocity;
-                sprite.sourceRect.y = sprite.height * 0;
+                move(entity, glm::vec2(0, -velocityMagnitude), 0);
                 break;
             case SDLK_RIGHT:
             case SDLK_d:
-                rigidBody.velocity = keyboardControl.rightVelocity;
-                sprite.sourceRect.y = sprite.height * 1;
+                move(entity, glm::vec2(velocityMagnitude, 0), 1);
                 break;
             case SDLK_DOWN:
             case SDLK_s:
-                rigidBody.velocity = keyboardControl.downVelocity;
-                sprite.sourceRect.y = sprite.height * 2;
+                move(entity, glm::vec2(0, velocityMagnitude), 2);
                 break;
             case SDLK_LEFT:
             case SDLK_a:
-                rigidBody.velocity = keyboardControl.leftVelocity;
-                sprite.sourceRect.y = sprite.height * 3;
+                move(entity, glm::vec2(-velocityMagnitude, 0), 3);
+                break;
+            case SDLK_SPACE:
+                if (entity.hasComponent<ProjectileEmitterComponent>()) {
+                    auto& projectileEmitter{entity.getComponent<ProjectileEmitterComponent>()};
+                    if (projectileEmitter.canShoot()) {
+                        glm::vec2 projectileVelocity{0, -projectileEmitter.projectileVelocity.y};
+                        if (entity.hasComponent<TransformComponent>()) {
+                            const auto& transform{entity.getComponent<TransformComponent>()};
+                            projectileVelocity =
+                                glm::rotate(projectileVelocity, glm::radians(transform.rotation));
+                        }
+                        Game::instance().getEventBus().dispatchEvent<ProjectileEmitEvent>(
+                            entity, projectileVelocity, projectileEmitter.projectileDuration);
+                    }
+                }
                 break;
             }
+        }
+    }
+
+    void PlayerInputSystem::move(const Entity& entity, glm::vec2 velocity, int spriteIndex)
+    {
+        if (entity.hasComponent<RigidBodyComponent>()) {
+            auto& rigidBody{entity.getComponent<RigidBodyComponent>()};
+            rigidBody.velocity = velocity;
+        }
+        if (entity.hasComponent<SpriteComponent>()) {
+            auto& sprite{entity.getComponent<SpriteComponent>()};
+            sprite.sourceRect.y = sprite.height * spriteIndex;
+        }
+        if (entity.hasComponent<TransformComponent>()) {
+            auto& transform{entity.getComponent<TransformComponent>()};
+            transform.rotation = static_cast<float>(spriteIndex) * 90.0f;
         }
     }
 
@@ -257,25 +282,59 @@ namespace Engine
         requireComponent<TransformComponent>();
     }
 
-    void ProjectileEmitSystem::update(Registry& registry)
+    void ProjectileEmitSystem::subscribeToEvents(EventBus& eventBus)
+    {
+        eventBus.addSubscriber<ProjectileEmitEvent, ProjectileEmitSystem>(
+            this, &ProjectileEmitSystem::onEmitProjectile);
+    }
+
+    void ProjectileEmitSystem::update()
     {
         for (const auto& entity : getEntities()) {
             auto& projectileEmitter{entity.getComponent<ProjectileEmitterComponent>()};
-            const auto& transform{entity.getComponent<TransformComponent>()};
-            if (static_cast<int>(Timer::getTicks() - projectileEmitter.lastEmissionTime) >
-                projectileEmitter.repeatFrequency) {
-                glm::vec2 projectilePosition{transform.position};
-                if (entity.hasComponent<SpriteComponent>()) {
-                    const auto& sprite{entity.getComponent<SpriteComponent>()};
-                    projectilePosition.x += static_cast<float>(sprite.width) * transform.scale.x / 2.0f;
-                    projectilePosition.y += static_cast<float>(sprite.height) * transform.scale.y / 2.0f;
-                }
-                Entity projectile{registry.createEntity()};
-                projectile.addComponent<TransformComponent>(projectilePosition);
-                projectile.addComponent<RigidBodyComponent>(projectileEmitter.projectileVelocity);
-                projectile.addComponent<SpriteComponent>("bullet", 4, 4, 4);
-                projectile.addComponent<BoxColliderComponent>(4, 4);
-                projectileEmitter.lastEmissionTime = Timer::getTicks();
+            if (projectileEmitter.isAutoShoot && projectileEmitter.canShoot()) {
+                emitProjectile(entity, projectileEmitter.projectileVelocity,
+                               projectileEmitter.projectileDuration);
+            }
+        }
+    }
+
+    void ProjectileEmitSystem::emitProjectile(const Entity& entity, glm::vec2 velocity, int duration)
+    {
+        const auto& transform{entity.getComponent<TransformComponent>()};
+        glm::vec2 projectilePosition{transform.position};
+        if (entity.hasComponent<SpriteComponent>()) {
+            const auto& sprite{entity.getComponent<SpriteComponent>()};
+            projectilePosition.x += static_cast<float>(sprite.width) * transform.scale.x / 2.0f;
+            projectilePosition.y += static_cast<float>(sprite.height) * transform.scale.y / 2.0f;
+        }
+        Entity projectile{entity.getRegistry().createEntity()};
+        projectile.addComponent<TransformComponent>(projectilePosition);
+        projectile.addComponent<RigidBodyComponent>(velocity);
+        projectile.addComponent<SpriteComponent>("bullet", 4, 4, 4);
+        projectile.addComponent<BoxColliderComponent>(4, 4);
+        projectile.addComponent<LifecycleComponent>(duration);
+        auto& projectileEmitter{entity.getComponent<ProjectileEmitterComponent>()};
+        projectileEmitter.lastEmissionTime = Timer::getTicks();
+    }
+
+    void ProjectileEmitSystem::onEmitProjectile(ProjectileEmitEvent& event)
+    {
+        emitProjectile(event.entity, event.velocity, event.duration);
+    }
+
+    LifecycleSystem::LifecycleSystem()
+        : System{}
+    {
+        requireComponent<LifecycleComponent>();
+    }
+
+    void LifecycleSystem::update()
+    {
+        for (auto& entity : getEntities()) {
+            const auto& lifecycle{entity.getComponent<LifecycleComponent>()};
+            if (static_cast<int>(Timer::getTicks() - lifecycle.startTime) > lifecycle.duration) {
+                entity.kill();
             }
         }
     }
