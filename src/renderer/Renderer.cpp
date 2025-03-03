@@ -38,10 +38,13 @@ namespace Engine
         SDL_SetRenderDrawColor(m_renderingContext, color.r, color.g, color.b, color.a);
     }
 
-    void Renderer::drawRectangle(float x, float y, float width, float height)
+    void Renderer::drawRectangle(FRect rect, bool fill)
     {
-        const FRect rect{x, y, width, height};
-        SDL_RenderDrawRectF(m_renderingContext, &rect);
+        if (fill) {
+            SDL_RenderFillRectF(m_renderingContext, &rect);
+        } else {
+            SDL_RenderDrawRectF(m_renderingContext, &rect);
+        }
     }
 
     void Renderer::drawTexture(const Texture& texture, const Rect& sourceRect, const FRect& destinationRect,

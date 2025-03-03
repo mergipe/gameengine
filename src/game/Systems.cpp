@@ -33,7 +33,6 @@ namespace Engine
     }
 
     MovementSystem::MovementSystem()
-        : System{}
     {
         requireComponent<TransformComponent>();
         requireComponent<RigidBodyComponent>();
@@ -49,7 +48,6 @@ namespace Engine
     };
 
     SpriteRenderingSystem::SpriteRenderingSystem()
-        : System{}
     {
         requireComponent<TransformComponent>();
         requireComponent<SpriteComponent>();
@@ -83,7 +81,6 @@ namespace Engine
     }
 
     AnimationSystem::AnimationSystem()
-        : System{}
     {
         requireComponent<SpriteComponent>();
         requireComponent<AnimationComponent>();
@@ -102,7 +99,6 @@ namespace Engine
     }
 
     CollisionSystem::CollisionSystem()
-        : System{}
     {
         requireComponent<TransformComponent>();
         requireComponent<BoxColliderComponent>();
@@ -139,7 +135,6 @@ namespace Engine
     }
 
     BoxColliderRenderingSystem::BoxColliderRenderingSystem()
-        : System{}
     {
         requireComponent<TransformComponent>();
         requireComponent<BoxColliderComponent>();
@@ -163,18 +158,15 @@ namespace Engine
                 renderer.setDrawColor(Color{255, 255, 0, 255});
             }
             renderPosition = getRenderPosition(renderPosition, camera);
-            renderer.drawRectangle(renderPosition.x + boxCollider.offset.x,
-                                   renderPosition.y + boxCollider.offset.y,
-                                   static_cast<float>(boxCollider.width) * transform.scale.x,
-                                   static_cast<float>(boxCollider.height) * transform.scale.y);
+            renderer.drawRectangle({renderPosition.x + boxCollider.offset.x,
+                                    renderPosition.y + boxCollider.offset.y,
+                                    static_cast<float>(boxCollider.width) * transform.scale.x,
+                                    static_cast<float>(boxCollider.height) * transform.scale.y},
+                                   false);
         }
     }
 
-    DamageSystem::DamageSystem()
-        : System{}
-    {
-        requireComponent<BoxColliderComponent>();
-    }
+    DamageSystem::DamageSystem() { requireComponent<BoxColliderComponent>(); }
 
     void DamageSystem::subscribeToEvents(EventBus& eventBus)
     {
@@ -208,11 +200,7 @@ namespace Engine
         projectile.kill();
     }
 
-    PlayerInputSystem::PlayerInputSystem()
-        : System{}
-    {
-        requireComponent<PlayerInputComponent>();
-    }
+    PlayerInputSystem::PlayerInputSystem() { requireComponent<PlayerInputComponent>(); }
 
     void PlayerInputSystem::subscribeToEvents(EventBus& eventBus)
     {
@@ -277,7 +265,6 @@ namespace Engine
     }
 
     CameraMovementSystem::CameraMovementSystem()
-        : System{}
     {
         requireComponent<CameraFollowComponent>();
         requireComponent<TransformComponent>();
@@ -296,7 +283,6 @@ namespace Engine
     }
 
     ProjectileEmitSystem::ProjectileEmitSystem()
-        : System{}
     {
         requireComponent<ProjectileEmitterComponent>();
         requireComponent<TransformComponent>();
@@ -349,11 +335,7 @@ namespace Engine
                        event.isProjectileFriendly);
     }
 
-    LifecycleSystem::LifecycleSystem()
-        : System{}
-    {
-        requireComponent<LifecycleComponent>();
-    }
+    LifecycleSystem::LifecycleSystem() { requireComponent<LifecycleComponent>(); }
 
     void LifecycleSystem::update()
     {
@@ -365,14 +347,14 @@ namespace Engine
         }
     }
 
-    RenderTextSystem::RenderTextSystem()
-        : System{}
+    TextRenderingSystem::TextRenderingSystem()
     {
         requireComponent<TransformComponent>();
         requireComponent<TextComponent>();
     }
 
-    void RenderTextSystem::update(Renderer& renderer, const AssetManager& assetManager, const Camera& camera)
+    void TextRenderingSystem::update(Renderer& renderer, const AssetManager& assetManager,
+                                     const Camera& camera)
     {
         for (const auto& entity : getEntities()) {
             const auto& transform{entity.getComponent<TransformComponent>()};
@@ -383,6 +365,42 @@ namespace Engine
                 renderPosition = getRenderPosition(renderPosition, camera);
             }
             renderer.drawText(font, text.text, text.color, renderPosition);
+        }
+    }
+
+    HealthBarRenderingSystem::HealthBarRenderingSystem()
+    {
+        requireComponent<TransformComponent>();
+        requireComponent<SpriteComponent>();
+        requireComponent<HealthComponent>();
+    }
+
+    void HealthBarRenderingSystem::update(Renderer& renderer, const Font& font, const Camera& camera)
+    {
+        for (const auto& entity : getEntities()) {
+            const auto& transform{entity.getComponent<TransformComponent>()};
+            const auto& sprite{entity.getComponent<SpriteComponent>()};
+            const auto& health{entity.getComponent<HealthComponent>()};
+            Color color;
+            if (health.healthPercentage <= 20) {
+                color = {255, 0, 0, 255};
+            } else if (health.healthPercentage <= 70) {
+                color = {255, 165, 0, 255};
+            } else {
+                color = {0, 255, 0, 255};
+            }
+            std::string text{std::to_string(health.healthPercentage) + '%'};
+            int barHeight{4};
+            glm::vec2 entityPosition{getRenderPosition(transform.position, camera)};
+            glm::vec2 barPosition{entityPosition.x, entityPosition.y - 2.0f - static_cast<float>(barHeight)};
+            glm::vec2 textPosition{barPosition.x, barPosition.y - 18.0f};
+            renderer.setDrawColor(color);
+            renderer.drawText(font, text, color, textPosition);
+            renderer.drawRectangle({barPosition.x, barPosition.y,
+                                    static_cast<float>(sprite.width) * transform.scale.x *
+                                        static_cast<float>(health.healthPercentage) / 100.0f,
+                                    static_cast<float>(barHeight)},
+                                   true);
         }
     }
 } // namespace Engine

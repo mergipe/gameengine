@@ -37,7 +37,9 @@ namespace Engine
         m_renderer->clear();
         m_registry->getSystem<SpriteRenderingSystem>().update(*m_renderer, *m_assetManager,
                                                               m_sceneData.camera, frameExtrapolationTimeStep);
-        m_registry->getSystem<RenderTextSystem>().update(*m_renderer, *m_assetManager, m_sceneData.camera);
+        m_registry->getSystem<TextRenderingSystem>().update(*m_renderer, *m_assetManager, m_sceneData.camera);
+        m_registry->getSystem<HealthBarRenderingSystem>().update(
+            *m_renderer, m_assetManager->getFont("charriot-15"), m_sceneData.camera);
         if (Game::instance().isDebugModeActivated()) {
             m_registry->getSystem<BoxColliderRenderingSystem>().update(*m_renderer, m_sceneData.camera,
                                                                        frameExtrapolationTimeStep);
@@ -126,7 +128,7 @@ namespace Engine
         truck.addComponent<HealthComponent>();
         Entity label{m_registry->createEntity()};
         label.addComponent<TransformComponent>(glm::vec2{20, 20});
-        label.addComponent<TextComponent>("CHOPPER 1.0", "charriot-font", Color{0, 255, 0, 255}, true);
+        label.addComponent<TextComponent>("CHOPPER 1.0", "charriot-20", Color{0, 255, 0, 255}, true);
     }
 
     void Scene::loadLevel(int level)
@@ -142,12 +144,14 @@ namespace Engine
         m_registry->addSystem<ProjectileEmitSystem>();
         m_registry->addSystem<LifecycleSystem>();
         m_registry->addSystem<CameraMovementSystem>();
-        m_registry->addSystem<RenderTextSystem>();
+        m_registry->addSystem<TextRenderingSystem>();
+        m_registry->addSystem<HealthBarRenderingSystem>();
         if (Game::instance().hasDebugCapability()) {
             m_registry->addSystem<BoxColliderRenderingSystem>();
         }
         std::filesystem::path fontsPath{m_assetManager->getAssetPath(Game::s_fontsFolder)};
-        m_assetManager->addFont("charriot-font", fontsPath / "charriot.ttf", 20);
+        m_assetManager->addFont("charriot-20", fontsPath / "charriot.ttf", 20);
+        m_assetManager->addFont("charriot-15", fontsPath / "charriot.ttf", 15);
         loadMap("jungle.png", "jungle.map", 32, 32, 10, 4.0);
         loadEntities();
     }

@@ -24,7 +24,7 @@ namespace Engine
         ~Renderer();
         std::unique_ptr<Texture> loadTexture(const std::filesystem::path& filepath);
         void setDrawColor(const Color& color);
-        void drawRectangle(float x, float y, float width, float height);
+        void drawRectangle(FRect rect, bool fill);
         void drawTexture(const Texture& texture, const Rect& sourceRect, const FRect& destinationRect,
                          double rotationAngle);
         void drawText(const Font& font, std::string_view text, const Color& color, glm::vec2 position);

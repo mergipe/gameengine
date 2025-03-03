@@ -97,11 +97,18 @@ namespace Engine
         void update();
     };
 
-    class RenderTextSystem final : public System
+    class TextRenderingSystem final : public System
     {
     public:
-        RenderTextSystem();
+        TextRenderingSystem();
         void update(Renderer& renderer, const AssetManager& assetManager, const Camera& camera);
+    };
+
+    class HealthBarRenderingSystem final : public System
+    {
+    public:
+        HealthBarRenderingSystem();
+        void update(Renderer& renderer, const Font& font, const Camera& camera);
     };
 } // namespace Engine
 
