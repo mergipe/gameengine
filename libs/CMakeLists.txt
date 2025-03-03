@@ -4,6 +4,9 @@ target_include_directories(glm SYSTEM INTERFACE glm/include)
 add_library(sol INTERFACE)
 target_include_directories(sol SYSTEM INTERFACE sol/include)
 
+add_library(entt INTERFACE)
+target_include_directories(entt SYSTEM INTERFACE entt/include)
+
 set(IMGUI_SRC_DIR imgui/include/imgui)
 add_library(
     imgui

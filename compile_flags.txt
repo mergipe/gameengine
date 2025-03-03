@@ -9,6 +9,7 @@
 -xc++
 -I./libs/glm/include
 -I./libs/sol/include
+-I./libs/entt/include
 -I./libs/spdlog/include
 -I./libs/imgui/include
 -I./src
