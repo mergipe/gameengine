@@ -4,6 +4,7 @@
 #include "renderer/Renderer.h"
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #include <iostream>
 
 namespace Engine
@@ -24,11 +25,14 @@ namespace Engine
         if (!(IMG_Init(flags) & flags)) {
             Logger::error("Failed to initialize SDL_image: {}", IMG_GetError());
         }
+        if (!TTF_Init()) {
+            Logger::error("Failed to initialize SDL_ttf: {}", TTF_GetError());
+        }
         m_basePath = std::filesystem::canonical(SDL_GetBasePath()).parent_path();
         Logger::init(m_basePath / s_logFilepath);
         m_window = std::make_unique<Window>(s_windowTitle, s_windowWidth, s_windowHeight);
         m_renderer = std::make_unique<Renderer>(*m_window);
-        m_resourceManager = std::make_unique<ResourceManager>(m_basePath / s_resourcesFolder);
+        m_assetManager = std::make_unique<AssetManager>(m_basePath / s_assetsFolder);
         m_eventBus = std::make_unique<EventBus>();
         Logger::info("Game initialized");
     }
@@ -37,8 +41,8 @@ namespace Engine
     {
         Logger::info("Game started to run");
         m_isRunning = true;
-        m_currentScene = std::make_unique<Scene>(m_renderer.get(), m_resourceManager.get(),
-                                                 m_window->getWidth(), m_window->getHeight());
+        m_currentScene = std::make_unique<Scene>(m_renderer.get(), m_assetManager.get(), m_window->getWidth(),
+                                                 m_window->getHeight());
         std::uint64_t previousTicks{Timer::getTicks()};
         float lag{0.0f};
         while (m_isRunning) {
@@ -58,12 +62,13 @@ namespace Engine
     void Game::shutDown()
     {
         m_eventBus.reset();
-        m_resourceManager.reset();
+        m_assetManager.reset();
         m_renderer.reset();
         m_window.reset();
-        Logger::info("Game resources destroyed");
+        TTF_Quit();
         IMG_Quit();
         SDL_Quit();
+        Logger::info("Game resources destroyed");
     }
 
     void Game::processInput()

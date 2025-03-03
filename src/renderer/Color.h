@@ -1,16 +1,11 @@
 #ifndef COLOR_H
 #define COLOR_H
 
-#include <cstdint>
+#include <SDL_pixels.h>
 
 namespace Engine
 {
-    struct Color {
-        std::uint8_t r;
-        std::uint8_t g;
-        std::uint8_t b;
-        std::uint8_t a;
-    };
+    using Color = SDL_Color;
 } // namespace Engine
 
 #endif

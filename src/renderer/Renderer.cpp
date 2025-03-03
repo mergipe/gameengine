@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include "core/Logger.h"
 #include <SDL_image.h>
+#include <SDL_render.h>
 
 namespace Engine
 {
@@ -48,6 +49,20 @@ namespace Engine
     {
         SDL_RenderCopyExF(m_renderingContext, texture.getData(), &sourceRect, &destinationRect, rotationAngle,
                           nullptr, SDL_FLIP_NONE);
+    }
+
+    void Renderer::drawText(const Font& font, std::string_view text, const Color& color, glm::vec2 position)
+    {
+        SDL_Surface* surface{TTF_RenderText_Blended(font.getData(), text.data(), color)};
+        SDL_Texture* texture{SDL_CreateTextureFromSurface(m_renderingContext, surface)};
+        SDL_FreeSurface(surface);
+        int textWidth{};
+        int textHeight{};
+        SDL_QueryTexture(texture, nullptr, nullptr, &textWidth, &textHeight);
+        FRect destinationRect{position.x, position.y, static_cast<float>(textWidth),
+                              static_cast<float>(textHeight)};
+        SDL_RenderCopyF(m_renderingContext, texture, nullptr, &destinationRect);
+        SDL_DestroyTexture(texture);
     }
 
     void Renderer::clear() { SDL_RenderClear(m_renderingContext); }

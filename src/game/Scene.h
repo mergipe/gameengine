@@ -2,9 +2,9 @@
 #define SCENE_H
 
 #include "ECS.h"
+#include "assets/AssetManager.h"
 #include "renderer/Camera.h"
 #include "renderer/Renderer.h"
-#include "resources/ResourceManager.h"
 #include <memory>
 #include <string_view>
 
@@ -19,7 +19,7 @@ namespace Engine
     class Scene final
     {
     public:
-        Scene(Renderer* renderer, ResourceManager* resourceManager, int windowWidth, int windowHeight);
+        Scene(Renderer* renderer, AssetManager* assetManager, int windowWidth, int windowHeight);
         Scene(const Scene&) = delete;
         Scene(Scene&&) = delete;
         Scene& operator=(const Scene&) = delete;
@@ -35,7 +35,7 @@ namespace Engine
         void loadLevel(int level);
         std::unique_ptr<Registry> m_registry{};
         Renderer* m_renderer{};
-        ResourceManager* m_resourceManager{};
+        AssetManager* m_assetManager{};
         SceneData m_sceneData{};
     };
 } // namespace Engine

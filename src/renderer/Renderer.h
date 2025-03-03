@@ -2,11 +2,13 @@
 #define RENDERER_H
 
 #include "Color.h"
+#include "Font.h"
 #include "Rect.h"
 #include "Texture.h"
 #include "core/Window.h"
 #include <SDL_render.h>
 #include <filesystem>
+#include <glm/glm.hpp>
 #include <memory>
 
 namespace Engine
@@ -25,6 +27,7 @@ namespace Engine
         void drawRectangle(float x, float y, float width, float height);
         void drawTexture(const Texture& texture, const Rect& sourceRect, const FRect& destinationRect,
                          double rotationAngle);
+        void drawText(const Font& font, std::string_view text, const Color& color, glm::vec2 position);
         void clear();
         void present();
 

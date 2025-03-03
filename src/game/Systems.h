@@ -2,11 +2,11 @@
 #define SYSTEMS_H
 
 #include "ECS.h"
+#include "assets/AssetManager.h"
 #include "events/EventBus.h"
 #include "game/Scene.h"
 #include "renderer/Camera.h"
 #include "renderer/Renderer.h"
-#include "resources/ResourceManager.h"
 #include <glm/glm.hpp>
 
 namespace Engine
@@ -22,7 +22,7 @@ namespace Engine
     {
     public:
         SpriteRenderingSystem();
-        void update(Renderer& renderer, const ResourceManager& resourceManager, const Camera& camera,
+        void update(Renderer& renderer, const AssetManager& assetManager, const Camera& camera,
                     float frameExtrapolationTimeStep);
     };
 
@@ -95,6 +95,13 @@ namespace Engine
     public:
         LifecycleSystem();
         void update();
+    };
+
+    class RenderTextSystem final : public System
+    {
+    public:
+        RenderTextSystem();
+        void update(Renderer& renderer, const AssetManager& assetManager, const Camera& camera);
     };
 } // namespace Engine
 

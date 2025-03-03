@@ -55,7 +55,7 @@ namespace Engine
         requireComponent<SpriteComponent>();
     }
 
-    void SpriteRenderingSystem::update(Renderer& renderer, const ResourceManager& resourceManager,
+    void SpriteRenderingSystem::update(Renderer& renderer, const AssetManager& assetManager,
                                        const Camera& camera, float frameExtrapolationTimeStep)
     {
         std::vector<Entity> entities{getEntities()};
@@ -77,8 +77,8 @@ namespace Engine
             const FRect destinationRect{renderPosition.x, renderPosition.y,
                                         static_cast<float>(sprite.width) * transform.scale.x,
                                         static_cast<float>(sprite.height) * transform.scale.y};
-            renderer.drawTexture(resourceManager.getTexture(sprite.resourceId), sprite.sourceRect,
-                                 destinationRect, 0.0);
+            renderer.drawTexture(assetManager.getTexture(sprite.assetId), sprite.sourceRect, destinationRect,
+                                 0.0);
         }
     }
 
@@ -226,19 +226,19 @@ namespace Engine
             switch (event.keyCode) {
             case SDLK_UP:
             case SDLK_w:
-                move(entity, glm::vec2(0, -velocityMagnitude), 0);
+                move(entity, glm::vec2{0, -velocityMagnitude}, 0);
                 break;
             case SDLK_RIGHT:
             case SDLK_d:
-                move(entity, glm::vec2(velocityMagnitude, 0), 1);
+                move(entity, glm::vec2{velocityMagnitude, 0}, 1);
                 break;
             case SDLK_DOWN:
             case SDLK_s:
-                move(entity, glm::vec2(0, velocityMagnitude), 2);
+                move(entity, glm::vec2{0, velocityMagnitude}, 2);
                 break;
             case SDLK_LEFT:
             case SDLK_a:
-                move(entity, glm::vec2(-velocityMagnitude, 0), 3);
+                move(entity, glm::vec2{-velocityMagnitude, 0}, 3);
                 break;
             case SDLK_SPACE:
                 if (entity.hasComponent<ProjectileEmitterComponent>()) {
@@ -362,6 +362,27 @@ namespace Engine
             if (static_cast<int>(Timer::getTicks() - lifecycle.startTime) > lifecycle.duration) {
                 entity.kill();
             }
+        }
+    }
+
+    RenderTextSystem::RenderTextSystem()
+        : System{}
+    {
+        requireComponent<TransformComponent>();
+        requireComponent<TextComponent>();
+    }
+
+    void RenderTextSystem::update(Renderer& renderer, const AssetManager& assetManager, const Camera& camera)
+    {
+        for (const auto& entity : getEntities()) {
+            const auto& transform{entity.getComponent<TransformComponent>()};
+            const auto& text{entity.getComponent<TextComponent>()};
+            const Font& font{assetManager.getFont(text.assetId)};
+            glm::vec2 renderPosition{transform.position};
+            if (!text.hasFixedPosition) {
+                renderPosition = getRenderPosition(renderPosition, camera);
+            }
+            renderer.drawText(font, text.text, text.color, renderPosition);
         }
     }
 } // namespace Engine

@@ -2,6 +2,7 @@
 #define COMPONENTS_H
 
 #include "core/Timer.h"
+#include "renderer/Color.h"
 #include "renderer/Rect.h"
 #include <glm/glm.hpp>
 #include <string>
@@ -19,9 +20,9 @@ namespace Engine
     };
 
     struct SpriteComponent final {
-        SpriteComponent(std::string_view resourceId = "", int width = 0, int height = 0, int zIndex = 0,
+        SpriteComponent(std::string_view assetId = "", int width = 0, int height = 0, int zIndex = 0,
                         bool isPositionFixed = false, int sourceRectX = 0, int sourceRectY = 0)
-            : resourceId{resourceId}
+            : assetId{assetId}
             , sourceRect{Rect{sourceRectX, sourceRectY, width, height}}
             , width{width}
             , height{height}
@@ -29,7 +30,7 @@ namespace Engine
             , hasFixedPosition{isPositionFixed}
         {
         }
-        std::string resourceId{};
+        std::string assetId{};
         Rect sourceRect{};
         int width{};
         int height{};
@@ -50,7 +51,7 @@ namespace Engine
     };
 
     struct BoxColliderComponent final {
-        BoxColliderComponent(int width = 0, int height = 0, const glm::vec2& offset = glm::vec2(0))
+        BoxColliderComponent(int width = 0, int height = 0, const glm::vec2& offset = glm::vec2{0})
             : offset{offset}, width{width}, height{height}
         {
         }
@@ -68,7 +69,7 @@ namespace Engine
 
     // this and ProjectileEmitSystem should become a script in the future
     struct ProjectileEmitterComponent final {
-        ProjectileEmitterComponent(glm::vec2 projectileVelocity = glm::vec2(0), int repeatFrequency = 0,
+        ProjectileEmitterComponent(glm::vec2 projectileVelocity = glm::vec2{0}, int repeatFrequency = 0,
                                    int projectileDuration = 10000, int hitPercentDamage = 10,
                                    bool isProjectileFriendly = false, bool isAutoShoot = true)
             : projectileVelocity{projectileVelocity}
@@ -104,6 +105,13 @@ namespace Engine
         }
         int duration{};
         std::uint64_t startTime{Timer::getTicks()};
+    };
+
+    struct TextComponent {
+        std::string text{};
+        std::string assetId{};
+        Color color{0, 0, 0, 0};
+        bool hasFixedPosition{true};
     };
 } // namespace Engine
 
