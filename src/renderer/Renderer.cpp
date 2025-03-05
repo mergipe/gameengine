@@ -30,6 +30,7 @@ namespace Engine
             Logger::error("Failed to load texture from {}: {}", filepath.c_str(), SDL_GetError());
         }
         Logger::info("Texture loaded from {}", filepathStr);
+        SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
         return std::make_unique<Texture>(filepathStr, texture);
     }
 
