@@ -1,27 +1,51 @@
 #ifndef SYSTEMS_H
 #define SYSTEMS_H
 
-#include "ECS.h"
 #include "assets/AssetManager.h"
 #include "events/EventBus.h"
-#include "game/Scene.h"
+#include "game/SceneData.h"
 #include "renderer/Camera.h"
 #include "renderer/Renderer.h"
+#include <entt/entt.hpp>
 #include <glm/glm.hpp>
 
 namespace Engine
 {
+    class System
+    {
+    public:
+        System(entt::registry* registry)
+            : m_registry{registry}
+        {
+        }
+        System(const System&) = delete;
+        System(System&&) = delete;
+        System& operator=(const System&) = delete;
+        System& operator=(System&&) = delete;
+        virtual ~System() = default;
+        entt::registry& getRegistry() const { return *m_registry; }
+
+    private:
+        entt::registry* m_registry{};
+    };
+
     class MovementSystem final : public System
     {
     public:
-        MovementSystem();
+        MovementSystem(entt::registry* registry)
+            : System{registry}
+        {
+        }
         void update(float timeStep);
     };
 
     class SpriteRenderingSystem final : public System
     {
     public:
-        SpriteRenderingSystem();
+        SpriteRenderingSystem(entt::registry* registry)
+            : System{registry}
+        {
+        }
         void update(Renderer& renderer, const AssetManager& assetManager, const Camera& camera,
                     float frameExtrapolationTimeStep);
     };
@@ -29,50 +53,68 @@ namespace Engine
     class AnimationSystem final : public System
     {
     public:
-        AnimationSystem();
+        AnimationSystem(entt::registry* registry)
+            : System{registry}
+        {
+        }
         void update();
     };
 
     class CollisionSystem final : public System
     {
     public:
-        CollisionSystem();
-        void update(EventBus& eventBus);
+        CollisionSystem(entt::registry* registry)
+            : System{registry}
+        {
+        }
+        void update();
     };
 
     class BoxColliderRenderingSystem final : public System
     {
     public:
-        BoxColliderRenderingSystem();
+        BoxColliderRenderingSystem(entt::registry* registry)
+            : System{registry}
+        {
+        }
         void update(Renderer& renderer, const Camera& camera, float frameExtrapolationTimeStep);
     };
 
     class DamageSystem final : public System
     {
     public:
-        DamageSystem();
+        DamageSystem(entt::registry* registry)
+            : System{registry}
+        {
+        }
         void subscribeToEvents(EventBus& eventBus);
         void onCollision(CollisionEvent& event);
 
     private:
-        void onProjectileHitsEntity(Entity& projectile, Entity& entity);
+        void onProjectileHitsEntity(entt::entity& projectile, entt::entity& entity);
     };
 
     class PlayerInputSystem final : public System
     {
     public:
-        PlayerInputSystem();
+        PlayerInputSystem(entt::registry* registry)
+            : System{registry}
+        {
+        }
         void subscribeToEvents(EventBus& eventBus);
         void onKeyPressed(KeyPressedEvent& event);
 
     private:
-        void move(const Entity& entity, glm::vec2 velocity, int spriteIndex);
+        void move(const entt::entity& entity, glm::vec2 velocity, int spriteIndex);
     };
 
     class CameraMovementSystem final : public System
     {
     public:
-        CameraMovementSystem();
+        CameraMovementSystem(entt::registry* registry)
+            : System{registry}
+        {
+        }
         void update(SceneData& sceneData);
     };
 
@@ -80,34 +122,46 @@ namespace Engine
     class ProjectileEmitSystem final : public System
     {
     public:
-        ProjectileEmitSystem();
+        ProjectileEmitSystem(entt::registry* registry)
+            : System{registry}
+        {
+        }
         void subscribeToEvents(EventBus& eventBus);
         void update();
         void onEmitProjectile(ProjectileEmitEvent& event);
 
     private:
-        void emitProjectile(const Entity& entity, glm::vec2 velocity, int duration, int damage,
+        void emitProjectile(const entt::entity& entity, glm::vec2 velocity, int duration, int damage,
                             bool isFriendly);
     };
 
     class LifecycleSystem final : public System
     {
     public:
-        LifecycleSystem();
+        LifecycleSystem(entt::registry* registry)
+            : System{registry}
+        {
+        }
         void update();
     };
 
     class TextRenderingSystem final : public System
     {
     public:
-        TextRenderingSystem();
+        TextRenderingSystem(entt::registry* registry)
+            : System{registry}
+        {
+        }
         void update(Renderer& renderer, const AssetManager& assetManager, const Camera& camera);
     };
 
     class HealthBarRenderingSystem final : public System
     {
     public:
-        HealthBarRenderingSystem();
+        HealthBarRenderingSystem(entt::registry* registry)
+            : System{registry}
+        {
+        }
         void update(Renderer& renderer, const Font& font, const Camera& camera);
     };
 } // namespace Engine

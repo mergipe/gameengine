@@ -81,7 +81,7 @@ namespace Engine
             , isAutoShoot{isAutoShoot}
         {
         }
-        bool canShoot() { return static_cast<int>(Timer::getTicks() - lastEmissionTime) > cooldown; }
+        bool canShoot() const { return static_cast<int>(Timer::getTicks() - lastEmissionTime) > cooldown; }
         glm::vec2 projectileVelocity{};
         std::uint64_t lastEmissionTime{Timer::getTicks()};
         int cooldown{};
@@ -113,6 +113,21 @@ namespace Engine
         std::string assetId{};
         Color color{0, 0, 0, 0};
         bool hasFixedPosition{true};
+    };
+
+    struct Player {
+    };
+
+    struct Enemy {
+    };
+
+    struct EnemyProjectile {
+    };
+
+    struct PlayerProjectile {
+    };
+
+    struct Tile {
     };
 } // namespace Engine
 

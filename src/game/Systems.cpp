@@ -32,41 +32,29 @@ namespace Engine
                          position.y - static_cast<float>(camera.display.y)};
     }
 
-    MovementSystem::MovementSystem()
-    {
-        requireComponent<TransformComponent>();
-        requireComponent<RigidBodyComponent>();
-    }
-
     void MovementSystem::update(float timeStep)
     {
-        for (const auto& entity : getEntities()) {
-            auto& transform{entity.getComponent<TransformComponent>()};
-            const auto& rigidBody{entity.getComponent<RigidBodyComponent>()};
+        auto view{getRegistry().view<TransformComponent, const RigidBodyComponent>()};
+        for (auto entity : view) {
+            auto& transform{view.get<TransformComponent>(entity)};
+            const auto& rigidBody{view.get<RigidBodyComponent>(entity)};
             transform.position += rigidBody.velocity * timeStep;
         }
     };
 
-    SpriteRenderingSystem::SpriteRenderingSystem()
-    {
-        requireComponent<TransformComponent>();
-        requireComponent<SpriteComponent>();
-    }
-
     void SpriteRenderingSystem::update(Renderer& renderer, const AssetManager& assetManager,
                                        const Camera& camera, float frameExtrapolationTimeStep)
     {
-        std::vector<Entity> entities{getEntities()};
-        std::sort(entities.begin(), entities.end(), [](Entity a, Entity b) {
-            return a.getComponent<SpriteComponent>().zIndex < b.getComponent<SpriteComponent>().zIndex;
-        });
-        for (const auto& entity : entities) {
-            const auto& transform{entity.getComponent<TransformComponent>()};
-            const auto& sprite{entity.getComponent<SpriteComponent>()};
+        getRegistry().sort<SpriteComponent>(
+            [](const SpriteComponent& lhs, const SpriteComponent& rhs) { return lhs.zIndex < rhs.zIndex; });
+        auto view{getRegistry().view<const TransformComponent, const SpriteComponent>()};
+        for (auto entity : view) {
+            const auto& transform{view.get<TransformComponent>(entity)};
+            const auto& sprite{view.get<SpriteComponent>(entity)};
             glm::vec2 renderPosition{transform.position};
-            if (entity.hasComponent<RigidBodyComponent>()) {
-                const auto& rigidBody{entity.getComponent<RigidBodyComponent>()};
-                renderPosition = getExtrapolatedPosition(transform.position, rigidBody.velocity,
+            const auto* rigidBody{getRegistry().try_get<RigidBodyComponent>(entity)};
+            if (rigidBody) {
+                renderPosition = getExtrapolatedPosition(transform.position, rigidBody->velocity,
                                                          frameExtrapolationTimeStep);
             }
             if (!sprite.hasFixedPosition) {
@@ -80,17 +68,12 @@ namespace Engine
         }
     }
 
-    AnimationSystem::AnimationSystem()
-    {
-        requireComponent<SpriteComponent>();
-        requireComponent<AnimationComponent>();
-    }
-
     void AnimationSystem::update()
     {
-        for (const auto& entity : getEntities()) {
-            auto& sprite{entity.getComponent<SpriteComponent>()};
-            auto& animation{entity.getComponent<AnimationComponent>()};
+        auto view{getRegistry().view<SpriteComponent, AnimationComponent>()};
+        for (auto entity : view) {
+            auto& sprite{view.get<SpriteComponent>(entity)};
+            auto& animation{view.get<AnimationComponent>(entity)};
             animation.currentFrame = (static_cast<int>(Timer::getTicks() - animation.startTime) *
                                       animation.framesPerSecond / 1000) %
                                      animation.framesCount;
@@ -98,26 +81,22 @@ namespace Engine
         }
     }
 
-    CollisionSystem::CollisionSystem()
+    void CollisionSystem::update()
     {
-        requireComponent<TransformComponent>();
-        requireComponent<BoxColliderComponent>();
-    }
-
-    void CollisionSystem::update(EventBus& eventBus)
-    {
-        const auto entities{getEntities()};
-        for (const auto& entity : entities) {
-            entity.getComponent<BoxColliderComponent>().isColliding = false;
+        auto view{getRegistry().view<const TransformComponent, BoxColliderComponent>()};
+        for (auto entity : view) {
+            view.get<BoxColliderComponent>(entity).isColliding = false;
         }
-        for (auto i{entities.begin()}; i != entities.end(); ++i) {
-            const Entity entity{*i};
-            const auto& transform{entity.getComponent<TransformComponent>()};
-            auto& boxCollider{entity.getComponent<BoxColliderComponent>()};
-            for (auto j{i + 1}; j != entities.end(); ++j) {
-                const Entity otherEntity{*j};
-                const auto& otherTransform{otherEntity.getComponent<TransformComponent>()};
-                auto& otherBoxCollider{otherEntity.getComponent<BoxColliderComponent>()};
+        for (auto i{view.begin()}; i != view.end(); ++i) {
+            auto entity{*i};
+            const auto& transform{view.get<TransformComponent>(entity)};
+            auto& boxCollider{view.get<BoxColliderComponent>(entity)};
+            for (auto j{i}; j != view.end(); ++j) {
+                if (i == j)
+                    continue;
+                auto otherEntity{*j};
+                const auto& otherTransform{view.get<TransformComponent>(otherEntity)};
+                auto& otherBoxCollider{view.get<BoxColliderComponent>(otherEntity)};
                 const bool collisionHappened{aabbHasCollided(
                     transform.position.x + boxCollider.offset.x, transform.position.y + boxCollider.offset.y,
                     static_cast<float>(boxCollider.width) * transform.scale.x,
@@ -128,28 +107,23 @@ namespace Engine
                     static_cast<float>(otherBoxCollider.height) * otherTransform.scale.y)};
                 if (collisionHappened) {
                     boxCollider.isColliding = otherBoxCollider.isColliding = true;
-                    eventBus.dispatchEvent<CollisionEvent>(entity, otherEntity);
+                    Game::instance().getEventBus().dispatchEvent<CollisionEvent>(entity, otherEntity);
                 }
             }
         }
     }
 
-    BoxColliderRenderingSystem::BoxColliderRenderingSystem()
-    {
-        requireComponent<TransformComponent>();
-        requireComponent<BoxColliderComponent>();
-    }
-
     void BoxColliderRenderingSystem::update(Renderer& renderer, const Camera& camera,
                                             float frameExtrapolationTimeStep)
     {
-        for (const auto& entity : getEntities()) {
-            const auto& transform{entity.getComponent<TransformComponent>()};
-            const auto& boxCollider{entity.getComponent<BoxColliderComponent>()};
+        auto view{getRegistry().view<const TransformComponent, const BoxColliderComponent>()};
+        for (auto entity : view) {
+            const auto& transform{view.get<TransformComponent>(entity)};
+            const auto& boxCollider{view.get<BoxColliderComponent>(entity)};
             glm::vec2 renderPosition{transform.position};
-            if (entity.hasComponent<RigidBodyComponent>()) {
-                const auto& rigidBody{entity.getComponent<RigidBodyComponent>()};
-                renderPosition = getExtrapolatedPosition(transform.position, rigidBody.velocity,
+            const auto* rigidBody{getRegistry().try_get<RigidBodyComponent>(entity)};
+            if (rigidBody) {
+                renderPosition = getExtrapolatedPosition(transform.position, rigidBody->velocity,
                                                          frameExtrapolationTimeStep);
             }
             if (boxCollider.isColliding) {
@@ -166,8 +140,6 @@ namespace Engine
         }
     }
 
-    DamageSystem::DamageSystem() { requireComponent<BoxColliderComponent>(); }
-
     void DamageSystem::subscribeToEvents(EventBus& eventBus)
     {
         eventBus.addSubscriber<CollisionEvent, DamageSystem>(this, &DamageSystem::onCollision);
@@ -175,32 +147,32 @@ namespace Engine
 
     void DamageSystem::onCollision(CollisionEvent& event)
     {
-        Logger::trace("Collision between entities {} and {}", event.entity.getId(),
-                      event.otherEntity.getId());
-        if (event.entity.belongsToGroup("enemy-projectiles") && event.otherEntity.hasTag("player")) {
+        if (getRegistry().any_of<EnemyProjectile>(event.entity) &&
+            getRegistry().any_of<Player>(event.otherEntity)) {
             onProjectileHitsEntity(event.entity, event.otherEntity);
-        } else if (event.entity.hasTag("player") && event.otherEntity.belongsToGroup("enemy-projectiles")) {
+        } else if (getRegistry().any_of<Player>(event.entity) &&
+                   getRegistry().any_of<EnemyProjectile>(event.otherEntity)) {
             onProjectileHitsEntity(event.otherEntity, event.entity);
-        } else if (event.entity.belongsToGroup("player-projectiles") &&
-                   event.otherEntity.belongsToGroup("enemies")) {
+        } else if (getRegistry().any_of<PlayerProjectile>(event.entity) &&
+                   getRegistry().any_of<Enemy>(event.otherEntity)) {
             onProjectileHitsEntity(event.entity, event.otherEntity);
-        } else if (event.entity.belongsToGroup("enemies") &&
-                   event.otherEntity.belongsToGroup("player-projectiles")) {
+        } else if (getRegistry().any_of<Enemy>(event.entity) &&
+                   getRegistry().any_of<PlayerProjectile>(event.otherEntity)) {
             onProjectileHitsEntity(event.otherEntity, event.entity);
         }
     }
 
-    void DamageSystem::onProjectileHitsEntity(Entity& projectile, Entity& entity)
+    void DamageSystem::onProjectileHitsEntity(entt::entity& projectile, entt::entity& entity)
     {
-        auto& health{entity.getComponent<HealthComponent>()};
-        const auto& damage{projectile.getComponent<DamageComponent>()};
-        health.healthPercentage -= damage.value;
-        if (health.healthPercentage <= 0)
-            entity.kill();
-        projectile.kill();
+        auto* health{getRegistry().try_get<HealthComponent>(entity)};
+        const auto* damage{getRegistry().try_get<DamageComponent>(projectile)};
+        if (!health || !damage)
+            return;
+        health->healthPercentage -= damage->value;
+        if (health->healthPercentage <= 0)
+            getRegistry().destroy(entity);
+        getRegistry().destroy(projectile);
     }
-
-    PlayerInputSystem::PlayerInputSystem() { requireComponent<PlayerInputComponent>(); }
 
     void PlayerInputSystem::subscribeToEvents(EventBus& eventBus)
     {
@@ -210,7 +182,8 @@ namespace Engine
     void PlayerInputSystem::onKeyPressed(KeyPressedEvent& event)
     {
         float velocityMagnitude{0.2f};
-        for (const auto& entity : getEntities()) {
+        auto view{getRegistry().view<const PlayerInputComponent>()};
+        for (auto entity : view) {
             switch (event.keyCode) {
             case SDLK_UP:
             case SDLK_W:
@@ -229,18 +202,18 @@ namespace Engine
                 move(entity, glm::vec2{-velocityMagnitude, 0}, 3);
                 break;
             case SDLK_SPACE:
-                if (entity.hasComponent<ProjectileEmitterComponent>()) {
-                    auto& projectileEmitter{entity.getComponent<ProjectileEmitterComponent>()};
-                    if (projectileEmitter.canShoot()) {
-                        glm::vec2 projectileVelocity{0, -projectileEmitter.projectileVelocity.y};
-                        if (entity.hasComponent<TransformComponent>()) {
-                            const auto& transform{entity.getComponent<TransformComponent>()};
+                const auto* projectileEmitter{getRegistry().try_get<ProjectileEmitterComponent>(entity)};
+                if (projectileEmitter) {
+                    if (projectileEmitter->canShoot()) {
+                        glm::vec2 projectileVelocity{0, -projectileEmitter->projectileVelocity.y};
+                        const auto* transform{getRegistry().try_get<TransformComponent>(entity)};
+                        if (transform) {
                             projectileVelocity =
-                                glm::rotate(projectileVelocity, glm::radians(transform.rotation));
+                                glm::rotate(projectileVelocity, glm::radians(transform->rotation));
                         }
                         Game::instance().getEventBus().dispatchEvent<ProjectileEmitEvent>(
-                            entity, projectileVelocity, projectileEmitter.projectileDuration,
-                            projectileEmitter.hitPercentDamage, true);
+                            entity, projectileVelocity, projectileEmitter->projectileDuration,
+                            projectileEmitter->hitPercentDamage, true);
                     }
                 }
                 break;
@@ -248,44 +221,33 @@ namespace Engine
         }
     }
 
-    void PlayerInputSystem::move(const Entity& entity, glm::vec2 velocity, int spriteIndex)
+    void PlayerInputSystem::move(const entt::entity& entity, glm::vec2 velocity, int spriteIndex)
     {
-        if (entity.hasComponent<RigidBodyComponent>()) {
-            auto& rigidBody{entity.getComponent<RigidBodyComponent>()};
-            rigidBody.velocity = velocity;
+        auto* rigidBody{getRegistry().try_get<RigidBodyComponent>(entity)};
+        if (rigidBody) {
+            rigidBody->velocity = velocity;
         }
-        if (entity.hasComponent<SpriteComponent>()) {
-            auto& sprite{entity.getComponent<SpriteComponent>()};
-            sprite.sourceRect.y = sprite.height * static_cast<float>(spriteIndex);
+        auto* sprite{getRegistry().try_get<SpriteComponent>(entity)};
+        if (sprite) {
+            sprite->sourceRect.y = sprite->height * static_cast<float>(spriteIndex);
         }
-        if (entity.hasComponent<TransformComponent>()) {
-            auto& transform{entity.getComponent<TransformComponent>()};
-            transform.rotation = static_cast<float>(spriteIndex) * 90.0f;
+        auto* transform{getRegistry().try_get<TransformComponent>(entity)};
+        if (transform) {
+            transform->rotation = static_cast<float>(spriteIndex) * 90.0f;
         }
-    }
-
-    CameraMovementSystem::CameraMovementSystem()
-    {
-        requireComponent<CameraFollowComponent>();
-        requireComponent<TransformComponent>();
     }
 
     void CameraMovementSystem::update(SceneData& sceneData)
     {
-        for (const auto& entity : getEntities()) {
-            const auto& transform{entity.getComponent<TransformComponent>()};
+        auto view{getRegistry().view<const CameraFollowComponent, const TransformComponent>()};
+        for (auto entity : view) {
+            const auto& transform{view.get<TransformComponent>(entity)};
             Rect& cameraDisplay{sceneData.camera.display};
             cameraDisplay.x = static_cast<int>(transform.position.x - (cameraDisplay.w / 2.0));
             cameraDisplay.y = static_cast<int>(transform.position.y - (cameraDisplay.h / 2.0));
             cameraDisplay.x = std::clamp(cameraDisplay.x, 0, sceneData.mapWidth - cameraDisplay.w);
             cameraDisplay.y = std::clamp(cameraDisplay.y, 0, sceneData.mapHeight - cameraDisplay.h);
         }
-    }
-
-    ProjectileEmitSystem::ProjectileEmitSystem()
-    {
-        requireComponent<ProjectileEmitterComponent>();
-        requireComponent<TransformComponent>();
     }
 
     void ProjectileEmitSystem::subscribeToEvents(EventBus& eventBus)
@@ -296,8 +258,9 @@ namespace Engine
 
     void ProjectileEmitSystem::update()
     {
-        for (const auto& entity : getEntities()) {
-            auto& projectileEmitter{entity.getComponent<ProjectileEmitterComponent>()};
+        auto view{getRegistry().view<ProjectileEmitterComponent, const TransformComponent>()};
+        for (auto entity : view) {
+            auto& projectileEmitter{view.get<ProjectileEmitterComponent>(entity)};
             if (projectileEmitter.isAutoShoot && projectileEmitter.canShoot()) {
                 emitProjectile(entity, projectileEmitter.projectileVelocity,
                                projectileEmitter.projectileDuration, projectileEmitter.hitPercentDamage,
@@ -306,26 +269,30 @@ namespace Engine
         }
     }
 
-    void ProjectileEmitSystem::emitProjectile(const Entity& entity, glm::vec2 velocity, int duration,
+    void ProjectileEmitSystem::emitProjectile(const entt::entity& entity, glm::vec2 velocity, int duration,
                                               int damage, bool isFriendly)
     {
-        const auto& transform{entity.getComponent<TransformComponent>()};
+        const auto& transform{getRegistry().get<TransformComponent>(entity)};
         glm::vec2 projectilePosition{transform.position};
-        if (entity.hasComponent<SpriteComponent>()) {
-            const auto& sprite{entity.getComponent<SpriteComponent>()};
-            projectilePosition.x += static_cast<float>(sprite.width) * transform.scale.x / 2.0f;
-            projectilePosition.y += static_cast<float>(sprite.height) * transform.scale.y / 2.0f;
+        const auto* sprite{getRegistry().try_get<SpriteComponent>(entity)};
+        if (sprite) {
+            projectilePosition.x += static_cast<float>(sprite->width) * transform.scale.x / 2.0f;
+            projectilePosition.y += static_cast<float>(sprite->height) * transform.scale.y / 2.0f;
         }
-        Entity projectile{entity.getRegistry().createEntity()};
+        auto projectile{getRegistry().create()};
         std::string group{isFriendly ? "player-projectiles" : "enemy-projectiles"};
-        projectile.group(group);
-        projectile.addComponent<TransformComponent>(projectilePosition);
-        projectile.addComponent<RigidBodyComponent>(velocity);
-        projectile.addComponent<SpriteComponent>("bullet", 4.0f, 4.0f, 4);
-        projectile.addComponent<BoxColliderComponent>(4, 4);
-        projectile.addComponent<LifecycleComponent>(duration);
-        projectile.addComponent<DamageComponent>(damage);
-        auto& projectileEmitter{entity.getComponent<ProjectileEmitterComponent>()};
+        if (isFriendly) {
+            getRegistry().emplace<PlayerProjectile>(projectile);
+        } else {
+            getRegistry().emplace<EnemyProjectile>(projectile);
+        }
+        getRegistry().emplace<TransformComponent>(projectile, projectilePosition);
+        getRegistry().emplace<RigidBodyComponent>(projectile, velocity);
+        getRegistry().emplace<SpriteComponent>(projectile, "bullet", 4.0f, 4.0f, 4);
+        getRegistry().emplace<BoxColliderComponent>(projectile, 4, 4);
+        getRegistry().emplace<LifecycleComponent>(projectile, duration);
+        getRegistry().emplace<DamageComponent>(projectile, damage);
+        auto& projectileEmitter{getRegistry().get<ProjectileEmitterComponent>(entity)};
         projectileEmitter.lastEmissionTime = Timer::getTicks();
     }
 
@@ -335,30 +302,24 @@ namespace Engine
                        event.isProjectileFriendly);
     }
 
-    LifecycleSystem::LifecycleSystem() { requireComponent<LifecycleComponent>(); }
-
     void LifecycleSystem::update()
     {
-        for (auto& entity : getEntities()) {
-            const auto& lifecycle{entity.getComponent<LifecycleComponent>()};
+        auto view{getRegistry().view<const LifecycleComponent>()};
+        for (auto entity : view) {
+            const auto& lifecycle{view.get<LifecycleComponent>(entity)};
             if (static_cast<int>(Timer::getTicks() - lifecycle.startTime) > lifecycle.duration) {
-                entity.kill();
+                getRegistry().destroy(entity);
             }
         }
-    }
-
-    TextRenderingSystem::TextRenderingSystem()
-    {
-        requireComponent<TransformComponent>();
-        requireComponent<TextComponent>();
     }
 
     void TextRenderingSystem::update(Renderer& renderer, const AssetManager& assetManager,
                                      const Camera& camera)
     {
-        for (const auto& entity : getEntities()) {
-            const auto& transform{entity.getComponent<TransformComponent>()};
-            const auto& text{entity.getComponent<TextComponent>()};
+        auto view{getRegistry().view<const TransformComponent, const TextComponent>()};
+        for (auto entity : view) {
+            const auto& transform{view.get<TransformComponent>(entity)};
+            const auto& text{view.get<TextComponent>(entity)};
             const Font& font{assetManager.getFont(text.assetId)};
             glm::vec2 renderPosition{transform.position};
             if (!text.hasFixedPosition) {
@@ -368,19 +329,14 @@ namespace Engine
         }
     }
 
-    HealthBarRenderingSystem::HealthBarRenderingSystem()
-    {
-        requireComponent<TransformComponent>();
-        requireComponent<SpriteComponent>();
-        requireComponent<HealthComponent>();
-    }
-
     void HealthBarRenderingSystem::update(Renderer& renderer, const Font& font, const Camera& camera)
     {
-        for (const auto& entity : getEntities()) {
-            const auto& transform{entity.getComponent<TransformComponent>()};
-            const auto& sprite{entity.getComponent<SpriteComponent>()};
-            const auto& health{entity.getComponent<HealthComponent>()};
+        auto view{
+            getRegistry().view<const TransformComponent, const SpriteComponent, const HealthComponent>()};
+        for (auto entity : view) {
+            const auto& transform{view.get<TransformComponent>(entity)};
+            const auto& sprite{view.get<SpriteComponent>(entity)};
+            const auto& health{view.get<HealthComponent>(entity)};
             Color color;
             if (health.healthPercentage <= 20) {
                 color = {255, 0, 0, 255};

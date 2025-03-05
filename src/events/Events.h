@@ -1,8 +1,8 @@
 #ifndef EVENTS_H
 #define EVENTS_H
 
-#include "game/ECS.h"
 #include <SDL3/SDL.h>
+#include <entt/entt.hpp>
 #include <glm/glm.hpp>
 
 namespace Engine
@@ -21,12 +21,12 @@ namespace Engine
     };
 
     struct CollisionEvent final : public Event {
-        CollisionEvent(const Entity& entity, const Entity& otherEntity)
+        CollisionEvent(const entt::entity& entity, const entt::entity& otherEntity)
             : entity{entity}, otherEntity{otherEntity}
         {
         }
-        Entity entity;
-        Entity otherEntity;
+        entt::entity entity;
+        entt::entity otherEntity;
     };
 
     struct KeyPressedEvent final : public Event {
@@ -38,7 +38,7 @@ namespace Engine
     };
 
     struct ProjectileEmitEvent final : public Event {
-        ProjectileEmitEvent(const Entity& entity, glm::vec2 velocity, int projectileDuration,
+        ProjectileEmitEvent(const entt::entity& entity, glm::vec2 velocity, int projectileDuration,
                             int projectileDamage, bool isProjectileFriendly)
             : entity{entity}
             , velocity{velocity}
@@ -47,7 +47,7 @@ namespace Engine
             , isProjectileFriendly{isProjectileFriendly}
         {
         }
-        Entity entity;
+        entt::entity entity;
         glm::vec2 velocity{};
         int projectileDuration{};
         int projectileDamage{};
