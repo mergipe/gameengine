@@ -42,6 +42,4 @@ namespace Engine
         ImGui::Render();
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_renderer->getRenderingContext());
     }
-
-    void DeveloperModeGui::showDemoWindow() { ImGui::ShowDemoWindow(); }
 } // namespace Engine

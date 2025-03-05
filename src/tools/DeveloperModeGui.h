@@ -18,7 +18,6 @@ namespace Engine
         void processEvent(SDL_Event& event);
         void newFrame();
         void render();
-        void showDemoWindow();
 
     private:
         Renderer* m_renderer;

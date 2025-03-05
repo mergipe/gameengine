@@ -11,7 +11,6 @@ set(IMGUI_SRC_DIR imgui/include/imgui)
 add_library(
     imgui
     ${IMGUI_SRC_DIR}/imgui.cpp
-    ${IMGUI_SRC_DIR}/imgui_demo.cpp
     ${IMGUI_SRC_DIR}/imgui_draw.cpp
     ${IMGUI_SRC_DIR}/imgui_impl_sdl3.cpp
     ${IMGUI_SRC_DIR}/imgui_impl_sdlrenderer3.cpp

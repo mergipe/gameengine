@@ -45,7 +45,6 @@ namespace Engine
                                                                        frameExtrapolationTimeStep);
             auto& developerModeGui{Game::instance().getDeveloperModeGui()};
             developerModeGui.newFrame();
-            developerModeGui.showDemoWindow();
             developerModeGui.render();
         }
         m_renderer->present();
