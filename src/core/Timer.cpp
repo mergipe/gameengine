@@ -1,7 +1,7 @@
 #include "Timer.h"
-#include <SDL_timer.h>
+#include <SDL3/SDL.h>
 
 namespace Engine::Timer
 {
-    std::uint64_t getTicks() { return SDL_GetTicks64(); }
+    std::uint64_t getTicks() { return SDL_GetTicks(); }
 } // namespace Engine::Timer

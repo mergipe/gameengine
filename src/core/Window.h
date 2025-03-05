@@ -1,7 +1,7 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <SDL_video.h>
+#include <SDL3/SDL.h>
 #include <string>
 #include <string_view>
 

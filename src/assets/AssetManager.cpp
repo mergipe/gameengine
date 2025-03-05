@@ -1,5 +1,6 @@
 #include "AssetManager.h"
 #include "core/Logger.h"
+#include <SDL3_ttf/SDL_ttf.h>
 #include <utility>
 
 namespace Engine
@@ -12,7 +13,7 @@ namespace Engine
     }
 
     void AssetManager::addFont(std::string_view assetId, const std::filesystem::path& relativePath,
-                               int fontSize)
+                               float fontSize)
     {
         auto font{std::make_unique<Font>(TTF_OpenFont(relativePath.c_str(), fontSize))};
         m_fonts.insert(std::make_pair(assetId, std::move(font)));

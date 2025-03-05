@@ -1,7 +1,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include <SDL_render.h>
+#include <SDL3/SDL.h>
 #include <filesystem>
 
 namespace Engine

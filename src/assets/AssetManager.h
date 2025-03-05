@@ -26,7 +26,7 @@ namespace Engine
         void clearAssets() { m_textures.clear(); }
         void addTexture(std::string_view assetId, std::unique_ptr<Texture> texture);
         const Texture& getTexture(const std::string& assetId) const { return *(m_textures.at(assetId)); };
-        void addFont(std::string_view assetId, const std::filesystem::path& relativePath, int fontSize);
+        void addFont(std::string_view assetId, const std::filesystem::path& relativePath, float fontSize);
         const Font& getFont(const std::string& assetId) const { return *(m_fonts.at(assetId)); }
         const std::filesystem::path& getAssetsPath() const { return m_assetsPath; };
         std::filesystem::path getAssetPath(const std::filesystem::path& relativeFilepath) const

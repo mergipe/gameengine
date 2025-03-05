@@ -20,10 +20,11 @@ namespace Engine
     };
 
     struct SpriteComponent final {
-        SpriteComponent(std::string_view assetId = "", int width = 0, int height = 0, int zIndex = 0,
-                        bool isPositionFixed = false, int sourceRectX = 0, int sourceRectY = 0)
+        SpriteComponent(std::string_view assetId = "", float width = 0.0f, float height = 0.0f,
+                        int zIndex = 0, bool isPositionFixed = false, float sourceRectX = 0.0f,
+                        float sourceRectY = 0.0f)
             : assetId{assetId}
-            , sourceRect{Rect{sourceRectX, sourceRectY, width, height}}
+            , sourceRect{FRect{sourceRectX, sourceRectY, width, height}}
             , width{width}
             , height{height}
             , zIndex{zIndex}
@@ -31,9 +32,9 @@ namespace Engine
         {
         }
         std::string assetId{};
-        Rect sourceRect{};
-        int width{};
-        int height{};
+        FRect sourceRect{};
+        float width{};
+        float height{};
         int zIndex{};
         bool hasFixedPosition{};
     };

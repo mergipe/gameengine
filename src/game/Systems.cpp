@@ -6,7 +6,7 @@
 #include "renderer/Color.h"
 #include "renderer/Rect.h"
 #include "renderer/Renderer.h"
-#include <SDL_keyboard.h>
+#include <SDL3/SDL.h>
 #include <algorithm>
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -94,7 +94,7 @@ namespace Engine
             animation.currentFrame = (static_cast<int>(Timer::getTicks() - animation.startTime) *
                                       animation.framesPerSecond / 1000) %
                                      animation.framesCount;
-            sprite.sourceRect.x = animation.currentFrame * sprite.width;
+            sprite.sourceRect.x = static_cast<float>(animation.currentFrame) * sprite.width;
         }
     }
 
@@ -213,19 +213,19 @@ namespace Engine
         for (const auto& entity : getEntities()) {
             switch (event.keyCode) {
             case SDLK_UP:
-            case SDLK_w:
+            case SDLK_W:
                 move(entity, glm::vec2{0, -velocityMagnitude}, 0);
                 break;
             case SDLK_RIGHT:
-            case SDLK_d:
+            case SDLK_D:
                 move(entity, glm::vec2{velocityMagnitude, 0}, 1);
                 break;
             case SDLK_DOWN:
-            case SDLK_s:
+            case SDLK_S:
                 move(entity, glm::vec2{0, velocityMagnitude}, 2);
                 break;
             case SDLK_LEFT:
-            case SDLK_a:
+            case SDLK_A:
                 move(entity, glm::vec2{-velocityMagnitude, 0}, 3);
                 break;
             case SDLK_SPACE:
@@ -256,7 +256,7 @@ namespace Engine
         }
         if (entity.hasComponent<SpriteComponent>()) {
             auto& sprite{entity.getComponent<SpriteComponent>()};
-            sprite.sourceRect.y = sprite.height * spriteIndex;
+            sprite.sourceRect.y = sprite.height * static_cast<float>(spriteIndex);
         }
         if (entity.hasComponent<TransformComponent>()) {
             auto& transform{entity.getComponent<TransformComponent>()};
@@ -321,7 +321,7 @@ namespace Engine
         projectile.group(group);
         projectile.addComponent<TransformComponent>(projectilePosition);
         projectile.addComponent<RigidBodyComponent>(velocity);
-        projectile.addComponent<SpriteComponent>("bullet", 4, 4, 4);
+        projectile.addComponent<SpriteComponent>("bullet", 4.0f, 4.0f, 4);
         projectile.addComponent<BoxColliderComponent>(4, 4);
         projectile.addComponent<LifecycleComponent>(duration);
         projectile.addComponent<DamageComponent>(damage);

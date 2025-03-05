@@ -6,6 +6,7 @@
 #include "events/EventBus.h"
 #include "game/Scene.h"
 #include "renderer/Renderer.h"
+#include "tools/DeveloperModeGui.h"
 #include <filesystem>
 #include <memory>
 #include <string_view>
@@ -26,8 +27,9 @@ namespace Engine
         void run();
         void shutDown();
         EventBus& getEventBus() { return *m_eventBus; }
-        bool hasDebugCapability() { return m_hasDebugCapability; }
-        bool isDebugModeActivated() { return m_isDebugModeActivated; }
+        DeveloperModeGui& getDeveloperModeGui() { return *m_developerModeGui; }
+        bool hasDeveloperMode() { return m_hasDeveloperMode; }
+        bool isDeveloperModeEnabled() { return m_isDeveloperModeEnabled; }
         static constexpr std::string_view s_tilemapsFolder{"tilemaps"};
         static constexpr std::string_view s_texturesFolder{"textures"};
         static constexpr std::string_view s_fontsFolder{"fonts"};
@@ -49,8 +51,9 @@ namespace Engine
         std::unique_ptr<Window> m_window{};
         std::unique_ptr<Renderer> m_renderer{};
         std::unique_ptr<Scene> m_currentScene{};
-        bool m_hasDebugCapability{true};
-        bool m_isDebugModeActivated{false};
+        std::unique_ptr<DeveloperModeGui> m_developerModeGui{};
+        bool m_hasDeveloperMode{true};
+        bool m_isDeveloperModeEnabled{false};
         bool m_isRunning{false};
     };
 } // namespace Engine

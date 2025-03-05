@@ -2,7 +2,7 @@
 #define EVENTS_H
 
 #include "game/ECS.h"
-#include <SDL_keycode.h>
+#include <SDL3/SDL.h>
 #include <glm/glm.hpp>
 
 namespace Engine

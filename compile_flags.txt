@@ -13,4 +13,4 @@
 -I./libs/spdlog/include
 -I./libs/imgui/include
 -I./src
--I/usr/include/SDL2
+-I/usr/include/SDL3

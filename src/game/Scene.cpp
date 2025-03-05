@@ -40,15 +40,19 @@ namespace Engine
         m_registry->getSystem<TextRenderingSystem>().update(*m_renderer, *m_assetManager, m_sceneData.camera);
         m_registry->getSystem<HealthBarRenderingSystem>().update(
             *m_renderer, m_assetManager->getFont("charriot-15"), m_sceneData.camera);
-        if (Game::instance().isDebugModeActivated()) {
+        if (Game::instance().isDeveloperModeEnabled()) {
             m_registry->getSystem<BoxColliderRenderingSystem>().update(*m_renderer, m_sceneData.camera,
                                                                        frameExtrapolationTimeStep);
+            auto& developerModeGui{Game::instance().getDeveloperModeGui()};
+            developerModeGui.newFrame();
+            developerModeGui.showDemoWindow();
+            developerModeGui.render();
         }
         m_renderer->present();
     }
 
-    void Scene::loadMap(std::string_view tilesetFilename, std::string_view tilemapFilename, int tileWidth,
-                        int tileHeight, int tilesetColumns, float scale)
+    void Scene::loadMap(std::string_view tilesetFilename, std::string_view tilemapFilename, float tileWidth,
+                        float tileHeight, int tilesetColumns, float scale)
     {
         Logger::info("Loading map {}", tilemapFilename);
         const std::filesystem::path tilemapsPath{m_assetManager->getAssetPath(Game::s_tilemapsFolder)};
@@ -62,8 +66,8 @@ namespace Engine
         }
         const std::vector<std::vector<int>> tilemap{IO::parseIntCsvFile(tilemapFile)};
         tilemapFile.close();
-        int scaledTileWidth{static_cast<int>(static_cast<float>(tileWidth) * scale)};
-        int scaledTileHeight{static_cast<int>(static_cast<float>(tileHeight) * scale)};
+        int scaledTileWidth{static_cast<int>(tileWidth * scale)};
+        int scaledTileHeight{static_cast<int>(tileHeight * scale)};
         for (size_t i{0}; i < tilemap.size(); ++i) {
             const std::vector<int> values{tilemap[i]};
             for (size_t j{0}; j < values.size(); ++j) {
@@ -71,13 +75,14 @@ namespace Engine
                 tile.group("tiles");
                 m_registry->addComponent<TransformComponent>(
                     tile,
-                    glm::vec2{static_cast<float>(j) * static_cast<float>(tileWidth) * scale,
-                              static_cast<float>(i) * static_cast<float>(tileHeight) * scale},
+                    glm::vec2{static_cast<float>(j) * tileWidth * scale,
+                              static_cast<float>(i) * tileHeight * scale},
                     glm::vec2{scale, scale});
                 const int tileId{values[j]};
-                m_registry->addComponent<SpriteComponent>(tile, tilesetId, tileWidth, tileHeight, 0, false,
-                                                          tileWidth * (tileId % tilesetColumns),
-                                                          tileHeight * (tileId / tilesetColumns));
+                m_registry->addComponent<SpriteComponent>(
+                    tile, tilesetId, tileWidth, tileHeight, 0, false,
+                    tileWidth * static_cast<float>(tileId % tilesetColumns),
+                    tileHeight * static_cast<float>(tileId / tilesetColumns));
             }
         }
         m_sceneData.mapWidth = static_cast<int>(tilemap[0].size()) * scaledTileWidth;
@@ -99,7 +104,7 @@ namespace Engine
         chopper.tag("player");
         chopper.addComponent<TransformComponent>(glm::vec2{300}, glm::vec2{2});
         chopper.addComponent<RigidBodyComponent>(glm::vec2{0.0, 0.0});
-        chopper.addComponent<SpriteComponent>("chopper", 32, 32, 1);
+        chopper.addComponent<SpriteComponent>("chopper", 32.0f, 32.0f, 1);
         chopper.addComponent<AnimationComponent>(2, 15);
         chopper.addComponent<BoxColliderComponent>(32, 32);
         chopper.addComponent<PlayerInputComponent>();
@@ -108,13 +113,13 @@ namespace Engine
         chopper.addComponent<ProjectileEmitterComponent>(glm::vec2{0.4, 0.4}, 200, 10000, 10, true, false);
         Entity radar{m_registry->createEntity()};
         radar.addComponent<TransformComponent>(glm::vec2{400, 10}, glm::vec2{2});
-        radar.addComponent<SpriteComponent>("radar", 64, 64, 2, true);
+        radar.addComponent<SpriteComponent>("radar", 64.0f, 64.0f, 2, true);
         radar.addComponent<AnimationComponent>(8, 5);
         Entity tank{m_registry->createEntity()};
         tank.group("enemies");
         tank.addComponent<TransformComponent>(glm::vec2{500, 50}, glm::vec2{2});
         tank.addComponent<RigidBodyComponent>(glm::vec2{0.0, 0.0});
-        tank.addComponent<SpriteComponent>("tank-right", 32, 32, 1);
+        tank.addComponent<SpriteComponent>("tank-right", 32.0f, 32.0f, 1);
         tank.addComponent<BoxColliderComponent>(32, 32);
         tank.addComponent<ProjectileEmitterComponent>(glm::vec2{0.1, 0}, 5000, 3000, 10, false);
         tank.addComponent<HealthComponent>();
@@ -122,7 +127,7 @@ namespace Engine
         truck.group("enemies");
         truck.addComponent<TransformComponent>(glm::vec2{50, 50}, glm::vec2{2});
         truck.addComponent<RigidBodyComponent>(glm::vec2{0.0, 0.0});
-        truck.addComponent<SpriteComponent>("truck-right", 32, 32, 1);
+        truck.addComponent<SpriteComponent>("truck-right", 32.0f, 32.0f, 1);
         truck.addComponent<BoxColliderComponent>(32, 32);
         truck.addComponent<ProjectileEmitterComponent>(glm::vec2{0, 0.1}, 2000, 5000, 10, false);
         truck.addComponent<HealthComponent>();
@@ -146,12 +151,12 @@ namespace Engine
         m_registry->addSystem<CameraMovementSystem>();
         m_registry->addSystem<TextRenderingSystem>();
         m_registry->addSystem<HealthBarRenderingSystem>();
-        if (Game::instance().hasDebugCapability()) {
+        if (Game::instance().hasDeveloperMode()) {
             m_registry->addSystem<BoxColliderRenderingSystem>();
         }
         std::filesystem::path fontsPath{m_assetManager->getAssetPath(Game::s_fontsFolder)};
-        m_assetManager->addFont("charriot-20", fontsPath / "charriot.ttf", 20);
-        m_assetManager->addFont("charriot-15", fontsPath / "charriot.ttf", 15);
+        m_assetManager->addFont("charriot-20", fontsPath / "charriot.ttf", 20.0f);
+        m_assetManager->addFont("charriot-15", fontsPath / "charriot.ttf", 15.0f);
         loadMap("jungle.png", "jungle.map", 32, 32, 10, 4.0);
         loadEntities();
     }

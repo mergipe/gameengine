@@ -1,7 +1,7 @@
 #ifndef RECT_H
 #define RECT_H
 
-#include <SDL_rect.h>
+#include <SDL3/SDL.h>
 
 namespace Engine
 {

@@ -1,12 +1,12 @@
 #include "Renderer.h"
 #include "core/Logger.h"
-#include <SDL_image.h>
-#include <SDL_render.h>
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 
 namespace Engine
 {
     Renderer::Renderer(const Window& window)
-        : m_renderingContext(SDL_CreateRenderer(window.getWindowPtr(), -1, SDL_RENDERER_ACCELERATED))
+        : m_renderingContext(SDL_CreateRenderer(window.getWindowPtr(), nullptr))
     {
         if (!m_renderingContext) {
             Logger::critical("Failed to initialize the renderer: {}", SDL_GetError());
@@ -27,7 +27,7 @@ namespace Engine
         const char* filepathStr{filepath.c_str()};
         SDL_Texture* texture{IMG_LoadTexture(m_renderingContext, filepathStr)};
         if (!texture) {
-            Logger::error("Failed to load texture from {}: {}", filepath.c_str(), IMG_GetError());
+            Logger::error("Failed to load texture from {}: {}", filepath.c_str(), SDL_GetError());
         }
         Logger::info("Texture loaded from {}", filepathStr);
         return std::make_unique<Texture>(filepathStr, texture);
@@ -41,30 +41,29 @@ namespace Engine
     void Renderer::drawRectangle(FRect rect, bool fill)
     {
         if (fill) {
-            SDL_RenderFillRectF(m_renderingContext, &rect);
+            SDL_RenderFillRect(m_renderingContext, &rect);
         } else {
-            SDL_RenderDrawRectF(m_renderingContext, &rect);
+            SDL_RenderRect(m_renderingContext, &rect);
         }
     }
 
-    void Renderer::drawTexture(const Texture& texture, const Rect& sourceRect, const FRect& destinationRect,
+    void Renderer::drawTexture(const Texture& texture, const FRect& sourceRect, const FRect& destinationRect,
                                double rotationAngle)
     {
-        SDL_RenderCopyExF(m_renderingContext, texture.getData(), &sourceRect, &destinationRect, rotationAngle,
-                          nullptr, SDL_FLIP_NONE);
+        SDL_RenderTextureRotated(m_renderingContext, texture.getData(), &sourceRect, &destinationRect,
+                                 rotationAngle, nullptr, SDL_FLIP_NONE);
     }
 
     void Renderer::drawText(const Font& font, std::string_view text, const Color& color, glm::vec2 position)
     {
-        SDL_Surface* surface{TTF_RenderText_Blended(font.getData(), text.data(), color)};
+        SDL_Surface* surface{TTF_RenderText_Blended(font.getData(), text.data(), text.length(), color)};
         SDL_Texture* texture{SDL_CreateTextureFromSurface(m_renderingContext, surface)};
-        SDL_FreeSurface(surface);
-        int textWidth{};
-        int textHeight{};
-        SDL_QueryTexture(texture, nullptr, nullptr, &textWidth, &textHeight);
-        FRect destinationRect{position.x, position.y, static_cast<float>(textWidth),
-                              static_cast<float>(textHeight)};
-        SDL_RenderCopyF(m_renderingContext, texture, nullptr, &destinationRect);
+        SDL_DestroySurface(surface);
+        float textWidth{};
+        float textHeight{};
+        SDL_GetTextureSize(texture, &textWidth, &textHeight);
+        FRect destinationRect{position.x, position.y, textWidth, textHeight};
+        SDL_RenderTexture(m_renderingContext, texture, nullptr, &destinationRect);
         SDL_DestroyTexture(texture);
     }
 
