@@ -32,12 +32,19 @@ namespace Engine
                          position.y - static_cast<float>(camera.display.y)};
     }
 
+    constexpr bool isObjectOutOfMap(const glm::vec2& position, float objectWidth, float objectHeight,
+                                    float mapWidth, float mapHeight)
+    {
+        return position.x + objectWidth < 0 || position.x > mapWidth || position.y + objectHeight < 0 ||
+               position.y > mapHeight;
+    }
+
     void MovementSystem::update(float timeStep, const SceneData& sceneData)
     {
-        auto view{getRegistry().view<TransformComponent, const RigidBodyComponent>()};
+        auto view{getRegistry().view<TransformComponent, RigidBodyComponent>()};
         for (auto entity : view) {
             auto& transform{view.get<TransformComponent>(entity)};
-            const auto& rigidBody{view.get<RigidBodyComponent>(entity)};
+            auto& rigidBody{view.get<RigidBodyComponent>(entity)};
             transform.position += rigidBody.velocity * timeStep;
             const auto* sprite{getRegistry().try_get<SpriteComponent>(entity)};
             float width{0.0f};
@@ -46,11 +53,15 @@ namespace Engine
                 width = sprite->width * transform.scale.x;
                 height = sprite->height * transform.scale.y;
             }
-            bool isOutOfMap{transform.position.x + width < 0 ||
-                            transform.position.x > static_cast<float>(sceneData.mapWidth) ||
-                            transform.position.y + height < 0 ||
-                            transform.position.y > static_cast<float>(sceneData.mapHeight)};
-            if (isOutOfMap && !getRegistry().any_of<Player>(entity)) {
+            bool isPlayer = getRegistry().any_of<Player>(entity);
+            if (isPlayer) {
+                transform.position.x =
+                    std::clamp(transform.position.x, 0.0f, static_cast<float>(sceneData.mapWidth) - width);
+                transform.position.y =
+                    std::clamp(transform.position.y, 0.0f, static_cast<float>(sceneData.mapHeight) - height);
+            } else if (isObjectOutOfMap(transform.position, width, height,
+                                        static_cast<float>(sceneData.mapWidth),
+                                        static_cast<float>(sceneData.mapHeight))) {
                 getRegistry().destroy(entity);
             }
         }
@@ -74,9 +85,15 @@ namespace Engine
             if (!sprite.hasFixedPosition) {
                 renderPosition = getRenderPosition(renderPosition, camera);
             }
-            const FRect destinationRect{renderPosition.x, renderPosition.y,
-                                        static_cast<float>(sprite.width) * transform.scale.x,
-                                        static_cast<float>(sprite.height) * transform.scale.y};
+            float spriteWidth{static_cast<float>(sprite.width) * transform.scale.x};
+            float spriteHeight{static_cast<float>(sprite.height) * transform.scale.y};
+            if (renderPosition.x + spriteWidth < 0 ||
+                renderPosition.x > static_cast<float>(camera.display.w) ||
+                renderPosition.y + spriteHeight < 0 ||
+                renderPosition.y > static_cast<float>(camera.display.h)) {
+                continue;
+            }
+            const FRect destinationRect{renderPosition.x, renderPosition.y, spriteWidth, spriteHeight};
             renderer.drawTexture(assetManager.getTexture(sprite.assetId), sprite.sourceRect, destinationRect,
                                  0.0);
         }
