@@ -32,13 +32,27 @@ namespace Engine
                          position.y - static_cast<float>(camera.display.y)};
     }
 
-    void MovementSystem::update(float timeStep)
+    void MovementSystem::update(float timeStep, const SceneData& sceneData)
     {
         auto view{getRegistry().view<TransformComponent, const RigidBodyComponent>()};
         for (auto entity : view) {
             auto& transform{view.get<TransformComponent>(entity)};
             const auto& rigidBody{view.get<RigidBodyComponent>(entity)};
             transform.position += rigidBody.velocity * timeStep;
+            const auto* sprite{getRegistry().try_get<SpriteComponent>(entity)};
+            float width{0.0f};
+            float height{0.0f};
+            if (sprite) {
+                width = sprite->width * transform.scale.x;
+                height = sprite->height * transform.scale.y;
+            }
+            bool isOutOfMap{transform.position.x + width < 0 ||
+                            transform.position.x > static_cast<float>(sceneData.mapWidth) ||
+                            transform.position.y + height < 0 ||
+                            transform.position.y > static_cast<float>(sceneData.mapHeight)};
+            if (isOutOfMap && !getRegistry().any_of<Player>(entity)) {
+                getRegistry().destroy(entity);
+            }
         }
     };
 

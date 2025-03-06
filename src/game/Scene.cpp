@@ -39,7 +39,7 @@ namespace Engine
         m_damageSystem->subscribeToEvents(eventBus);
         m_playerInputSystem->subscribeToEvents(eventBus);
         m_projectileEmitSystem->subscribeToEvents(eventBus);
-        m_movementSystem->update(timeStep);
+        m_movementSystem->update(timeStep, m_sceneData);
         m_collisionSystem->update();
         m_animationSystem->update();
         m_projectileEmitSystem->update();

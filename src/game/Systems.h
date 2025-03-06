@@ -36,7 +36,7 @@ namespace Engine
             : System{registry}
         {
         }
-        void update(float timeStep);
+        void update(float timeStep, const SceneData& sceneData);
     };
 
     class SpriteRenderingSystem final : public System
