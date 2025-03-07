@@ -12,6 +12,7 @@ namespace Engine
         ImGui::CreateContext();
         ImGuiIO& io{ImGui::GetIO()};
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
         ImGui::StyleColorsDark();
         ImGui_ImplSDL3_InitForSDLRenderer(window.getWindowPtr(), renderer->getRenderingContext());
         ImGui_ImplSDLRenderer3_Init(renderer->getRenderingContext());
@@ -41,5 +42,9 @@ namespace Engine
     {
         ImGui::Render();
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_renderer->getRenderingContext());
+        if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+        }
     }
 } // namespace Engine
