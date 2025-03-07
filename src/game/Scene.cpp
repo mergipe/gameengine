@@ -1,6 +1,7 @@
 #include "Scene.h"
 #include "Components.h"
 #include "Game.h"
+#include "LevelLoader.h"
 #include "Systems.h"
 #include "core/IO.h"
 #include "core/Logger.h"
@@ -27,7 +28,9 @@ namespace Engine
             m_boxColliderRenderingSystem = std::make_unique<BoxColliderRenderingSystem>(m_registry.get());
         }
         m_sceneData.camera = {0, 0, windowWidth, windowHeight};
-        loadLevel();
+        LevelLoader levelLoader{};
+        std::filesystem::path scriptsFolder{m_assetManager->getAssetPath(Game::s_scriptsFolder)};
+        levelLoader.loadLevel(scriptsFolder / "level1.lua", *m_registry, *m_assetManager, *m_renderer);
     }
 
     Scene::~Scene() { m_assetManager->clearAssets(); }

@@ -4,7 +4,7 @@
 
 namespace Engine
 {
-    constexpr std::optional<Logger::Level> getLevelFromString(std::string_view levelStr)
+    constexpr std::optional<Logger::Level> getLevel(std::string_view levelStr)
     {
         using enum Logger::Level;
         if (levelStr == "trace")
@@ -48,7 +48,7 @@ namespace Engine
         s_logger = spdlog::stdout_color_mt(s_loggerName);
         const char* loggerLevelEnvValue{std::getenv(s_loggerLevelEnvVariableName.c_str())};
         if (loggerLevelEnvValue) {
-            const std::optional<Level> loggerLevelFromEnv{getLevelFromString(loggerLevelEnvValue)};
+            const std::optional<Level> loggerLevelFromEnv{getLevel(loggerLevelEnvValue)};
             if (loggerLevelFromEnv && loggerLevelFromEnv.value() > level) {
                 level = loggerLevelFromEnv.value();
             }

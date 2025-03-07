@@ -2,7 +2,7 @@ add_executable(gameengine
                Main.cpp
                assets/AssetManager.cpp
                core/IO.cpp core/Logger.cpp core/Timer.cpp core/Window.cpp
-               game/Game.cpp game/Scene.cpp game/Systems.cpp
+               game/Game.cpp game/LevelLoader.cpp game/Scene.cpp game/Systems.cpp
                renderer/Font.cpp renderer/Renderer.cpp renderer/Texture.cpp
                tools/DeveloperModeGui.cpp)
 target_compile_features(gameengine PRIVATE cxx_std_23)

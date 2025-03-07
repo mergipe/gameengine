@@ -33,6 +33,7 @@ namespace Engine
         static constexpr std::string_view s_tilemapsFolder{"tilemaps"};
         static constexpr std::string_view s_texturesFolder{"textures"};
         static constexpr std::string_view s_fontsFolder{"fonts"};
+        static constexpr std::string_view s_scriptsFolder{"scripts"};
 
     private:
         void processInput();
