@@ -15,6 +15,7 @@ namespace Engine
     void AssetManager::addFont(std::string_view assetId, const std::filesystem::path& relativePath,
                                float fontSize)
     {
+        Logger::info("Adding font from {} to the asset manager as '{}'", relativePath.c_str(), assetId);
         auto font{std::make_unique<Font>(TTF_OpenFont(relativePath.c_str(), fontSize))};
         m_fonts.insert(std::make_pair(assetId, std::move(font)));
     }

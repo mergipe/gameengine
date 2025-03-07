@@ -73,6 +73,7 @@ namespace Engine
         getRegistry().sort<SpriteComponent>(
             [](const SpriteComponent& lhs, const SpriteComponent& rhs) { return lhs.zIndex < rhs.zIndex; });
         auto view{getRegistry().view<const TransformComponent, const SpriteComponent>()};
+        view.use<SpriteComponent>();
         for (auto entity : view) {
             const auto& transform{view.get<TransformComponent>(entity)};
             const auto& sprite{view.get<SpriteComponent>(entity)};
@@ -94,8 +95,8 @@ namespace Engine
                 continue;
             }
             const FRect destinationRect{renderPosition.x, renderPosition.y, spriteWidth, spriteHeight};
-            renderer.drawTexture(assetManager.getTexture(sprite.assetId), sprite.sourceRect, destinationRect,
-                                 0.0);
+            renderer.drawTexture(assetManager.getTexture(sprite.textureId), sprite.sourceRect,
+                                 destinationRect, 0.0);
         }
     }
 
@@ -244,7 +245,7 @@ namespace Engine
                         }
                         Game::instance().getEventBus().dispatchEvent<ProjectileEmitEvent>(
                             entity, projectileVelocity, projectileEmitter->projectileDuration,
-                            projectileEmitter->hitPercentDamage, true);
+                            projectileEmitter->hitPercentageDamage, true);
                     }
                 }
                 break;
@@ -294,7 +295,7 @@ namespace Engine
             auto& projectileEmitter{view.get<ProjectileEmitterComponent>(entity)};
             if (projectileEmitter.isAutoShoot && projectileEmitter.canShoot()) {
                 emitProjectile(entity, projectileEmitter.projectileVelocity,
-                               projectileEmitter.projectileDuration, projectileEmitter.hitPercentDamage,
+                               projectileEmitter.projectileDuration, projectileEmitter.hitPercentageDamage,
                                projectileEmitter.isProjectileFriendly);
             }
         }
@@ -319,7 +320,7 @@ namespace Engine
         }
         getRegistry().emplace<TransformComponent>(projectile, projectilePosition);
         getRegistry().emplace<RigidBodyComponent>(projectile, velocity);
-        getRegistry().emplace<SpriteComponent>(projectile, "bullet", 4.0f, 4.0f, 4);
+        getRegistry().emplace<SpriteComponent>(projectile, "bullet-texture", 4.0f, 4.0f, 4);
         getRegistry().emplace<BoxColliderComponent>(projectile, 4, 4);
         getRegistry().emplace<LifecycleComponent>(projectile, duration);
         getRegistry().emplace<DamageComponent>(projectile, damage);
@@ -351,7 +352,7 @@ namespace Engine
         for (auto entity : view) {
             const auto& transform{view.get<TransformComponent>(entity)};
             const auto& text{view.get<TextComponent>(entity)};
-            const Font& font{assetManager.getFont(text.assetId)};
+            const Font& font{assetManager.getFont(text.fontId)};
             glm::vec2 renderPosition{transform.position};
             if (!text.hasFixedPosition) {
                 renderPosition = getRenderPosition(renderPosition, camera);

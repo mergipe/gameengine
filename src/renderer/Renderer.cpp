@@ -28,6 +28,7 @@ namespace Engine
         SDL_Texture* texture{IMG_LoadTexture(m_renderingContext, filepathStr)};
         if (!texture) {
             Logger::error("Failed to load texture from {}: {}", filepath.c_str(), SDL_GetError());
+            return nullptr;
         }
         Logger::info("Texture loaded from {}", filepathStr);
         SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);

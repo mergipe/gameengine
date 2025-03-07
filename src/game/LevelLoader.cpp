@@ -8,21 +8,17 @@ namespace Engine
     void loadAssets(sol::table& level, AssetManager& assetManager, Renderer& renderer)
     {
         sol::table assets{level["assets"]};
-        for (size_t i{0}; i < assets.size(); ++i) {
-            sol::optional<sol::table> assetOpt{assets[i]};
-            if (assetOpt == sol::nullopt) {
-                break;
-            }
-            sol::table asset{assets[i]};
-            std::string assetTypeStr{asset["type"]};
-            auto assetType{getAssetType(assetTypeStr)};
-            if (!assetType) {
-                Logger::error("Asset type {} unknown", assetTypeStr);
+        for (const auto& entry : assets) {
+            sol::table asset{entry.second};
+            std::string typeStr{asset["type"]};
+            auto type{getAssetType(typeStr)};
+            if (!type) {
+                Logger::error("Asset type {} unknown", typeStr);
                 continue;
             }
             std::string assetId{asset["id"]};
             std::string filepath{asset["file"]};
-            switch (assetType.value()) {
+            switch (type.value()) {
             case AssetType::texture:
                 assetManager.addTexture(assetId, renderer.loadTexture(filepath));
                 break;
@@ -49,7 +45,7 @@ namespace Engine
             return;
         }
         loadResult();
-        sol::table level{luaState["level"]};
+        sol::table level{luaState["Level"]};
         loadAssets(level, assetManager, renderer);
         sol::table tilemap{luaState["tilemap"]};
         loadTilemap(tilemap);

@@ -20,10 +20,10 @@ namespace Engine
     };
 
     struct SpriteComponent final {
-        SpriteComponent(std::string_view assetId = "", float width = 0.0f, float height = 0.0f,
+        SpriteComponent(std::string_view textureId = "", float width = 0.0f, float height = 0.0f,
                         int zIndex = 0, bool isPositionFixed = false, float sourceRectX = 0.0f,
                         float sourceRectY = 0.0f)
-            : assetId{assetId}
+            : textureId{textureId}
             , sourceRect{FRect{sourceRectX, sourceRectY, width, height}}
             , width{width}
             , height{height}
@@ -31,7 +31,7 @@ namespace Engine
             , hasFixedPosition{isPositionFixed}
         {
         }
-        std::string assetId{};
+        std::string textureId{};
         FRect sourceRect{};
         float width{};
         float height{};
@@ -70,13 +70,13 @@ namespace Engine
 
     // this and ProjectileEmitSystem should become a script in the future
     struct ProjectileEmitterComponent final {
-        ProjectileEmitterComponent(glm::vec2 projectileVelocity = glm::vec2{0}, int repeatFrequency = 0,
-                                   int projectileDuration = 10000, int hitPercentDamage = 10,
+        ProjectileEmitterComponent(glm::vec2 projectileVelocity = glm::vec2{0}, int cooldown = 0,
+                                   int projectileDuration = 10000, int hitPercentageDamage = 10,
                                    bool isProjectileFriendly = false, bool isAutoShoot = true)
             : projectileVelocity{projectileVelocity}
-            , cooldown{repeatFrequency}
+            , cooldown{cooldown}
             , projectileDuration{projectileDuration}
-            , hitPercentDamage{hitPercentDamage}
+            , hitPercentageDamage{hitPercentageDamage}
             , isProjectileFriendly{isProjectileFriendly}
             , isAutoShoot{isAutoShoot}
         {
@@ -86,7 +86,7 @@ namespace Engine
         std::uint64_t lastEmissionTime{Timer::getTicks()};
         int cooldown{};
         int projectileDuration{};
-        int hitPercentDamage{};
+        int hitPercentageDamage{};
         bool isProjectileFriendly{};
         bool isAutoShoot{};
     };
@@ -110,7 +110,7 @@ namespace Engine
 
     struct TextComponent {
         std::string text{};
-        std::string assetId{};
+        std::string fontId{};
         Color color{0, 0, 0, 0};
         bool hasFixedPosition{true};
     };
