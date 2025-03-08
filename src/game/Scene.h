@@ -7,7 +7,6 @@
 #include "renderer/Renderer.h"
 #include <entt/entt.hpp>
 #include <memory>
-#include <string_view>
 
 namespace Engine
 {
@@ -24,9 +23,6 @@ namespace Engine
         void render(float frameExtrapolationTimeStep);
 
     private:
-        void loadMap(std::string_view tilemapFilename, float tileWidth, float tileHeight, int tilesetColumns,
-                     float scale);
-        void loadEntities();
         SceneData m_sceneData{};
         Renderer* m_renderer{};
         AssetManager* m_assetManager{};

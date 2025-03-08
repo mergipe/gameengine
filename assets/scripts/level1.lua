@@ -10,8 +10,9 @@ Level = {
     tilemap = {
         map_file = "./assets/tilemaps/jungle.map",
         texture_id = "tilemap-texture",
-        num_rows = 20,
-        num_cols = 25,
+        map_rows = 20,
+        map_cols = 25,
+        tileset_cols = 10,
         tile_size = 32,
         scale = 4.0,
     },
@@ -74,7 +75,7 @@ Level = {
                     height = 32,
                     z_index = 2,
                 },
-                boxcollider = {
+                box_collider = {
                     width = 25,
                     height = 18,
                     offset = { x = 0, y = 7 },

@@ -21,14 +21,14 @@ namespace Engine
 
     struct SpriteComponent final {
         SpriteComponent(std::string_view textureId = "", float width = 0.0f, float height = 0.0f,
-                        int zIndex = 0, bool isPositionFixed = false, float sourceRectX = 0.0f,
+                        int zIndex = 0, bool hasFixedPosition = false, float sourceRectX = 0.0f,
                         float sourceRectY = 0.0f)
             : textureId{textureId}
             , sourceRect{FRect{sourceRectX, sourceRectY, width, height}}
             , width{width}
             , height{height}
             , zIndex{zIndex}
-            , hasFixedPosition{isPositionFixed}
+            , hasFixedPosition{hasFixedPosition}
         {
         }
         std::string textureId{};

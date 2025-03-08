@@ -54,14 +54,12 @@ namespace Engine
                 height = sprite->height * transform.scale.y;
             }
             bool isPlayer = getRegistry().any_of<Player>(entity);
+            float mapWidth{sceneData.levelData.mapData.width};
+            float mapHeight{sceneData.levelData.mapData.height};
             if (isPlayer) {
-                transform.position.x =
-                    std::clamp(transform.position.x, 0.0f, static_cast<float>(sceneData.mapWidth) - width);
-                transform.position.y =
-                    std::clamp(transform.position.y, 0.0f, static_cast<float>(sceneData.mapHeight) - height);
-            } else if (isObjectOutOfMap(transform.position, width, height,
-                                        static_cast<float>(sceneData.mapWidth),
-                                        static_cast<float>(sceneData.mapHeight))) {
+                transform.position.x = std::clamp(transform.position.x, 0.0f, mapWidth - width);
+                transform.position.y = std::clamp(transform.position.y, 0.0f, mapHeight - height);
+            } else if (isObjectOutOfMap(transform.position, width, height, mapWidth, mapHeight)) {
                 getRegistry().destroy(entity);
             }
         }
@@ -277,8 +275,10 @@ namespace Engine
             Rect& cameraDisplay{sceneData.camera.display};
             cameraDisplay.x = static_cast<int>(transform.position.x - (cameraDisplay.w / 2.0));
             cameraDisplay.y = static_cast<int>(transform.position.y - (cameraDisplay.h / 2.0));
-            cameraDisplay.x = std::clamp(cameraDisplay.x, 0, sceneData.mapWidth - cameraDisplay.w);
-            cameraDisplay.y = std::clamp(cameraDisplay.y, 0, sceneData.mapHeight - cameraDisplay.h);
+            cameraDisplay.x = std::clamp(
+                cameraDisplay.x, 0, static_cast<int>(sceneData.levelData.mapData.width) - cameraDisplay.w);
+            cameraDisplay.y = std::clamp(
+                cameraDisplay.y, 0, static_cast<int>(sceneData.levelData.mapData.height) - cameraDisplay.h);
         }
     }
 

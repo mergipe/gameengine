@@ -8,11 +8,20 @@
 
 namespace Engine
 {
+    struct TilemapData {
+        float width;
+        float height;
+    };
+
+    struct LevelData {
+        TilemapData mapData;
+    };
+
     class LevelLoader
     {
     public:
-        void loadLevel(const std::filesystem::path& levelFilepath, entt::registry& registry,
-                       AssetManager& assetManager, Renderer& renderer);
+        LevelData loadLevel(const std::filesystem::path& levelFilepath, entt::registry& registry,
+                            AssetManager& assetManager, Renderer& renderer);
     };
 } // namespace Engine
 
