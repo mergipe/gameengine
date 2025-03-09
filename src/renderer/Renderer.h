@@ -27,7 +27,7 @@ namespace Engine
         void setDrawColor(const Color& color);
         void drawRectangle(FRect rect, bool fill);
         void drawTexture(const Texture& texture, const FRect& sourceRect, const FRect& destinationRect,
-                         double rotationAngle);
+                         float rotationAngle);
         void drawText(const Font& font, std::string_view text, const Color& color, glm::vec2 position);
         void clear();
         void present();

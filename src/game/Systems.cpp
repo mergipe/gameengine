@@ -14,8 +14,8 @@
 
 namespace Engine
 {
-    constexpr bool aabbHasCollided(double aX, double aY, double aW, double aH, double bX, double bY,
-                                   double bW, double bH)
+    constexpr bool aabbHasCollided(float aX, float aY, float aW, float aH, float bX, float bY, float bW,
+                                   float bH)
     {
         return (aX < bX + bW && aX + aW > bX && aY < bY + bH && aY + aH > bY);
     }

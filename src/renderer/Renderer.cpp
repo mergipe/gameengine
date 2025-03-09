@@ -50,7 +50,7 @@ namespace Engine
     }
 
     void Renderer::drawTexture(const Texture& texture, const FRect& sourceRect, const FRect& destinationRect,
-                               double rotationAngle)
+                               float rotationAngle)
     {
         SDL_RenderTextureRotated(m_renderingContext, texture.getData(), &sourceRect, &destinationRect,
                                  rotationAngle, nullptr, SDL_FLIP_NONE);
