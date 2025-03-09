@@ -129,6 +129,9 @@ namespace Engine
 
     struct Tile {
     };
+
+    struct UI {
+    };
 } // namespace Engine
 
 #endif

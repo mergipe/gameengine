@@ -144,6 +144,9 @@ namespace Engine
                 if (components["enemy"]) {
                     registry.emplace<Enemy>(entity);
                 }
+                if (components["ui"]) {
+                    registry.emplace<UI>(entity);
+                }
             }
         }
     }
