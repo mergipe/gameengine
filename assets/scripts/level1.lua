@@ -100,7 +100,7 @@ Level = {
             components = {
                 player = {},
                 transform = {
-                    position = { x = 242, y = 110 },
+                    position = { x = 484, y = 220 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -144,7 +144,7 @@ Level = {
             -- Takeoff base
             components = {
                 transform = {
-                    position = { x = 240, y = 113 },
+                    position = { x = 480, y = 226 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -160,7 +160,7 @@ Level = {
             -- Landing base
             components = {
                 transform = {
-                    position = { x = 1396, y = 493 },
+                    position = { x = 2792, y = 986 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -177,7 +177,7 @@ Level = {
             components = {
                 ui = {},
                 transform = {
-                    position = { x = 10, y = 10 },
+                    position = { x = 20, y = 20 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -198,7 +198,7 @@ Level = {
             -- Runway
             components = {
                 transform = {
-                    position = { x = 940, y = 65 },
+                    position = { x = 1880, y = 130 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 270.0, -- degrees
                 },
@@ -214,7 +214,7 @@ Level = {
             -- Runway
             components = {
                 transform = {
-                    position = { x = 470, y = 385 },
+                    position = { x = 940, y = 770 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -231,7 +231,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 200, y = 497 },
+                    position = { x = 400, y = 994 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -263,7 +263,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 785, y = 170 },
+                    position = { x = 1570, y = 340 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -295,7 +295,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 785, y = 250 },
+                    position = { x = 1570, y = 500 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -327,7 +327,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 785, y = 350 },
+                    position = { x = 1570, y = 700 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -359,7 +359,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 570, y = 520 },
+                    position = { x = 1140, y = 1040 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -391,7 +391,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 570, y = 600 },
+                    position = { x = 1140, y = 1200 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -423,7 +423,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1050, y = 170 },
+                    position = { x = 2100, y = 340 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -455,7 +455,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1170, y = 116 },
+                    position = { x = 2340, y = 232 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -487,7 +487,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1380, y = 116 },
+                    position = { x = 2760, y = 232 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -519,7 +519,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1265, y = 240 },
+                    position = { x = 2530, y = 480 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -536,7 +536,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1265, y = 290 },
+                    position = { x = 2530, y = 580 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -568,7 +568,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 640, y = 800 },
+                    position = { x = 1280, y = 1600 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -600,7 +600,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 790, y = 745 },
+                    position = { x = 1580, y = 1490 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -632,7 +632,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 980, y = 790 },
+                    position = { x = 1960, y = 1580 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -664,7 +664,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1070, y = 870 },
+                    position = { x = 2140, y = 1740 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -696,7 +696,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1190, y = 790 },
+                    position = { x = 2380, y = 1580 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -728,7 +728,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1210, y = 790 },
+                    position = { x = 2420, y = 1580 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -760,7 +760,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1230, y = 790 },
+                    position = { x = 2460, y = 1580 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -792,7 +792,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1250, y = 790 },
+                    position = { x = 2500, y = 1580 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -824,7 +824,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1000, y = 445 },
+                    position = { x = 2000, y = 890 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -856,7 +856,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1426, y = 760 },
+                    position = { x = 2852, y = 1520 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -888,7 +888,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1423, y = 835 },
+                    position = { x = 2846, y = 1670 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -920,7 +920,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1450, y = 300 },
+                    position = { x = 2900, y = 600 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -952,7 +952,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 195, y = 980 },
+                    position = { x = 390, y = 1960 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -984,7 +984,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 110, y = 1125 },
+                    position = { x = 220, y = 2250 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1016,7 +1016,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1395, y = 540 },
+                    position = { x = 2790, y = 1080 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1033,7 +1033,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 113, y = 580 },
+                    position = { x = 226, y = 1160 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1058,7 +1058,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 180, y = 1045 },
+                    position = { x = 360, y = 2090 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1083,7 +1083,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 195, y = 1055 },
+                    position = { x = 390, y = 2110 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1108,7 +1108,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 210, y = 1065 },
+                    position = { x = 420, y = 2130 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1133,7 +1133,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 545, y = 660 },
+                    position = { x = 1090, y = 1320 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1158,7 +1158,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 560, y = 670 },
+                    position = { x = 1120, y = 1340 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1183,7 +1183,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1360, y = 880 },
+                    position = { x = 2720, y = 1760 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1208,7 +1208,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1380, y = 880 },
+                    position = { x = 2760, y = 1760 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1233,7 +1233,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1400, y = 880 },
+                    position = { x = 2800, y = 1760 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1258,7 +1258,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1505, y = 780 },
+                    position = { x = 3010, y = 1560 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1283,7 +1283,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1515, y = 790 },
+                    position = { x = 3030, y = 1580 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1308,7 +1308,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 495, y = 380 },
+                    position = { x = 990, y = 760 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1344,7 +1344,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 495, y = 410 },
+                    position = { x = 990, y = 820 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1380,7 +1380,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1290, y = 115 },
+                    position = { x = 2580, y = 230 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1416,7 +1416,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 935, y = 557 },
+                    position = { x = 1870, y = 1114 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1452,7 +1452,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 114, y = 700 },
+                    position = { x = 228, y = 1400 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1484,7 +1484,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 114, y = 720 },
+                    position = { x = 228, y = 1440 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1516,7 +1516,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 116, y = 499 },
+                    position = { x = 232, y = 998 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1548,7 +1548,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1454, y = 215 },
+                    position = { x = 2908, y = 430 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1580,7 +1580,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1454, y = 231 },
+                    position = { x = 2908, y = 462 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1612,7 +1612,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1454, y = 247 },
+                    position = { x = 2908, y = 494 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1643,7 +1643,7 @@ Level = {
             -- Vegetation
             components = {
                 transform = {
-                    position = { x = 115, y = 633 },
+                    position = { x = 230, y = 1266 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1659,7 +1659,7 @@ Level = {
             -- Vegetation
             components = {
                 transform = {
-                    position = { x = 117, y = 650 },
+                    position = { x = 234, y = 1300 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1675,7 +1675,7 @@ Level = {
             -- Vegetation
             components = {
                 transform = {
-                    position = { x = 318, y = 490 },
+                    position = { x = 636, y = 980 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1691,7 +1691,7 @@ Level = {
             -- Vegetation
             components = {
                 transform = {
-                    position = { x = 668, y = 526 },
+                    position = { x = 1336, y = 1052 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1707,7 +1707,7 @@ Level = {
             -- Vegetation
             components = {
                 transform = {
-                    position = { x = 1018, y = 738 },
+                    position = { x = 2036, y = 1476 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1723,7 +1723,7 @@ Level = {
             -- Vegetation
             components = {
                 transform = {
-                    position = { x = 1034, y = 738 },
+                    position = { x = 2068, y = 1476 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1739,7 +1739,7 @@ Level = {
             -- Vegetation
             components = {
                 transform = {
-                    position = { x = 1028, y = 745 },
+                    position = { x = 2056, y = 1490 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1755,7 +1755,7 @@ Level = {
             -- Vegetation
             components = {
                 transform = {
-                    position = { x = 1390, y = 440 },
+                    position = { x = 2780, y = 880 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1771,7 +1771,7 @@ Level = {
             -- Vegetation
             components = {
                 transform = {
-                    position = { x = 1400, y = 445 },
+                    position = { x = 2800, y = 890 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1787,7 +1787,7 @@ Level = {
             -- Vegetation
             components = {
                 transform = {
-                    position = { x = 1365, y = 290 },
+                    position = { x = 2730, y = 580 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1803,7 +1803,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 669, y = 549 },
+                    position = { x = 1338, y = 1098 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1819,7 +1819,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 685, y = 549 },
+                    position = { x = 1370, y = 1098 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1835,7 +1835,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 315, y = 505 },
+                    position = { x = 630, y = 1010 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1851,7 +1851,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 330, y = 507 },
+                    position = { x = 660, y = 1014 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1867,7 +1867,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 438, y = 390 },
+                    position = { x = 876, y = 780 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1883,7 +1883,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 449, y = 408 },
+                    position = { x = 898, y = 816 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1899,7 +1899,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 431, y = 416 },
+                    position = { x = 862, y = 832 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1915,7 +1915,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 940, y = 695 },
+                    position = { x = 1880, y = 1390 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1931,7 +1931,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 955, y = 705 },
+                    position = { x = 1910, y = 1410 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1947,7 +1947,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 1085, y = 507 },
+                    position = { x = 2170, y = 1014 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1963,7 +1963,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 1075, y = 527 },
+                    position = { x = 2150, y = 1054 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1979,7 +1979,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 1075, y = 547 },
+                    position = { x = 2150, y = 1094 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1995,7 +1995,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 1085, y = 567 },
+                    position = { x = 2170, y = 1134 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2011,7 +2011,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 1355, y = 449 },
+                    position = { x = 2710, y = 898 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2027,7 +2027,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 1430, y = 446 },
+                    position = { x = 2860, y = 892 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2043,7 +2043,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 1435, y = 195 },
+                    position = { x = 2870, y = 390 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2059,7 +2059,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 1425, y = 215 },
+                    position = { x = 2850, y = 430 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2075,7 +2075,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 1425, y = 235 },
+                    position = { x = 2850, y = 470 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2091,7 +2091,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 1425, y = 255 },
+                    position = { x = 2850, y = 510 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2107,7 +2107,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 1435, y = 275 },
+                    position = { x = 2870, y = 550 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2123,7 +2123,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 1360, y = 310 },
+                    position = { x = 2720, y = 620 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2139,7 +2139,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 1380, y = 312 },
+                    position = { x = 2760, y = 624 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2155,7 +2155,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 1330, y = 212 },
+                    position = { x = 2660, y = 424 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2171,7 +2171,7 @@ Level = {
             -- Obstacles
             components = {
                 transform = {
-                    position = { x = 1360, y = 232 },
+                    position = { x = 2720, y = 464 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2187,7 +2187,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 630, y = 405 },
+                    position = { x = 1260, y = 810 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2203,7 +2203,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 497, y = 450 },
+                    position = { x = 994, y = 900 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2219,7 +2219,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 572, y = 560 },
+                    position = { x = 1144, y = 1120 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2235,7 +2235,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 114, y = 980 },
+                    position = { x = 228, y = 1960 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2251,7 +2251,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 114, y = 1030 },
+                    position = { x = 228, y = 2060 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2267,7 +2267,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 883, y = 490 },
+                    position = { x = 1766, y = 980 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2283,7 +2283,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 113, y = 851 },
+                    position = { x = 226, y = 1702 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2299,7 +2299,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 750, y = 630 },
+                    position = { x = 1500, y = 1260 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2315,7 +2315,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 800, y = 630 },
+                    position = { x = 1600, y = 1260 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2331,7 +2331,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 856, y = 115 },
+                    position = { x = 1712, y = 230 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2347,7 +2347,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 900, y = 115 },
+                    position = { x = 1800, y = 230 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2363,7 +2363,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 1117, y = 530 },
+                    position = { x = 2234, y = 1060 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2379,7 +2379,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 755, y = 440 },
+                    position = { x = 1510, y = 880 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2395,7 +2395,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 810, y = 440 },
+                    position = { x = 1620, y = 880 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2411,7 +2411,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 1390, y = 690 },
+                    position = { x = 2780, y = 1380 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2427,7 +2427,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 1425, y = 690 },
+                    position = { x = 2850, y = 1380 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2443,7 +2443,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 1465, y = 690 },
+                    position = { x = 2930, y = 1380 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2459,7 +2459,7 @@ Level = {
             -- Boat
             components = {
                 transform = {
-                    position = { x = 80, y = 520 },
+                    position = { x = 160, y = 1040 },
                     scale = { x = 1.6, y = 1.6 },
                     rotation = 0.0, -- degrees
                 },
@@ -2475,7 +2475,7 @@ Level = {
             -- Boat
             components = {
                 transform = {
-                    position = { x = 80, y = 790 },
+                    position = { x = 160, y = 1580 },
                     scale = { x = 1.6, y = 1.6 },
                     rotation = 0.0, -- degrees
                 },
@@ -2491,7 +2491,7 @@ Level = {
             -- Boat
             components = {
                 transform = {
-                    position = { x = 345, y = 423 },
+                    position = { x = 690, y = 846 },
                     scale = { x = 1.6, y = 1.6 },
                     rotation = 270.0, -- degrees
                 },
@@ -2507,7 +2507,7 @@ Level = {
             -- Boat
             components = {
                 transform = {
-                    position = { x = 1510, y = 460 },
+                    position = { x = 3020, y = 920 },
                     scale = { x = 1.6, y = 1.6 },
                     rotation = 0.0, -- degrees
                 },
@@ -2523,7 +2523,7 @@ Level = {
             -- Carrier
             components = {
                 transform = {
-                    position = { x = 670, y = 150 },
+                    position = { x = 1340, y = 300 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2539,7 +2539,7 @@ Level = {
             -- Carrier
             components = {
                 transform = {
-                    position = { x = 300, y = 975 },
+                    position = { x = 600, y = 1950 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2556,7 +2556,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 688, y = 165 },
+                    position = { x = 1376, y = 330 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2585,7 +2585,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 685, y = 300 },
+                    position = { x = 1370, y = 600 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = -10.0, -- degrees
                 },
@@ -2617,7 +2617,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 464, y = 520 },
+                    position = { x = 928, y = 1040 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2646,7 +2646,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1000, y = 143 },
+                    position = { x = 2000, y = 286 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = -90.0, -- degrees
                 },
@@ -2678,7 +2678,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 920, y = 179 },
+                    position = { x = 1840, y = 358 },
                     scale = { x = 1.6, y = 1.6 },
                     rotation = 0.0, -- degrees
                 },
@@ -2699,7 +2699,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 950, y = 179 },
+                    position = { x = 1900, y = 358 },
                     scale = { x = 1.6, y = 1.6 },
                     rotation = 0.0, -- degrees
                 },
@@ -2720,7 +2720,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 980, y = 179 },
+                    position = { x = 1960, y = 358 },
                     scale = { x = 1.6, y = 1.6 },
                     rotation = 0.0, -- degrees
                 },
@@ -2742,7 +2742,7 @@ Level = {
             components = {
 enemy = {},
                 transform = {
-                    position = { x = 317, y = 985 },
+                    position = { x = 634, y = 1970 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2806,7 +2806,7 @@ enemy = {},
             components = {
 enemy = {},
                 transform = {
-                    position = { x = 10, y = 10 },
+                    position = { x = 20, y = 20 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 90.0, -- degrees
                 },
