@@ -138,6 +138,12 @@ namespace Engine
                         projectileEmitter["is_projectile_friendly"].get_or(false),
                         projectileEmitter["is_auto_shoot"].get_or(true));
                 }
+                const sol::optional<sol::table> maybeScript{components["script"]};
+                if (maybeScript) {
+                    const sol::table script{maybeScript.value()};
+                    const sol::function func{script["on_update"]};
+                    registry.emplace<ScriptComponent>(entity, func);
+                }
                 if (components["player"]) {
                     registry.emplace<Player>(entity);
                 }
@@ -151,11 +157,9 @@ namespace Engine
         }
     }
 
-    LevelData LevelLoader::loadLevel(const std::filesystem::path& levelFilepath, entt::registry& registry,
-                                     AssetManager& assetManager, Renderer& renderer)
+    LevelData LevelLoader::loadLevel(sol::state& luaState, const std::filesystem::path& levelFilepath,
+                                     entt::registry& registry, AssetManager& assetManager, Renderer& renderer)
     {
-        sol::state luaState{};
-        luaState.open_libraries(sol::lib::base);
         sol::load_result loadResult{luaState.load_file(levelFilepath)};
         if (!loadResult.valid()) {
             sol::error error{loadResult};

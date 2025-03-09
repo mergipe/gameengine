@@ -7,6 +7,7 @@
 #include "renderer/Renderer.h"
 #include <entt/entt.hpp>
 #include <memory>
+#include <sol/sol.hpp>
 
 namespace Engine
 {
@@ -23,6 +24,7 @@ namespace Engine
         void render(float frameExtrapolationTimeStep);
 
     private:
+        sol::state m_luaState{};
         SceneData m_sceneData{};
         Renderer* m_renderer{};
         AssetManager* m_assetManager{};
@@ -39,6 +41,7 @@ namespace Engine
         std::unique_ptr<HealthBarRenderingSystem> m_healthBarRenderingSystem{};
         std::unique_ptr<BoxColliderRenderingSystem> m_boxColliderRenderingSystem{};
         std::unique_ptr<TextRenderingSystem> m_textRenderingSystem{};
+        std::unique_ptr<ScriptSystem> m_scriptSystem{};
     };
 } // namespace Engine
 

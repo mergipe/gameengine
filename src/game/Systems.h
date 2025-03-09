@@ -164,6 +164,25 @@ namespace Engine
         }
         void update(Renderer& renderer, const Font& font, const Camera& camera);
     };
+
+    class ScriptSystem final : public System
+    {
+    public:
+        ScriptSystem(entt::registry* registry)
+            : System{registry}
+        {
+        }
+        void update(float timeStep);
+        void createScriptBindings(sol::state& luaState);
+
+    private:
+        glm::vec2 getEntityPosition(entt::entity entity);
+        glm::vec2 getEntityVelocity(entt::entity entity);
+        void setEntityPosition(entt::entity entity, glm::vec2 position);
+        void setEntityVelocity(entt::entity entity, glm::vec2 velocity);
+        void setEntityRotation(entt::entity entity, float rotation);
+        void setProjectileVelocity(entt::entity entity, glm::vec2 velocity);
+    };
 } // namespace Engine
 
 #endif

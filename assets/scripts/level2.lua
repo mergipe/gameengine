@@ -1,19 +1,13 @@
-local current_system_hour = os.date("*t").hour
-local map_texture_id
-if current_system_hour >= 9 and current_system_hour < 18 then
-    map_texture_id = "tilemap-texture-day"
-else
-    map_texture_id = "tilemap-texture-night"
-end
-
 Level = {
+    ----------------------------------------------------
+    -- Table to define the list of assets
+    ----------------------------------------------------
     assets = {
-        { type = "texture", id = "tilemap-texture-day", file = "./assets/tilemaps/jungle.png" },
-        { type = "texture", id = "tilemap-texture-night", file = "./assets/tilemaps/jungle-night.png" },
+        { type = "texture", id = "tilemap-texture", file = "./assets/tilemaps/desert.png" },
         {
             type = "texture",
-            id = "chopper-texture",
-            file = "./assets/textures/chopper-green-spritesheet.png",
+            id = "tank-texture",
+            file = "./assets/textures/tank-panther-spritesheet.png",
         },
         { type = "texture", id = "su27-texture", file = "./assets/textures/su27-spritesheet.png" },
         { type = "texture", id = "f22-texture", file = "./assets/textures/f22-spritesheet.png" },
@@ -94,22 +88,30 @@ Level = {
         { type = "font", id = "pico8-font-5", file = "./assets/fonts/pico8.ttf", font_size = 5 },
         { type = "font", id = "pico8-font-10", file = "./assets/fonts/pico8.ttf", font_size = 10 },
     },
+
+    ----------------------------------------------------
+    -- table to define the map config variables
+    ----------------------------------------------------
     tilemap = {
-        map_file = "./assets/tilemaps/jungle.map",
-        texture_id = map_texture_id,
-        map_rows = 20,
-        map_cols = 25,
+        map_file = "./assets/tilemaps/desert.map",
+        texture_id = "tilemap-texture",
+        map_rows = 30,
+        map_cols = 40,
         tileset_cols = 10,
         tile_size = 32,
         scale = 4.0,
     },
+
+    ----------------------------------------------------
+    -- table to define entities and their components
+    ----------------------------------------------------
     entities = {
         {
             -- Player
             components = {
                 player = {},
                 transform = {
-                    position = { x = 484, y = 220 },
+                    position = { x = 1500, y = 900 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -117,17 +119,13 @@ Level = {
                     velocity = { x = 0.0, y = 0.0 },
                 },
                 sprite = {
-                    texture_id = "chopper-texture",
+                    texture_id = "tank-texture",
                     width = 32,
                     height = 32,
-                    z_index = 4,
+                    z_index = 6,
                     has_fixed_position = false,
                     source_rect_x = 0,
                     source_rect_y = 0,
-                },
-                animation = {
-                    frames_count = 2,
-                    frames_per_second = 10, -- fps
                 },
                 box_collider = {
                     width = 32,
@@ -140,7 +138,7 @@ Level = {
                 projectile_emitter = {
                     projectile_velocity = { x = 0.5, y = 0.5 },
                     projectile_duration = 10, -- seconds
-                    cooldown = 0.1, -- seconds
+                    cooldown = 0, -- seconds
                     hit_percentage_damage = 10,
                     is_projectile_friendly = true,
                     is_auto_shoot = false,
@@ -153,8 +151,8 @@ Level = {
             -- Takeoff base
             components = {
                 transform = {
-                    position = { x = 480, y = 226 },
-                    scale = { x = 2.0, y = 2.0 },
+                    position = { x = 1484, y = 896 },
+                    scale = { x = 3.0, y = 3.0 },
                     rotation = 0.0, -- degrees
                 },
                 sprite = {
@@ -169,7 +167,23 @@ Level = {
             -- Landing base
             components = {
                 transform = {
-                    position = { x = 2792, y = 986 },
+                    position = { x = 5000, y = 3700 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "landing-base-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+            },
+        },
+        {
+            -- Landing base
+            components = {
+                transform = {
+                    position = { x = 1930, y = 1492 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -207,22 +221,6 @@ Level = {
             -- Runway
             components = {
                 transform = {
-                    position = { x = 1880, y = 130 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 270.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "runway-texture",
-                    width = 21,
-                    height = 191,
-                    z_index = 1,
-                },
-            },
-        },
-        {
-            -- Runway
-            components = {
-                transform = {
                     position = { x = 940, y = 770 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
@@ -236,1079 +234,98 @@ Level = {
             },
         },
         {
-            -- Tank
+            -- Runway
             components = {
-                enemy = {},
                 transform = {
-                    position = { x = 400, y = 994 },
+                    position = { x = 1600, y = 2800 },
                     scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
+                    rotation = 90.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "tank-tiger-right-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 2,
-                },
-                box_collider = {
-                    width = 25,
-                    height = 18,
-                    offset = { x = 0, y = 7 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0.25, y = 0 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 20,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 1570, y = 340 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-up-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 18,
-                    offset = { x = 7, y = 10 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0, y = -0.125 },
-                    projectile_duration = 4, -- seconds
-                    cooldown = 2, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 1570, y = 500 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-tiger-down-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 20,
-                    height = 18,
-                    offset = { x = 5, y = 7 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0, y = 0.05 },
-                    projectile_duration = 3, -- seconds
-                    cooldown = 3, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 1570, y = 700 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-left-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 25,
-                    height = 18,
-                    offset = { x = 5, y = 7 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = -0.125, y = 0 },
-                    projectile_duration = 3, -- seconds
-                    cooldown = 3, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 1140, y = 1040 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-right-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 25,
-                    height = 18,
-                    offset = { x = 5, y = 7 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0.15, y = 0 },
-                    projectile_duration = 4, -- seconds
-                    cooldown = 4, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 1140, y = 1200 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-left-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 25,
-                    height = 18,
-                    offset = { x = 5, y = 7 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = -0.15, y = 0 },
-                    projectile_duration = 4, -- seconds
-                    cooldown = 4, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2100, y = 340 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-right-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 25,
-                    height = 18,
-                    offset = { x = 5, y = 7 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0.15, y = 0 },
-                    projectile_duration = 4, -- seconds
-                    cooldown = 4, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2340, y = 232 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-down-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 18,
-                    offset = { x = 8, y = 6 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0, y = 0.1 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 2, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2760, y = 232 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-down-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 18,
-                    offset = { x = 8, y = 6 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0, y = 0.1 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 2, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2530, y = 480 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-killed-texture",
-                    width = 32,
-                    height = 32,
+                    texture_id = "runway-texture",
+                    width = 21,
+                    height = 191,
                     z_index = 1,
                 },
             },
         },
         {
-            -- Tank
+            -- Runway
             components = {
-                enemy = {},
                 transform = {
-                    position = { x = 2530, y = 580 },
+                    position = { x = 1600, y = 3000 },
                     scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
+                    rotation = 90.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "tank-panther-left-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 20,
-                    height = 17,
-                    offset = { x = 7, y = 7 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = -0.1, y = 0 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 2, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 1280, y = 1600 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-tiger-down-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 18,
-                    height = 20,
-                    offset = { x = 7, y = 7 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0, y = 0.25 },
-                    projectile_duration = 5, -- seconds
-                    cooldown = 5, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 1580, y = 1490 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-tiger-left-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 25,
-                    height = 18,
-                    offset = { x = 7, y = 7 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = -0.15, y = 0 },
-                    projectile_duration = 10, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 1960, y = 1580 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-tiger-right-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 25,
-                    height = 18,
-                    offset = { x = 0, y = 7 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0.15, y = 0 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2140, y = 1740 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-down-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 20,
-                    offset = { x = 8, y = 4 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0, y = 0.25 },
-                    projectile_duration = 4, -- seconds
-                    cooldown = 2, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2380, y = 1580 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-up-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 20,
-                    offset = { x = 7, y = 8 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0, y = -0.5 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2420, y = 1580 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-up-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 20,
-                    offset = { x = 7, y = 8 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0, y = -0.5 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2460, y = 1580 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-up-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 20,
-                    offset = { x = 7, y = 8 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0, y = -0.5 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2500, y = 1580 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-up-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 20,
-                    offset = { x = 7, y = 8 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0, y = -0.5 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2000, y = 890 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-up-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 20,
-                    offset = { x = 7, y = 8 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0, y = -0.5 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2852, y = 1520 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-right-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 22,
-                    height = 18,
-                    offset = { x = 5, y = 7 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0.5, y = 0 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2846, y = 1670 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-tiger-left-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 25,
-                    height = 18,
-                    offset = { x = 7, y = 7 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = -0.5, y = 0 },
-                    projectile_duration = 1, -- seconds
-                    cooldown = 2, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2900, y = 600 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-tiger-down-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 19,
-                    height = 20,
-                    offset = { x = 6, y = 7 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0, y = 0.75 },
-                    projectile_duration = 1, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 390, y = 1960 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-tiger-up-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 18,
-                    height = 25,
-                    offset = { x = 7, y = 7 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0, y = -0.25 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 220, y = 2250 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-down-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 20,
-                    offset = { x = 8, y = 4 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0, y = 0.75 },
-                    projectile_duration = 1, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Tank
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2790, y = 1080 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tank-panther-killed-texture",
-                    width = 32,
-                    height = 32,
+                    texture_id = "runway-texture",
+                    width = 21,
+                    height = 191,
                     z_index = 1,
                 },
             },
         },
         {
-            -- Truck
+            -- Runway
             components = {
-                enemy = {},
                 transform = {
-                    position = { x = 226, y = 1160 },
+                    position = { x = 1600, y = 3200 },
                     scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
+                    rotation = 90.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "truck-ford-down-texture",
-                    width = 32,
-                    height = 32,
+                    texture_id = "runway-texture",
+                    width = 21,
+                    height = 191,
                     z_index = 1,
-                },
-                box_collider = {
-                    width = 12,
-                    height = 25,
-                    offset = { x = 10, y = 2 },
-                },
-                health = {
-                    health_percentage = 100,
                 },
             },
         },
         {
-            -- Truck
+            -- Runway
             components = {
-                enemy = {},
                 transform = {
-                    position = { x = 360, y = 2090 },
+                    position = { x = 2600, y = 2800 },
                     scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
+                    rotation = 90.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "truck-ford-down-texture",
-                    width = 32,
-                    height = 32,
+                    texture_id = "runway-texture",
+                    width = 21,
+                    height = 191,
                     z_index = 1,
-                },
-                box_collider = {
-                    width = 12,
-                    height = 25,
-                    offset = { x = 10, y = 2 },
-                },
-                health = {
-                    health_percentage = 100,
                 },
             },
         },
         {
-            -- Truck
+            -- Runway
             components = {
-                enemy = {},
                 transform = {
-                    position = { x = 390, y = 2110 },
+                    position = { x = 2600, y = 3000 },
                     scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
+                    rotation = 90.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "truck-ford-down-texture",
-                    width = 32,
-                    height = 32,
+                    texture_id = "runway-texture",
+                    width = 21,
+                    height = 191,
                     z_index = 1,
-                },
-                box_collider = {
-                    width = 12,
-                    height = 25,
-                    offset = { x = 10, y = 2 },
-                },
-                health = {
-                    health_percentage = 100,
                 },
             },
         },
         {
-            -- Truck
+            -- Runway
             components = {
-                enemy = {},
                 transform = {
-                    position = { x = 420, y = 2130 },
+                    position = { x = 2600, y = 3200 },
                     scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
+                    rotation = 90.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "truck-ford-down-texture",
-                    width = 32,
-                    height = 32,
+                    texture_id = "runway-texture",
+                    width = 21,
+                    height = 191,
                     z_index = 1,
-                },
-                box_collider = {
-                    width = 12,
-                    height = 25,
-                    offset = { x = 10, y = 2 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-            },
-        },
-        {
-            -- Truck
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 1090, y = 1320 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "truck-ford-down-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 12,
-                    height = 25,
-                    offset = { x = 10, y = 2 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-            },
-        },
-        {
-            -- Truck
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 1120, y = 1340 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "truck-ford-down-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 12,
-                    height = 25,
-                    offset = { x = 10, y = 2 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-            },
-        },
-        {
-            -- Truck
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2720, y = 1760 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "truck-ford-up-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 12,
-                    height = 20,
-                    offset = { x = 10, y = 8 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-            },
-        },
-        {
-            -- Truck
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2760, y = 1760 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "truck-ford-up-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 12,
-                    height = 20,
-                    offset = { x = 10, y = 8 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-            },
-        },
-        {
-            -- Truck
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2800, y = 1760 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "truck-ford-up-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 12,
-                    height = 20,
-                    offset = { x = 10, y = 8 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-            },
-        },
-        {
-            -- Truck
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 3010, y = 1560 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "truck-ford-left-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-                box_collider = {
-                    width = 25,
-                    height = 16,
-                    offset = { x = 3, y = 10 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-            },
-        },
-        {
-            -- Truck
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 3030, y = 1580 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "truck-ford-left-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 2,
-                },
-                box_collider = {
-                    width = 25,
-                    height = 16,
-                    offset = { x = 3, y = 10 },
-                },
-                health = {
-                    health_percentage = 100,
                 },
             },
         },
@@ -1341,8 +358,8 @@ Level = {
                 },
                 projectile_emitter = {
                     projectile_velocity = { x = -0.125, y = -0.125 },
-                    projectile_duration = 3, -- seconds
-                    cooldown = 2, -- seconds
+                    projectile_duration = 1, -- seconds
+                    cooldown = 3, -- seconds
                     hit_percentage_damage = 5,
                     is_projectile_friendly = false,
                 },
@@ -1377,8 +394,44 @@ Level = {
                 },
                 projectile_emitter = {
                     projectile_velocity = { x = -0.125, y = -0.125 },
+                    projectile_duration = 1, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- SAM Tank
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 4000, y = 800 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "sam-tank-left-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 2,
+                },
+                animation = {
+                    frames_count = 2,
+                    frames_per_second = 2, -- fps
+                },
+                box_collider = {
+                    width = 17,
+                    height = 15,
+                    offset = { x = 8, y = 8 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = -0.25, y = -0.25 },
                     projectile_duration = 3, -- seconds
-                    cooldown = 2, -- seconds
+                    cooldown = 3, -- seconds
                     hit_percentage_damage = 5,
                     is_projectile_friendly = false,
                 },
@@ -1389,7 +442,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 2580, y = 230 },
+                    position = { x = 4000, y = 900 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1412,9 +465,9 @@ Level = {
                     health_percentage = 100,
                 },
                 projectile_emitter = {
-                    projectile_velocity = { x = -0.25, y = -0.1875 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 2, -- seconds
+                    projectile_velocity = { x = -0.25, y = -0.25 },
+                    projectile_duration = 3, -- seconds
+                    cooldown = 3, -- seconds
                     hit_percentage_damage = 5,
                     is_projectile_friendly = false,
                 },
@@ -1425,7 +478,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1870, y = 1114 },
+                    position = { x = 4000, y = 1000 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -1448,7 +501,436 @@ Level = {
                     health_percentage = 100,
                 },
                 projectile_emitter = {
-                    projectile_velocity = { x = -0.25, y = -0.15 },
+                    projectile_velocity = { x = -0.25, y = -0.25 },
+                    projectile_duration = 3, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- SAM Tank
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 4000, y = 1100 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "sam-tank-left-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 2,
+                },
+                animation = {
+                    frames_count = 2,
+                    frames_per_second = 2, -- fps
+                },
+                box_collider = {
+                    width = 17,
+                    height = 15,
+                    offset = { x = 8, y = 8 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = -0.25, y = -0.25 },
+                    projectile_duration = 3, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- SAM Tank
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 4000, y = 1400 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "sam-tank-right-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 2,
+                },
+                animation = {
+                    frames_count = 2,
+                    frames_per_second = 2, -- fps
+                },
+                box_collider = {
+                    width = 17,
+                    height = 15,
+                    offset = { x = 8, y = 8 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.25, y = -0.25 },
+                    projectile_duration = 3, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+
+        {
+            -- SAM Tank
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 4000, y = 1600 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "sam-tank-right-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 2,
+                },
+                animation = {
+                    frames_count = 2,
+                    frames_per_second = 2, -- fps
+                },
+                box_collider = {
+                    width = 17,
+                    height = 15,
+                    offset = { x = 8, y = 8 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.25, y = -0.25 },
+                    projectile_duration = 3, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- Truck
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 1200, y = 2000 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "truck-ford-right-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 30,
+                    height = 20,
+                    offset = { x = 0, y = 5 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.125, y = 0.0 },
+                    projectile_duration = 5, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- Truck
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 1200, y = 2100 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "truck-ford-right-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 30,
+                    height = 20,
+                    offset = { x = 0, y = 5 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.125, y = 0.0 },
+                    projectile_duration = 5, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- Truck
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 1200, y = 2200 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "truck-ford-right-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 30,
+                    height = 20,
+                    offset = { x = 0, y = 5 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.125, y = 0.0 },
+                    projectile_duration = 5, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- Truck
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 1200, y = 2300 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "truck-ford-right-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 30,
+                    height = 20,
+                    offset = { x = 0, y = 5 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.125, y = 0.0 },
+                    projectile_duration = 5, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- Truck
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 1200, y = 2400 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "truck-ford-right-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 30,
+                    height = 20,
+                    offset = { x = 0, y = 5 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.125, y = 0.0 },
+                    projectile_duration = 5, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- Truck
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 1200, y = 2500 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "truck-ford-right-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 30,
+                    height = 20,
+                    offset = { x = 0, y = 5 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.125, y = 0.0 },
+                    projectile_duration = 5, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- Truck
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 2560, y = 2200 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "truck-ford-left-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 30,
+                    height = 20,
+                    offset = { x = 0, y = 5 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = -0.125, y = 0.0 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- Truck
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 2480, y = 2300 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "truck-ford-left-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 30,
+                    height = 20,
+                    offset = { x = 0, y = 5 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = -0.125, y = 0.0 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- Truck
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 2400, y = 2400 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "truck-ford-left-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 30,
+                    height = 20,
+                    offset = { x = 0, y = 5 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = -0.125, y = 0.0 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- Truck
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 1700, y = 3680 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "truck-ford-up-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 12,
+                    height = 20,
+                    offset = { x = 10, y = 8 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.0, y = -0.25 },
                     projectile_duration = 2, -- seconds
                     cooldown = 2, -- seconds
                     hit_percentage_damage = 5,
@@ -1457,738 +939,194 @@ Level = {
             },
         },
         {
-            -- SAM Truck
+            -- Truck
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 228, y = 1400 },
+                    position = { x = 1800, y = 3680 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "sam-truck-right-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 2,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 15,
-                    offset = { x = 8, y = 8 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0.125, y = -0.125 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 5,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- SAM Truck
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 228, y = 1440 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "sam-truck-right-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 2,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 15,
-                    offset = { x = 8, y = 8 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0.125, y = -0.125 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 5,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- SAM Truck
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 232, y = 998 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "sam-truck-right-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 2,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 15,
-                    offset = { x = 8, y = 8 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0.125, y = -0.175 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 5,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- SAM Truck
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2908, y = 430 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "sam-truck-right-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 2,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 15,
-                    offset = { x = 8, y = 8 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0.125, y = -0.175 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 5,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- SAM Truck
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2908, y = 462 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "sam-truck-right-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 2,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 15,
-                    offset = { x = 8, y = 8 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0.125, y = -0.175 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 5,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- SAM Truck
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2908, y = 494 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "sam-truck-right-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 2,
-                },
-                box_collider = {
-                    width = 17,
-                    height = 15,
-                    offset = { x = 8, y = 8 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0.125, y = -0.175 },
-                    projectile_duration = 2, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 5,
-                    is_projectile_friendly = false,
-                },
-            },
-        },
-        {
-            -- Vegetation
-            components = {
-                transform = {
-                    position = { x = 230, y = 1266 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tree5-texture",
+                    texture_id = "truck-ford-up-texture",
                     width = 32,
                     height = 32,
                     z_index = 1,
                 },
-            },
-        },
-        {
-            -- Vegetation
-            components = {
-                transform = {
-                    position = { x = 234, y = 1300 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tree5-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-            },
-        },
-        {
-            -- Vegetation
-            components = {
-                transform = {
-                    position = { x = 636, y = 980 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tree6-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-            },
-        },
-        {
-            -- Vegetation
-            components = {
-                transform = {
-                    position = { x = 1336, y = 1052 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tree14-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-            },
-        },
-        {
-            -- Vegetation
-            components = {
-                transform = {
-                    position = { x = 2036, y = 1476 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tree17-texture",
-                    width = 17,
+                box_collider = {
+                    width = 12,
                     height = 20,
-                    z_index = 1,
+                    offset = { x = 10, y = 8 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.0, y = -0.25 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 2, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
                 },
             },
         },
         {
-            -- Vegetation
+            -- Truck
             components = {
+                enemy = {},
                 transform = {
-                    position = { x = 2068, y = 1476 },
+                    position = { x = 1900, y = 3680 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "tree17-texture",
-                    width = 17,
+                    texture_id = "truck-ford-up-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 12,
                     height = 20,
-                    z_index = 1,
+                    offset = { x = 10, y = 8 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.0, y = -0.25 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 2, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
                 },
             },
         },
         {
-            -- Vegetation
+            -- Truck
             components = {
+                enemy = {},
                 transform = {
-                    position = { x = 2056, y = 1490 },
+                    position = { x = 2000, y = 3680 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "tree18-texture",
-                    width = 17,
+                    texture_id = "truck-ford-up-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 12,
                     height = 20,
-                    z_index = 2,
+                    offset = { x = 10, y = 8 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.0, y = -0.25 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 2, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
                 },
             },
         },
         {
-            -- Vegetation
+            -- Truck
             components = {
+                enemy = {},
                 transform = {
-                    position = { x = 2780, y = 880 },
+                    position = { x = 4800, y = 2200 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "tree10-texture",
-                    width = 31,
-                    height = 32,
-                    z_index = 1,
-                },
-            },
-        },
-        {
-            -- Vegetation
-            components = {
-                transform = {
-                    position = { x = 2800, y = 890 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tree10-texture",
-                    width = 31,
-                    height = 32,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Vegetation
-            components = {
-                transform = {
-                    position = { x = 2730, y = 580 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "tree14-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 1338, y = 1098 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 1370, y = 1098 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 630, y = 1010 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 3,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 660, y = 1014 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 876, y = 780 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 1,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 898, y = 816 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 862, y = 832 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 1880, y = 1390 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 1910, y = 1410 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 2170, y = 1014 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 2150, y = 1054 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 2150, y = 1094 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 2170, y = 1134 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 2710, y = 898 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles2-texture",
+                    texture_id = "truck-ford-left-texture",
                     width = 32,
                     height = 32,
                     z_index = 1,
                 },
+                box_collider = {
+                    width = 30,
+                    height = 20,
+                    offset = { x = 0, y = 5 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = -0.125, y = 0.0 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
             },
         },
         {
-            -- Obstacles
+            -- Truck
             components = {
+                enemy = {},
                 transform = {
-                    position = { x = 2860, y = 892 },
+                    position = { x = 4700, y = 2300 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "obstacles2-texture",
+                    texture_id = "truck-ford-left-texture",
                     width = 32,
                     height = 32,
                     z_index = 1,
                 },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 2870, y = 390 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
+                box_collider = {
+                    width = 30,
+                    height = 20,
+                    offset = { x = 0, y = 5 },
                 },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
+                health = {
+                    health_percentage = 100,
                 },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 2850, y = 430 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
+                projectile_emitter = {
+                    projectile_velocity = { x = -0.125, y = 0.0 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
                 },
             },
         },
         {
-            -- Obstacles
+            -- Truck
             components = {
+                enemy = {},
                 transform = {
-                    position = { x = 2850, y = 470 },
+                    position = { x = 4600, y = 2400 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 2850, y = 510 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 2870, y = 550 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 2,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 2720, y = 620 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 1,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 2760, y = 624 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles7-texture",
-                    width = 16,
-                    height = 16,
-                    z_index = 1,
-                },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 2660, y = 424 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "obstacles1-texture",
+                    texture_id = "truck-ford-left-texture",
                     width = 32,
                     height = 32,
                     z_index = 1,
                 },
-            },
-        },
-        {
-            -- Obstacles
-            components = {
-                transform = {
-                    position = { x = 2720, y = 464 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
+                box_collider = {
+                    width = 30,
+                    height = 20,
+                    offset = { x = 0, y = 5 },
                 },
-                sprite = {
-                    texture_id = "obstacles1-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = -0.125, y = 0.0 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 3, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
                 },
             },
         },
@@ -2196,7 +1134,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 1260, y = 810 },
+                    position = { x = 1000, y = 900 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2212,12 +1150,74 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 994, y = 900 },
+                    position = { x = 1200, y = 1600 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "army-walk-right-texture",
+                    texture_id = "army-gun-right-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 32,
+                    height = 32,
+                    offset = { x = 0, y = 0 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.25, y = 0.0 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 1, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- Army
+            components = {
+                transform = {
+                    position = { x = 1200, y = 1800 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "army-gun-right-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 32,
+                    height = 32,
+                    offset = { x = 0, y = 0 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.25, y = 0.0 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 1, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- Army
+            components = {
+                transform = {
+                    position = { x = 2400, y = 1800 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "army-walk-left-texture",
                     width = 32,
                     height = 32,
                     z_index = 1,
@@ -2228,7 +1228,23 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 1144, y = 1120 },
+                    position = { x = 3200, y = 1800 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "army-walk-left-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+            },
+        },
+        {
+            -- Army
+            components = {
+                transform = {
+                    position = { x = 3300, y = 2400 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2244,15 +1260,30 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 228, y = 1960 },
+                    position = { x = 3300, y = 2560 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "army-walk-up-texture",
+                    texture_id = "army-gun-right-texture",
                     width = 32,
                     height = 32,
                     z_index = 1,
+                },
+                box_collider = {
+                    width = 32,
+                    height = 32,
+                    offset = { x = 0, y = 0 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.2, y = 0.0 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 1, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
                 },
             },
         },
@@ -2260,7 +1291,38 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 228, y = 2060 },
+                    position = { x = 3800, y = 2520 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "army-gun-left-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 32,
+                    height = 32,
+                    offset = { x = 0, y = 0 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = -0.25, y = 0.0 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 1, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- Army
+            components = {
+                transform = {
+                    position = { x = 4600, y = 3000 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2276,12 +1338,12 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 1766, y = 980 },
+                    position = { x = 2120, y = 1420 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "army-walk-left-texture",
+                    texture_id = "army-walk-killed-texture",
                     width = 32,
                     height = 32,
                     z_index = 1,
@@ -2292,7 +1354,70 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 226, y = 1702 },
+                    position = { x = 2120, y = 1490 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "army-walk-killed-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+            },
+        },
+        {
+            -- Army
+            components = {
+                transform = {
+                    position = { x = 2120, y = 1560 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "army-walk-killed-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+            },
+        },
+        {
+            -- Army
+            components = {
+                transform = {
+                    position = { x = 2800, y = 1400 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "army-gun-left-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+                box_collider = {
+                    width = 32,
+                    height = 32,
+                    offset = { x = 0, y = 0 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = -0.25, y = 0.0 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 1, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
+            },
+        },
+        {
+            -- Army
+            components = {
+                transform = {
+                    position = { x = 2940, y = 1400 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2302,21 +1427,20 @@ Level = {
                     height = 32,
                     z_index = 1,
                 },
-            },
-        },
-        {
-            -- Army
-            components = {
-                transform = {
-                    position = { x = 1500, y = 1260 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "army-walk-left-texture",
+                box_collider = {
                     width = 32,
                     height = 32,
-                    z_index = 1,
+                    offset = { x = 0, y = 0 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.25, y = 0.0 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 1, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
                 },
             },
         },
@@ -2324,39 +1448,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 1600, y = 1260 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "army-walk-right-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-            },
-        },
-        {
-            -- Army
-            components = {
-                transform = {
-                    position = { x = 1712, y = 230 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "army-gun-down-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-            },
-        },
-        {
-            -- Army
-            components = {
-                transform = {
-                    position = { x = 1800, y = 230 },
+                    position = { x = 2870, y = 1320 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2366,21 +1458,20 @@ Level = {
                     height = 32,
                     z_index = 1,
                 },
-            },
-        },
-        {
-            -- Army
-            components = {
-                transform = {
-                    position = { x = 2234, y = 1060 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "army-walk-right-texture",
+                box_collider = {
                     width = 32,
                     height = 32,
-                    z_index = 1,
+                    offset = { x = 0, y = 0 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.0, y = -0.2 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 1, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
                 },
             },
         },
@@ -2388,23 +1479,7 @@ Level = {
             -- Army
             components = {
                 transform = {
-                    position = { x = 1510, y = 880 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "army-gun-down-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 1,
-                },
-            },
-        },
-        {
-            -- Army
-            components = {
-                transform = {
-                    position = { x = 1620, y = 880 },
+                    position = { x = 2870, y = 1480 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2414,18 +1489,497 @@ Level = {
                     height = 32,
                     z_index = 1,
                 },
+                box_collider = {
+                    width = 32,
+                    height = 32,
+                    offset = { x = 0, y = 0 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.0, y = 0.2 },
+                    projectile_duration = 2, -- seconds
+                    cooldown = 1, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
+                },
             },
         },
         {
-            -- Army
+            -- Obstacle
             components = {
                 transform = {
-                    position = { x = 2780, y = 1380 },
+                    position = { x = 800, y = 1000 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "army-walk-killed-texture",
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 2700, y = 800 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 3840, y = 3400 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 1800, y = 1600 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 1840, y = 1600 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 1880, y = 1600 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 1920, y = 1600 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 1960, y = 1600 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 2000, y = 1600 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 2040, y = 1600 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 2080, y = 1600 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 1800, y = 1420 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 1840, y = 1420 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 1880, y = 1420 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 1920, y = 1420 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 1960, y = 1420 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 2000, y = 1420 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 2040, y = 1420 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 2080, y = 1420 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 1800, y = 1450 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 1800, y = 1480 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 1800, y = 1510 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 1800, y = 1540 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 1800, y = 1570 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 2080, y = 1450 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 2080, y = 1480 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 2080, y = 1510 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 2080, y = 1540 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Obstacle
+            components = {
+                transform = {
+                    position = { x = 2080, y = 1570 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "obstacles7-texture",
+                    width = 16,
+                    height = 16,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Vegetation
+            components = {
+                transform = {
+                    position = { x = 1280, y = 3640 },
+                    scale = { x = 1.6, y = 1.6 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "tree14-texture",
                     width = 32,
                     height = 32,
                     z_index = 1,
@@ -2433,15 +1987,15 @@ Level = {
             },
         },
         {
-            -- Army
+            -- Vegetation
             components = {
                 transform = {
-                    position = { x = 2850, y = 1380 },
-                    scale = { x = 2.0, y = 2.0 },
+                    position = { x = 1320, y = 3640 },
+                    scale = { x = 1.6, y = 1.6 },
                     rotation = 0.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "army-walk-killed-texture",
+                    texture_id = "tree14-texture",
                     width = 32,
                     height = 32,
                     z_index = 1,
@@ -2449,15 +2003,15 @@ Level = {
             },
         },
         {
-            -- Army
+            -- Vegetation
             components = {
                 transform = {
-                    position = { x = 2930, y = 1380 },
-                    scale = { x = 2.0, y = 2.0 },
+                    position = { x = 2088, y = 1108 },
+                    scale = { x = 1.2, y = 1.2 },
                     rotation = 0.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "army-walk-killed-texture",
+                    texture_id = "tree10-texture",
                     width = 32,
                     height = 32,
                     z_index = 1,
@@ -2465,18 +2019,82 @@ Level = {
             },
         },
         {
-            -- Boat
+            -- Vegetation
             components = {
                 transform = {
-                    position = { x = 160, y = 1040 },
-                    scale = { x = 1.6, y = 1.6 },
+                    position = { x = 2100, y = 1120 },
+                    scale = { x = 1.2, y = 1.2 },
                     rotation = 0.0, -- degrees
                 },
                 sprite = {
-                    texture_id = "boat-texture",
-                    width = 21,
-                    height = 126,
+                    texture_id = "tree10-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Vegetation
+            components = {
+                transform = {
+                    position = { x = 3400, y = 2200 },
+                    scale = { x = 1.2, y = 1.2 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "tree10-texture",
+                    width = 32,
+                    height = 32,
                     z_index = 1,
+                },
+            },
+        },
+        {
+            -- Vegetation
+            components = {
+                transform = {
+                    position = { x = 3420, y = 2220 },
+                    scale = { x = 1.2, y = 1.2 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "tree10-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 2,
+                },
+            },
+        },
+        {
+            -- Vegetation
+            components = {
+                transform = {
+                    position = { x = 2088, y = 1108 },
+                    scale = { x = 1.2, y = 1.2 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "tree10-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 1,
+                },
+            },
+        },
+        {
+            -- Vegetation
+            components = {
+                transform = {
+                    position = { x = 2140, y = 1080 },
+                    scale = { x = 1.2, y = 1.2 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "tree10-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 2,
                 },
             },
         },
@@ -2484,15 +2102,22 @@ Level = {
             -- Boat
             components = {
                 transform = {
-                    position = { x = 160, y = 1580 },
+                    position = { x = 2000, y = 320 },
                     scale = { x = 1.6, y = 1.6 },
-                    rotation = 0.0, -- degrees
+                    rotation = 270, -- degrees
                 },
                 sprite = {
                     texture_id = "boat-texture",
                     width = 21,
                     height = 126,
                     z_index = 1,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.0, y = 0.75 },
+                    projectile_duration = 1, -- seconds
+                    cooldown = 1, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
                 },
             },
         },
@@ -2500,15 +2125,22 @@ Level = {
             -- Boat
             components = {
                 transform = {
-                    position = { x = 690, y = 846 },
+                    position = { x = 2400, y = 320 },
                     scale = { x = 1.6, y = 1.6 },
-                    rotation = 270.0, -- degrees
+                    rotation = 270, -- degrees
                 },
                 sprite = {
                     texture_id = "boat-texture",
                     width = 21,
                     height = 126,
                     z_index = 1,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.0, y = 0.75 },
+                    projectile_duration = 1, -- seconds
+                    cooldown = 1, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
                 },
             },
         },
@@ -2516,15 +2148,22 @@ Level = {
             -- Boat
             components = {
                 transform = {
-                    position = { x = 3020, y = 920 },
+                    position = { x = 2800, y = 320 },
                     scale = { x = 1.6, y = 1.6 },
-                    rotation = 0.0, -- degrees
+                    rotation = 270, -- degrees
                 },
                 sprite = {
                     texture_id = "boat-texture",
                     width = 21,
                     height = 126,
                     z_index = 1,
+                },
+                projectile_emitter = {
+                    projectile_velocity = { x = 0.0, y = 0.75 },
+                    projectile_duration = 1, -- seconds
+                    cooldown = 1, -- seconds
+                    hit_percentage_damage = 5,
+                    is_projectile_friendly = false,
                 },
             },
         },
@@ -2532,7 +2171,7 @@ Level = {
             -- Carrier
             components = {
                 transform = {
-                    position = { x = 1340, y = 300 },
+                    position = { x = 540, y = 1300 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2548,7 +2187,7 @@ Level = {
             -- Carrier
             components = {
                 transform = {
-                    position = { x = 600, y = 1950 },
+                    position = { x = 540, y = 1900 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2557,6 +2196,182 @@ Level = {
                     width = 59,
                     height = 191,
                     z_index = 1,
+                },
+            },
+        },
+        {
+            -- Carrier
+            components = {
+                transform = {
+                    position = { x = 540, y = 2500 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "carrier-texture",
+                    width = 59,
+                    height = 191,
+                    z_index = 1,
+                },
+            },
+        },
+        {
+            -- SU-27 fighter jet
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 1450, y = 2960 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 90.0, -- degrees
+                },
+                rigid_body = {
+                    velocity = { x = 0.05, y = 0.0 },
+                },
+                sprite = {
+                    texture_id = "su27-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 8,
+                },
+                animation = {
+                    frames_count = 2,
+                    frames_per_second = 10, -- fps
+                },
+                box_collider = {
+                    width = 25,
+                    height = 30,
+                    offset = { x = 5, y = 0 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+            },
+        },
+        {
+            -- FW-190 airplane
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 1480, y = 3160 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 90.0, -- degrees
+                },
+                rigid_body = {
+                    velocity = { x = 0.05, y = 0.0 },
+                },
+                sprite = {
+                    texture_id = "fw190-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 8,
+                },
+                animation = {
+                    frames_count = 2,
+                    frames_per_second = 10, -- fps
+                },
+                box_collider = {
+                    width = 25,
+                    height = 30,
+                    offset = { x = 5, y = 0 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+            },
+        },
+        {
+            -- FW-190 airplane
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 740, y = 3600 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 45.0, -- degrees
+                },
+                rigid_body = {
+                    velocity = { x = 0.1125, y = -0.1125 },
+                },
+                sprite = {
+                    texture_id = "fw190-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 8,
+                },
+                animation = {
+                    frames_count = 2,
+                    frames_per_second = 10, -- fps
+                },
+                box_collider = {
+                    width = 25,
+                    height = 30,
+                    offset = { x = 5, y = 0 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+            },
+        },
+        {
+            -- FW-190 airplane
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 780, y = 3700 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 45.0, -- degrees
+                },
+                rigid_body = {
+                    velocity = { x = 0.1125, y = -0.1125 },
+                },
+                sprite = {
+                    texture_id = "fw190-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 8,
+                },
+                animation = {
+                    frames_count = 2,
+                    frames_per_second = 10, -- fps
+                },
+                box_collider = {
+                    width = 25,
+                    height = 30,
+                    offset = { x = 5, y = 0 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+            },
+        },
+        {
+            -- FW-190 airplane
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 640, y = 3600 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 45.0, -- degrees
+                },
+                rigid_body = {
+                    velocity = { x = 0.1125, y = -0.1125 },
+                },
+                sprite = {
+                    texture_id = "fw190-texture",
+                    width = 32,
+                    height = 32,
+                    z_index = 8,
+                },
+                animation = {
+                    frames_count = 2,
+                    frames_per_second = 10, -- fps
+                },
+                box_collider = {
+                    width = 25,
+                    height = 30,
+                    offset = { x = 5, y = 0 },
+                },
+                health = {
+                    health_percentage = 100,
                 },
             },
         },
@@ -2565,7 +2380,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1376, y = 330 },
+                    position = { x = 576, y = 1332 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2590,11 +2405,40 @@ Level = {
             },
         },
         {
+            -- Bomber plane
+            components = {
+                enemy = {},
+                transform = {
+                    position = { x = 928, y = 1040 },
+                    scale = { x = 2.0, y = 2.0 },
+                    rotation = 0.0, -- degrees
+                },
+                sprite = {
+                    texture_id = "bomber-texture",
+                    width = 32,
+                    height = 24,
+                    z_index = 5,
+                },
+                animation = {
+                    frames_count = 2,
+                    frames_per_second = 10, -- fps
+                },
+                box_collider = {
+                    width = 32,
+                    height = 32,
+                    offset = { x = 0, y = 0 },
+                },
+                health = {
+                    health_percentage = 100,
+                },
+            },
+        },
+        {
             -- SU-27 fighter jet
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 1370, y = 600 },
+                    position = { x = 576, y = 1620 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = -10.0, -- degrees
                 },
@@ -2622,126 +2466,34 @@ Level = {
             },
         },
         {
-            -- Bomber plane
+            -- SU-27 fighter jet
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 928, y = 1040 },
+                    position = { x = 576, y = 2820 },
                     scale = { x = 2.0, y = 2.0 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "bomber-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 5,
-                },
-                animation = {
-                    frames_count = 2,
-                    frames_per_second = 10, -- fps
-                },
-                box_collider = {
-                    width = 32,
-                    height = 32,
-                    offset = { x = 0, y = 0 },
-                },
-                health = {
-                    health_percentage = 100,
-                },
-            },
-        },
-        {
-            -- FW190 plane
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 2000, y = 286 },
-                    scale = { x = 2.0, y = 2.0 },
-                    rotation = -90.0, -- degrees
+                    rotation = -10.0, -- degrees
                 },
                 rigid_body = {
-                    velocity = { x = -0.125, y = 0.0 },
+                    velocity = { x = -0.01375, y = -0.0875 },
                 },
                 sprite = {
-                    texture_id = "fw190-texture",
+                    texture_id = "su27-texture",
                     width = 32,
                     height = 32,
-                    z_index = 6,
+                    z_index = 5,
                 },
                 animation = {
-                    frames_count = 3,
-                    frames_per_second = 15, -- fps
+                    frames_count = 2,
+                    frames_per_second = 10, -- fps
                 },
                 box_collider = {
-                    width = 32,
+                    width = 25,
                     height = 30,
-                    offset = { x = 0, y = 0 },
+                    offset = { x = 5, y = 0 },
                 },
                 health = {
                     health_percentage = 100,
-                },
-            },
-        },
-        {
-            -- UPF7 plane
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 1840, y = 358 },
-                    scale = { x = 1.6, y = 1.6 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "upf7-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 5,
-                },
-                animation = {
-                    frames_count = 2,
-                    frames_per_second = 10, -- fps
-                },
-            },
-        },
-        {
-            -- UPF7 plane
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 1900, y = 358 },
-                    scale = { x = 1.6, y = 1.6 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "upf7-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 5,
-                },
-                animation = {
-                    frames_count = 2,
-                    frames_per_second = 10, -- fps
-                },
-            },
-        },
-        {
-            -- UPF7 plane
-            components = {
-                enemy = {},
-                transform = {
-                    position = { x = 1960, y = 358 },
-                    scale = { x = 1.6, y = 1.6 },
-                    rotation = 0.0, -- degrees
-                },
-                sprite = {
-                    texture_id = "upf7-texture",
-                    width = 32,
-                    height = 32,
-                    z_index = 5,
-                },
-                animation = {
-                    frames_count = 2,
-                    frames_per_second = 10, -- fps
                 },
             },
         },
@@ -2750,7 +2502,7 @@ Level = {
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 634, y = 1970 },
+                    position = { x = 2200, y = 2000 },
                     scale = { x = 2.0, y = 2.0 },
                     rotation = 0.0, -- degrees
                 },
@@ -2774,15 +2526,8 @@ Level = {
                 health = {
                     health_percentage = 100,
                 },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0, y = -0.25 },
-                    projectile_duration = 5, -- seconds
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
                 script = {
-                    on_update = function(entity, delta_time, elapsed_time)
+                    on_update = function(entity, delta_time, ellapsed_time)
                         -- this function makes the fighter jet move up and down the map shooting projectiles
                         local current_position = get_position(entity)
                         local current_velocity = get_velocity(entity)
@@ -2797,32 +2542,30 @@ Level = {
                         -- set the transform rotation to match going up or down
                         if current_velocity.y < 0 then
                             set_rotation(entity, 0) -- point up
-                            set_projectile_velocity(entity, Vec2.new(0, -0.5)) -- shoot projectiles up
                         else
                             set_rotation(entity, 180) -- point down
-                            set_projectile_velocity(entity, Vec2.new(0, 0.5)) -- shoot projectiles down
                         end
                     end,
                 },
             },
         },
         {
-            -- F-22 fighter jet
+            -- Bomber airplane
             components = {
                 enemy = {},
                 transform = {
-                    position = { x = 20, y = 20 },
+                    position = { x = 634, y = 1970 },
                     scale = { x = 2.0, y = 2.0 },
-                    rotation = 90.0, -- degrees
+                    rotation = 0.0, -- degrees
                 },
                 rigid_body = {
-                    velocity = { x = 0.0, y = 0.0 },
+                    velocity = { x = 0.0, y = -0.125 },
                 },
                 sprite = {
-                    texture_id = "f22-texture",
+                    texture_id = "bomber-texture",
                     width = 32,
-                    height = 32,
-                    z_index = 5,
+                    height = 24,
+                    z_index = 8,
                 },
                 animation = {
                     frames_count = 2,
@@ -2830,24 +2573,27 @@ Level = {
                 },
                 box_collider = {
                     width = 32,
-                    height = 32,
+                    height = 24,
                 },
                 health = {
                     health_percentage = 100,
                 },
-                projectile_emitter = {
-                    projectile_velocity = { x = 0.5, y = 0 },
-                    projectile_duration = 1, -- secondsm
-                    cooldown = 1, -- seconds
-                    hit_percentage_damage = 10,
-                    is_projectile_friendly = false,
-                },
                 script = {
-                    on_update = function(entity, delta_time, elapsed_time)
-                        -- change the position of the the airplane to follow a sine wave movement
-                        local new_x = elapsed_time * 0.09
-                        local new_y = 200 + (math.sin(elapsed_time * 0.001) * 50)
-                        set_position(entity, Vec2.new(new_x, new_y)) -- set the new position
+                    on_update = function(entity, delta_time, ellapsed_time)
+                        -- change the position of the the airplane to follow a circular path
+                        local radius = 170
+                        local distance_from_origin = 500
+
+                        local angle = ellapsed_time * 0.0009
+
+                        -- calculate the new x-y cartesian position using polar coordinates
+                        local new_x = (math.cos(angle) * radius) + distance_from_origin
+                        local new_y = (math.sin(angle) * radius) + distance_from_origin
+                        set_position(entity, Vec2.new(new_x, new_y))
+
+                        -- change the rotation of the sprite to match the circular motion
+                        local angle_in_degrees = 180 + angle * 180 / math.pi
+                        set_rotation(entity, angle_in_degrees)
                     end,
                 },
             },
@@ -2855,5 +2601,6 @@ Level = {
     },
 }
 
+-- Define some useful global variables
 map_width = Level.tilemap.map_cols * Level.tilemap.tile_size * Level.tilemap.scale
 map_height = Level.tilemap.map_rows * Level.tilemap.tile_size * Level.tilemap.scale

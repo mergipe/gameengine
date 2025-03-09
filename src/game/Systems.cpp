@@ -391,4 +391,78 @@ namespace Engine
                                    true);
         }
     }
+
+    void ScriptSystem::update(float timeStep)
+    {
+        auto view{getRegistry().view<const ScriptComponent>()};
+        std::uint64_t elapsedTime{Timer::getTicks()};
+        for (auto entity : view) {
+            const auto& script{view.get<ScriptComponent>(entity)};
+            script.func(entity, timeStep, elapsedTime);
+        }
+    }
+
+    void ScriptSystem::createScriptBindings(sol::state& luaState)
+    {
+        luaState.new_usertype<entt::entity>("Entity");
+        luaState.new_usertype<glm::vec2>("Vec2",
+                                         sol::constructors<glm::vec2(float), glm::vec2(float, float)>(), "x",
+                                         &glm::vec2::x, "y", &glm::vec2::y);
+        luaState.set_function("get_position", &ScriptSystem::getEntityPosition, this);
+        luaState.set_function("get_velocity", &ScriptSystem::getEntityVelocity, this);
+        luaState.set_function("set_position", &ScriptSystem::setEntityPosition, this);
+        luaState.set_function("set_velocity", &ScriptSystem::setEntityVelocity, this);
+        luaState.set_function("set_rotation", &ScriptSystem::setEntityRotation, this);
+        luaState.set_function("set_projectile_velocity", &ScriptSystem::setProjectileVelocity, this);
+    }
+
+    glm::vec2 ScriptSystem::getEntityPosition(entt::entity entity)
+    {
+        auto* transform{getRegistry().try_get<TransformComponent>(entity)};
+        if (transform) {
+            return transform->position;
+        }
+        return {};
+    }
+
+    glm::vec2 ScriptSystem::getEntityVelocity(entt::entity entity)
+    {
+        auto* rigidBody{getRegistry().try_get<RigidBodyComponent>(entity)};
+        if (rigidBody) {
+            return rigidBody->velocity;
+        }
+        return {};
+    }
+
+    void ScriptSystem::setEntityPosition(entt::entity entity, glm::vec2 position)
+    {
+        auto* transform{getRegistry().try_get<TransformComponent>(entity)};
+        if (transform) {
+            transform->position = position;
+        }
+    }
+
+    void ScriptSystem::setEntityVelocity(entt::entity entity, glm::vec2 velocity)
+    {
+        auto* rigidBody{getRegistry().try_get<RigidBodyComponent>(entity)};
+        if (rigidBody) {
+            rigidBody->velocity = velocity;
+        }
+    }
+
+    void ScriptSystem::setEntityRotation(entt::entity entity, float rotation)
+    {
+        auto* transform{getRegistry().try_get<TransformComponent>(entity)};
+        if (transform) {
+            transform->rotation = rotation;
+        }
+    }
+
+    void ScriptSystem::setProjectileVelocity(entt::entity entity, glm::vec2 velocity)
+    {
+        auto* projectileEmitter{getRegistry().try_get<ProjectileEmitterComponent>(entity)};
+        if (projectileEmitter) {
+            projectileEmitter->projectileVelocity = velocity;
+        }
+    }
 } // namespace Engine

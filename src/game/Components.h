@@ -5,6 +5,7 @@
 #include "renderer/Color.h"
 #include "renderer/Rect.h"
 #include <glm/glm.hpp>
+#include <sol/sol.hpp>
 #include <string>
 
 namespace Engine
@@ -113,6 +114,10 @@ namespace Engine
         std::string fontId{};
         Color color{0, 0, 0, 0};
         bool hasFixedPosition{true};
+    };
+
+    struct ScriptComponent {
+        sol::function func{sol::lua_nil};
     };
 
     struct Player {

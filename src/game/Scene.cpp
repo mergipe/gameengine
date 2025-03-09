@@ -20,14 +20,17 @@ namespace Engine
         , m_cameraMovementSystem{std::make_unique<CameraMovementSystem>(m_registry.get())}
         , m_healthBarRenderingSystem{std::make_unique<HealthBarRenderingSystem>(m_registry.get())}
         , m_textRenderingSystem{std::make_unique<TextRenderingSystem>(m_registry.get())}
+        , m_scriptSystem{std::make_unique<ScriptSystem>(m_registry.get())}
     {
         if (Game::instance().hasDeveloperMode()) {
             m_boxColliderRenderingSystem = std::make_unique<BoxColliderRenderingSystem>(m_registry.get());
         }
         std::filesystem::path scriptsFolder{m_assetManager->getAssetPath(Game::s_scriptsFolder)};
         LevelLoader levelLoader{};
-        LevelData levelData{
-            levelLoader.loadLevel(scriptsFolder / "level1.lua", *m_registry, *m_assetManager, *m_renderer)};
+        m_luaState.open_libraries(sol::lib::base, sol::lib::math, sol::lib::os);
+        m_scriptSystem->createScriptBindings(m_luaState);
+        LevelData levelData{levelLoader.loadLevel(m_luaState, scriptsFolder / "level2.lua", *m_registry,
+                                                  *m_assetManager, *m_renderer)};
         m_sceneData.camera = {0, 0, windowWidth, windowHeight};
         m_sceneData.levelData = levelData;
     }
@@ -47,6 +50,7 @@ namespace Engine
         m_projectileEmitSystem->update();
         m_lifecycleSystem->update();
         m_cameraMovementSystem->update(m_sceneData);
+        m_scriptSystem->update(timeStep);
     }
 
     void Scene::render(float frameExtrapolationTimeStep)

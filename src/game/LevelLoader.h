@@ -5,6 +5,7 @@
 #include "renderer/Renderer.h"
 #include <entt/entt.hpp>
 #include <filesystem>
+#include <sol/sol.hpp>
 
 namespace Engine
 {
@@ -20,8 +21,8 @@ namespace Engine
     class LevelLoader
     {
     public:
-        LevelData loadLevel(const std::filesystem::path& levelFilepath, entt::registry& registry,
-                            AssetManager& assetManager, Renderer& renderer);
+        LevelData loadLevel(sol::state& luaState, const std::filesystem::path& levelFilepath,
+                            entt::registry& registry, AssetManager& assetManager, Renderer& renderer);
     };
 } // namespace Engine
 
