@@ -3,14 +3,22 @@
 
 #include <SDL3/SDL.h>
 #include <string>
-#include <string_view>
 
 namespace Engine
 {
+    struct WindowConfig {
+        std::string title{"Title"};
+        int width{800};
+        int height{600};
+        bool isFullscreen{false};
+        bool isResizable{true};
+        bool isBorderless{false};
+    };
+
     class Window
     {
     public:
-        Window(std::string_view title, int width, int height);
+        Window(const WindowConfig& config);
         Window(const Window&) = delete;
         Window(Window&&) = delete;
         Window& operator=(const Window&) = delete;
@@ -19,15 +27,13 @@ namespace Engine
         void init();
         SDL_Window* getWindowPtr() const { return m_window; }
         SDL_GLContext getGLContext() const { return m_glContext; }
-        int getWidth() const { return m_width; }
-        int getHeight() const { return m_height; }
+        int getWidth() const { return m_config.width; }
+        int getHeight() const { return m_config.height; }
 
     private:
-        std::string m_title{};
+        WindowConfig m_config{};
         SDL_Window* m_window{};
         SDL_GLContext m_glContext{};
-        int m_width{};
-        int m_height{};
     };
 } // namespace Engine
 

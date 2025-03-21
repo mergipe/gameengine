@@ -77,7 +77,7 @@ namespace Engine
         glBindVertexArray(0);
         glm::mat4 projection{glm::ortho(0.0f, static_cast<float>(m_window->getWidth()),
                                         static_cast<float>(m_window->getHeight()), 0.0f, -1.0f, 1.0f)};
-        m_shaderManager = std::make_unique<ShaderManager>(Filesystem::getRelativePath("resources/shaders"));
+        m_shaderManager = std::make_unique<ShaderManager>();
         m_shaderManager->loadShader("sprite", "sprite.vert", "sprite.frag")
             .use()
             .setUniform("textureSampler", 0)

@@ -1,6 +1,6 @@
 add_executable(gameengine
                Main.cpp
-               core/Filesystem.cpp core/IO.cpp core/Logger.cpp core/Timer.cpp core/Window.cpp
+               core/Config.cpp core/Filesystem.cpp core/IO.cpp core/Logger.cpp core/Timer.cpp core/Window.cpp
                game/Game.cpp game/LevelLoader.cpp game/Scene.cpp game/Systems.cpp
                renderer/Renderer2D.cpp renderer/Shader.cpp renderer/ShaderManager.cpp
                resources/Font.cpp resources/ResourceManager.cpp resources/Texture2D.cpp

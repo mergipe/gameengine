@@ -22,11 +22,11 @@ namespace Engine
             m_boxColliderRenderingSystem = std::make_unique<BoxColliderRenderingSystem>(m_registry.get());
         }
         LevelLoader levelLoader{};
-        m_luaState.open_libraries(sol::lib::base, sol::lib::math, sol::lib::os);
-        m_scriptSystem->createScriptBindings(m_luaState);
+        m_lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::os);
+        m_scriptSystem->createScriptBindings(m_lua);
         std::filesystem::path scriptsFolder{m_resourceManager->getResourcePath("scripts")};
         LevelData levelData{
-            levelLoader.loadLevel(m_luaState, scriptsFolder / "level0.lua", *m_registry, *resourceManager)};
+            levelLoader.loadLevel(m_lua, scriptsFolder / "level0.lua", *m_registry, *resourceManager)};
         m_sceneData.camera = {glm::vec2{0.0f, 0.0f}, static_cast<float>(windowWidth),
                               static_cast<float>(windowHeight)};
         m_sceneData.levelData = levelData;

@@ -12,4 +12,10 @@ namespace Engine::Filesystem
     {
         return getBasePath() / relativePath;
     }
+
+    std::filesystem::path getLogsPath() { return getBasePath() / "logs"; }
+
+    std::filesystem::path getConfigPath() { return getBasePath() / "config"; }
+
+    std::filesystem::path getResourcesPath() { return getBasePath() / "resources"; }
 } // namespace Engine::Filesystem

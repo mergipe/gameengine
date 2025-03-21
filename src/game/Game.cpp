@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "core/Config.h"
 #include "core/Filesystem.h"
 #include "core/Logger.h"
 #include "core/Timer.h"
@@ -15,7 +16,7 @@ namespace Engine
 
     void Game::init()
     {
-        Logger::init(Filesystem::getRelativePath("logs/log.txt"));
+        Logger::init(Filesystem::getLogsPath() / "log.txt");
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -27,11 +28,11 @@ namespace Engine
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-        m_window = std::make_unique<Window>(s_windowTitle, s_windowWidth, s_windowHeight);
+        m_window = std::make_unique<Window>(Config::loadWindowConfig());
         m_window->init();
         m_renderer = std::make_unique<Renderer2D>(m_window.get());
         m_renderer->init();
-        m_resourceManager = std::make_unique<ResourceManager>(Filesystem::getRelativePath("resources"));
+        m_resourceManager = std::make_unique<ResourceManager>();
         m_eventBus = std::make_unique<EventBus>();
         if (m_hasDeveloperMode) {
             m_developerModeGui = std::make_unique<DeveloperModeGui>(*m_window);

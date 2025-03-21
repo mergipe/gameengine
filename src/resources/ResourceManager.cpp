@@ -1,4 +1,5 @@
 #include "ResourceManager.h"
+#include "core/Filesystem.h"
 #include "core/Logger.h"
 #include <stb_image/stb_image.h>
 #include <utility>
@@ -7,7 +8,7 @@ namespace Engine
 {
     std::filesystem::path ResourceManager::getResourcePath(const std::filesystem::path& relativePath) const
     {
-        return m_resourcesPath / relativePath;
+        return Filesystem::getResourcesPath() / relativePath;
     }
 
     void ResourceManager::clear() { m_textures.clear(); }
@@ -15,7 +16,7 @@ namespace Engine
     void ResourceManager::loadTexture(std::string_view textureId, const std::filesystem::path& relativePath,
                                       const TextureConfig& textureConfig)
     {
-        std::filesystem::path path{m_resourcesPath / relativePath};
+        std::filesystem::path path{Filesystem::getResourcesPath() / relativePath};
         int width{};
         int height{};
         int channels{};

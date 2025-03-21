@@ -3,9 +3,13 @@
 
 namespace Engine
 {
-    Window::Window(std::string_view title, int width, int height)
-        : m_title{title}, m_width{width}, m_height{height}
+    Window::Window(const WindowConfig& config)
+        : m_config{config}
     {
+        if (m_config.width <= 0 || m_config.height <= 0) {
+            m_config.width = 800;
+            m_config.height = 600;
+        }
     }
 
     Window::~Window()
@@ -19,8 +23,14 @@ namespace Engine
 
     void Window::init()
     {
-        SDL_WindowFlags flags{SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIGH_PIXEL_DENSITY};
-        m_window = SDL_CreateWindow(m_title.c_str(), m_width, m_height, flags);
+        SDL_WindowFlags flags{SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY};
+        if (m_config.isFullscreen)
+            flags |= SDL_WINDOW_FULLSCREEN;
+        if (m_config.isResizable)
+            flags |= SDL_WINDOW_RESIZABLE;
+        if (m_config.isBorderless)
+            flags |= SDL_WINDOW_BORDERLESS;
+        m_window = SDL_CreateWindow(m_config.title.c_str(), m_config.width, m_config.height, flags);
         if (!m_window) {
             Logger::critical("Failed to create a window: {}", SDL_GetError());
             std::abort();

@@ -2,6 +2,7 @@
 #define SHADERMANAGER_H
 
 #include "Shader.h"
+#include "core/Filesystem.h"
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -13,10 +14,7 @@ namespace Engine
     class ShaderManager final
     {
     public:
-        explicit ShaderManager(const std::filesystem::path& shadersPath)
-            : m_shadersPath{shadersPath}
-        {
-        }
+        ShaderManager() = default;
         ShaderManager(const ShaderManager&) = delete;
         ShaderManager(ShaderManager&&) = delete;
         ShaderManager& operator=(const ShaderManager&) = delete;
@@ -31,7 +29,7 @@ namespace Engine
 
     private:
         std::unordered_map<std::string, std::unique_ptr<Shader>> m_shaders{};
-        const std::filesystem::path m_shadersPath{};
+        const std::filesystem::path m_shadersPath{Filesystem::getResourcesPath() / "shaders"};
     };
 } // namespace Engine
 

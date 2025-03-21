@@ -178,8 +178,7 @@ namespace Engine
     {
         sol::load_result loadResult{luaState.load_file(levelFilepath)};
         if (!loadResult.valid()) {
-            sol::error error{loadResult};
-            Logger::error("Error loading lua script: {}", error.what());
+            Logger::error("Error loading lua script: {}", sol::error{loadResult}.what());
             return {};
         }
         loadResult();
