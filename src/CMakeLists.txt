@@ -2,11 +2,12 @@ add_executable(gameengine
                Main.cpp
                core/Config.cpp
                core/Filesystem.cpp
-               core/Input.cpp
                core/IO.cpp
                core/Logger.cpp
                core/Timer.cpp
                core/Window.cpp
+               input/Command.cpp
+               input/Input.cpp
                game/Game.cpp
                game/LevelLoader.cpp
                game/Scene.cpp

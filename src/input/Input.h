@@ -1,18 +1,13 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+#include "Command.h"
 #include <SDL3/SDL_scancode.h>
 #include <map>
 #include <memory>
 
 namespace Engine
 {
-    class Command
-    {
-    public:
-        void execute();
-    };
-
     class InputHandler
     {
     public:
