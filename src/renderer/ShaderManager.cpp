@@ -22,7 +22,7 @@ namespace Engine
         shader->compile(vertexShaderCode.c_str(), fragmentShaderCode.c_str(),
                         geometryShaderRelativePath ? geometryShaderCode.c_str() : nullptr);
         m_shaders.insert(std::make_pair(shaderId, std::move(shader)));
-        Logger::info("Shader loaded as {}", shaderId.data());
+        Logger::info("'{}' shader loaded", shaderId.data());
         return *m_shaders.at(shaderId.data());
     }
 
