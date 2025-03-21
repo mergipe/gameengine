@@ -8,7 +8,6 @@
 #include "resources/ResourceManager.h"
 #include "tools/DeveloperModeGui.h"
 #include <memory>
-#include <string_view>
 
 namespace Engine
 {
@@ -34,11 +33,8 @@ namespace Engine
         void processInput();
         void update();
         void render(float frameExtrapolationFactor);
-        static constexpr std::string_view s_windowTitle{"Game Engine"};
         static constexpr float s_updateRate{144.0f};
         static constexpr float s_timeStepInMs{1000.0f / s_updateRate};
-        static constexpr int s_windowWidth{3200};
-        static constexpr int s_windowHeight{1800};
         std::unique_ptr<ResourceManager> m_resourceManager{};
         std::unique_ptr<EventBus> m_eventBus{};
         std::unique_ptr<Window> m_window{};
