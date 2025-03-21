@@ -3,13 +3,17 @@
 
 #include <filesystem>
 
-namespace Engine::Filesystem
+namespace Engine
 {
-    std::filesystem::path getBasePath();
-    std::filesystem::path getRelativePath(std::string_view relativePath);
-    std::filesystem::path getLogsPath();
-    std::filesystem::path getConfigPath();
-    std::filesystem::path getResourcesPath();
-} // namespace Engine::Filesystem
+    class Filesystem
+    {
+    public:
+        static std::filesystem::path getBasePath();
+        static std::filesystem::path getRelativePath(std::string_view relativePath);
+        static std::filesystem::path getLogsPath();
+        static std::filesystem::path getConfigPath();
+        static std::filesystem::path getResourcesPath();
+    };
+} // namespace Engine
 
 #endif

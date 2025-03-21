@@ -1,4 +1,6 @@
 #include "Config.h"
+#include "Filesystem.h"
+#include "Logger.h"
 
 namespace Engine::Config
 {

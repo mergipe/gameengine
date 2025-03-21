@@ -1,9 +1,22 @@
 add_executable(gameengine
                Main.cpp
-               core/Config.cpp core/Filesystem.cpp core/IO.cpp core/Logger.cpp core/Timer.cpp core/Window.cpp
-               game/Game.cpp game/LevelLoader.cpp game/Scene.cpp game/Systems.cpp
-               renderer/Renderer2D.cpp renderer/Shader.cpp renderer/ShaderManager.cpp
-               resources/Font.cpp resources/ResourceManager.cpp resources/Texture2D.cpp
+               core/Config.cpp
+               core/Filesystem.cpp
+               core/Input.cpp
+               core/IO.cpp
+               core/Logger.cpp
+               core/Timer.cpp
+               core/Window.cpp
+               game/Game.cpp
+               game/LevelLoader.cpp
+               game/Scene.cpp
+               game/Systems.cpp
+               renderer/Renderer2D.cpp
+               renderer/Shader.cpp
+               renderer/ShaderManager.cpp
+               resources/Font.cpp
+               resources/ResourceManager.cpp
+               resources/Texture2D.cpp
                tools/DeveloperModeGui.cpp)
 target_compile_features(gameengine PRIVATE cxx_std_23)
 set_target_properties(gameengine PROPERTIES

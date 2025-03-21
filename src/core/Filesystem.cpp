@@ -1,21 +1,34 @@
 #include "Filesystem.h"
 #include <SDL3/SDL_filesystem.h>
 
-namespace Engine::Filesystem
+namespace Engine
 {
-    std::filesystem::path getBasePath()
+    std::filesystem::path Filesystem::getBasePath()
     {
-        return std::filesystem::canonical(SDL_GetBasePath()).parent_path();
+        static std::filesystem::path s_basePath{std::filesystem::canonical(SDL_GetBasePath()).parent_path()};
+        return s_basePath;
     }
 
-    std::filesystem::path getRelativePath(std::string_view relativePath)
+    std::filesystem::path Filesystem::getRelativePath(std::string_view relativePath)
     {
         return getBasePath() / relativePath;
     }
 
-    std::filesystem::path getLogsPath() { return getBasePath() / "logs"; }
+    std::filesystem::path Filesystem::getLogsPath()
+    {
+        static std::filesystem::path s_logsPath{getBasePath() / "logs"};
+        return s_logsPath;
+    }
 
-    std::filesystem::path getConfigPath() { return getBasePath() / "config"; }
+    std::filesystem::path Filesystem::getConfigPath()
+    {
+        static std::filesystem::path s_configPath{getBasePath() / "config"};
+        return s_configPath;
+    }
 
-    std::filesystem::path getResourcesPath() { return getBasePath() / "resources"; }
-} // namespace Engine::Filesystem
+    std::filesystem::path Filesystem::getResourcesPath()
+    {
+        static std::filesystem::path s_resourcesPath{getBasePath() / "resources"};
+        return s_resourcesPath;
+    }
+} // namespace Engine
