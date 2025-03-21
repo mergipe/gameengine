@@ -54,7 +54,7 @@ namespace Engine
             }
         }
         setLevel(level);
-        Logger::info("Logger initialized with console sink [{}]", getLevelName(level));
+        Logger::info("Logger initialized with console sink ({} level)", getLevelName(level));
     }
 
     void Logger::init(const std::filesystem::path& logFilepath, Level level)

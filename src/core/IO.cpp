@@ -1,4 +1,5 @@
 #include "IO.h"
+#include "Logger.h"
 #include <sstream>
 
 namespace Engine::IO
@@ -17,5 +18,19 @@ namespace Engine::IO
             rows.push_back(row);
         }
         return rows;
+    }
+
+    std::string readStringFromFile(const std::filesystem::path& filepath)
+    {
+        try {
+            std::ifstream fileStream{filepath};
+            std::stringstream stringStream{};
+            stringStream << fileStream.rdbuf();
+            fileStream.close();
+            return stringStream.str();
+        } catch (const std::exception& e) {
+            Logger::error("Error reading string from file {}", filepath.c_str());
+            return {};
+        }
     }
 } // namespace Engine::IO

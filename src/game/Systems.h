@@ -1,11 +1,11 @@
 #ifndef SYSTEMS_H
 #define SYSTEMS_H
 
-#include "assets/AssetManager.h"
 #include "events/EventBus.h"
 #include "game/SceneData.h"
 #include "renderer/Camera.h"
-#include "renderer/Renderer.h"
+#include "renderer/Renderer2D.h"
+#include "resources/ResourceManager.h"
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
 
@@ -36,7 +36,7 @@ namespace Engine
             : System{registry}
         {
         }
-        void update(float timeStep, const SceneData& sceneData);
+        void update(float timeStep);
     };
 
     class SpriteRenderingSystem final : public System
@@ -46,14 +46,14 @@ namespace Engine
             : System{registry}
         {
         }
-        void update(Renderer& renderer, const AssetManager& assetManager, const Camera& camera,
+        void update(Renderer2D& renderer, const ResourceManager& resourceManager, const Camera& camera,
                     float frameExtrapolationTimeStep);
     };
 
-    class AnimationSystem final : public System
+    class SpriteAnimationSystem final : public System
     {
     public:
-        AnimationSystem(entt::registry* registry)
+        SpriteAnimationSystem(entt::registry* registry)
             : System{registry}
         {
         }
@@ -77,21 +77,7 @@ namespace Engine
             : System{registry}
         {
         }
-        void update(Renderer& renderer, const Camera& camera, float frameExtrapolationTimeStep);
-    };
-
-    class DamageSystem final : public System
-    {
-    public:
-        DamageSystem(entt::registry* registry)
-            : System{registry}
-        {
-        }
-        void subscribeToEvents(EventBus& eventBus);
-        void onCollision(CollisionEvent& event);
-
-    private:
-        void onProjectileHitsEntity(entt::entity& projectile, entt::entity& entity);
+        void update(Renderer2D& renderer, const Camera& camera, float frameExtrapolationTimeStep);
     };
 
     class PlayerInputSystem final : public System
@@ -118,23 +104,6 @@ namespace Engine
         void update(SceneData& sceneData);
     };
 
-    // this and ProjectileEmmiterComponent should become a script in the future
-    class ProjectileEmitSystem final : public System
-    {
-    public:
-        ProjectileEmitSystem(entt::registry* registry)
-            : System{registry}
-        {
-        }
-        void subscribeToEvents(EventBus& eventBus);
-        void update();
-        void onEmitProjectile(ProjectileEmitEvent& event);
-
-    private:
-        void emitProjectile(const entt::entity& entity, glm::vec2 velocity, int duration, int damage,
-                            bool isFriendly);
-    };
-
     class LifecycleSystem final : public System
     {
     public:
@@ -143,26 +112,6 @@ namespace Engine
         {
         }
         void update();
-    };
-
-    class TextRenderingSystem final : public System
-    {
-    public:
-        TextRenderingSystem(entt::registry* registry)
-            : System{registry}
-        {
-        }
-        void update(Renderer& renderer, const AssetManager& assetManager, const Camera& camera);
-    };
-
-    class HealthBarRenderingSystem final : public System
-    {
-    public:
-        HealthBarRenderingSystem(entt::registry* registry)
-            : System{registry}
-        {
-        }
-        void update(Renderer& renderer, const Font& font, const Camera& camera);
     };
 
     class ScriptSystem final : public System
@@ -176,12 +125,11 @@ namespace Engine
         void createScriptBindings(sol::state& luaState);
 
     private:
-        glm::vec2 getEntityPosition(entt::entity entity);
-        glm::vec2 getEntityVelocity(entt::entity entity);
-        void setEntityPosition(entt::entity entity, glm::vec2 position);
-        void setEntityVelocity(entt::entity entity, glm::vec2 velocity);
-        void setEntityRotation(entt::entity entity, float rotation);
-        void setProjectileVelocity(entt::entity entity, glm::vec2 velocity);
+        glm::vec3 getEntityPosition(entt::entity entity);
+        glm::vec3 getEntityVelocity(entt::entity entity);
+        void setEntityPosition(entt::entity entity, glm::vec3 position);
+        void setEntityVelocity(entt::entity entity, glm::vec3 velocity);
+        void setEntityRotation(entt::entity entity, glm::vec3 rotation);
     };
 } // namespace Engine
 

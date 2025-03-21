@@ -1,26 +1,19 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include <SDL3_ttf/SDL_ttf.h>
-
 namespace Engine
 {
     class Font
     {
     public:
-        Font(TTF_Font* font)
-            : m_data{font}
-        {
-        }
+        Font() = default;
         Font(const Font&) = delete;
         Font(Font&&) = delete;
         Font& operator=(const Font&) = delete;
         Font& operator=(Font&&) = delete;
-        ~Font();
-        TTF_Font* getData() const { return m_data; }
+        ~Font() = default;
 
     private:
-        TTF_Font* m_data{};
     };
 } // namespace Engine
 

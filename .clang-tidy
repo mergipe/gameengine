@@ -1,2 +1,4 @@
-Checks:
-  cppcoreguidelines-*,-cppcoreguidelines-pro-type-union-access
+Checks: cppcoreguidelines-*,-cppcoreguidelines-pro-type-union-access
+HeaderFilterRegex: src/**
+ExcludeHeaderFilterRegex: libs/**
+UseColor: true

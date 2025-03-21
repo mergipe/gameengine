@@ -5,7 +5,8 @@
 
 namespace Engine::Timer
 {
-    std::uint64_t getTicks();
-}
+    using Ticks = std::uint64_t;
+    Ticks getTicks();
+} // namespace Engine::Timer
 
 #endif

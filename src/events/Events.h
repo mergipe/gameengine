@@ -36,23 +36,6 @@ namespace Engine
         }
         SDL_Keycode keyCode;
     };
-
-    struct ProjectileEmitEvent final : public Event {
-        ProjectileEmitEvent(const entt::entity& entity, glm::vec2 velocity, int projectileDuration,
-                            int projectileDamage, bool isProjectileFriendly)
-            : entity{entity}
-            , velocity{velocity}
-            , projectileDuration{projectileDuration}
-            , projectileDamage{projectileDamage}
-            , isProjectileFriendly{isProjectileFriendly}
-        {
-        }
-        entt::entity entity;
-        glm::vec2 velocity{};
-        int projectileDuration{};
-        int projectileDamage{};
-        bool isProjectileFriendly{};
-    };
 } // namespace Engine
 
 #endif

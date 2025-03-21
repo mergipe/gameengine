@@ -1,12 +1,14 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "Rect.h"
+#include <glm/glm.hpp>
 
 namespace Engine
 {
     struct Camera {
-        Rect display;
+        glm::vec2 position{};
+        float width{};
+        float height{};
     };
 } // namespace Engine
 

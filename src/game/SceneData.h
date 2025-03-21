@@ -7,8 +7,8 @@
 namespace Engine
 {
     struct SceneData {
-        Camera camera;
-        LevelData levelData;
+        Camera camera{};
+        LevelData levelData{};
     };
 } // namespace Engine
 

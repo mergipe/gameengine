@@ -16,13 +16,16 @@ namespace Engine
         Window& operator=(const Window&) = delete;
         Window& operator=(Window&&) = delete;
         ~Window();
+        void init();
         SDL_Window* getWindowPtr() const { return m_window; }
+        SDL_GLContext getGLContext() const { return m_glContext; }
         int getWidth() const { return m_width; }
         int getHeight() const { return m_height; }
 
     private:
         std::string m_title{};
         SDL_Window* m_window{};
+        SDL_GLContext m_glContext{};
         int m_width{};
         int m_height{};
     };

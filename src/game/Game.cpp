@@ -1,11 +1,9 @@
 #include "Game.h"
+#include "core/Filesystem.h"
 #include "core/Logger.h"
 #include "core/Timer.h"
-#include "renderer/Renderer.h"
+#include "renderer/Renderer2D.h"
 #include <SDL3/SDL.h>
-#include <SDL3_image/SDL_image.h>
-#include <SDL3_ttf/SDL_ttf.h>
-#include <iostream>
 
 namespace Engine
 {
@@ -17,21 +15,26 @@ namespace Engine
 
     void Game::init()
     {
-        if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
-            std::cerr << "Failed to initialize SDL: " << SDL_GetError() << '\n';
-            std::abort();
-        }
-        m_basePath = std::filesystem::canonical(SDL_GetBasePath()).parent_path();
-        Logger::init(m_basePath / s_logFilepath);
-        if (!TTF_Init()) {
-            Logger::error("Failed to initialize SDL_ttf: {}", SDL_GetError());
-        }
+        Logger::init(Filesystem::getRelativePath("logs/log.txt"));
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+#ifdef __APPLE__
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+#else
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+#endif
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
         m_window = std::make_unique<Window>(s_windowTitle, s_windowWidth, s_windowHeight);
-        m_renderer = std::make_unique<Renderer>(*m_window);
-        m_assetManager = std::make_unique<AssetManager>(m_basePath / s_assetsFolder);
+        m_window->init();
+        m_renderer = std::make_unique<Renderer2D>(m_window.get());
+        m_renderer->init();
+        m_resourceManager = std::make_unique<ResourceManager>(Filesystem::getRelativePath("resources"));
         m_eventBus = std::make_unique<EventBus>();
         if (m_hasDeveloperMode) {
-            m_developerModeGui = std::make_unique<DeveloperModeGui>(*m_window, m_renderer.get());
+            m_developerModeGui = std::make_unique<DeveloperModeGui>(*m_window);
         }
         Logger::info("Game initialized");
     }
@@ -40,12 +43,12 @@ namespace Engine
     {
         Logger::info("Game started to run");
         m_isRunning = true;
-        m_currentScene = std::make_unique<Scene>(m_renderer.get(), m_assetManager.get(), m_window->getWidth(),
-                                                 m_window->getHeight());
-        std::uint64_t previousTicks{Timer::getTicks()};
+        m_currentScene = std::make_unique<Scene>(m_renderer.get(), m_resourceManager.get(),
+                                                 m_window->getWidth(), m_window->getHeight());
+        Timer::Ticks previousTicks{Timer::getTicks()};
         float lag{0.0f};
         while (m_isRunning) {
-            const std::uint64_t currentTicks{Timer::getTicks()};
+            const Timer::Ticks currentTicks{Timer::getTicks()};
             lag += static_cast<float>(currentTicks - previousTicks);
             previousTicks = currentTicks;
             processInput();
@@ -64,11 +67,9 @@ namespace Engine
             m_developerModeGui.reset();
         }
         m_eventBus.reset();
-        m_assetManager.reset();
+        m_resourceManager.reset();
         m_renderer.reset();
         m_window.reset();
-        TTF_Quit();
-        SDL_Quit();
         Logger::info("Game resources destroyed");
     }
 
@@ -98,5 +99,9 @@ namespace Engine
     void Game::render(float frameExtrapolationTimeStep)
     {
         m_currentScene->render(frameExtrapolationTimeStep);
+        if (m_isDeveloperModeEnabled) {
+            m_developerModeGui->show();
+        }
+        m_renderer->present();
     }
 } // namespace Engine

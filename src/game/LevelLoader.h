@@ -1,8 +1,7 @@
 #ifndef LEVELLOADER_H
 #define LEVELLOADER_H
 
-#include "assets/AssetManager.h"
-#include "renderer/Renderer.h"
+#include "resources/ResourceManager.h"
 #include <entt/entt.hpp>
 #include <filesystem>
 #include <sol/sol.hpp>
@@ -22,7 +21,7 @@ namespace Engine
     {
     public:
         LevelData loadLevel(sol::state& luaState, const std::filesystem::path& levelFilepath,
-                            entt::registry& registry, AssetManager& assetManager, Renderer& renderer);
+                            entt::registry& registry, ResourceManager& resourceManager);
     };
 } // namespace Engine
 

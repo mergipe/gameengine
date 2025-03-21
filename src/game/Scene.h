@@ -3,8 +3,8 @@
 
 #include "SceneData.h"
 #include "Systems.h"
-#include "assets/AssetManager.h"
-#include "renderer/Renderer.h"
+#include "renderer/Renderer2D.h"
+#include "resources/ResourceManager.h"
 #include <entt/entt.hpp>
 #include <memory>
 #include <sol/sol.hpp>
@@ -14,7 +14,7 @@ namespace Engine
     class Scene final
     {
     public:
-        Scene(Renderer* renderer, AssetManager* assetManager, int windowWidth, int windowHeight);
+        Scene(Renderer2D* renderer, ResourceManager* resourceManager, int windowWidth, int windowHeight);
         Scene(const Scene&) = delete;
         Scene(Scene&&) = delete;
         Scene& operator=(const Scene&) = delete;
@@ -26,21 +26,17 @@ namespace Engine
     private:
         sol::state m_luaState{};
         SceneData m_sceneData{};
-        Renderer* m_renderer{};
-        AssetManager* m_assetManager{};
+        Renderer2D* m_renderer{};
+        ResourceManager* m_resourceManager{};
         std::unique_ptr<entt::registry> m_registry{};
         std::unique_ptr<MovementSystem> m_movementSystem{};
         std::unique_ptr<SpriteRenderingSystem> m_spriteRenderingSystem{};
-        std::unique_ptr<AnimationSystem> m_animationSystem{};
+        std::unique_ptr<SpriteAnimationSystem> m_animationSystem{};
         std::unique_ptr<CollisionSystem> m_collisionSystem{};
-        std::unique_ptr<DamageSystem> m_damageSystem{};
         std::unique_ptr<PlayerInputSystem> m_playerInputSystem{};
-        std::unique_ptr<ProjectileEmitSystem> m_projectileEmitSystem{};
         std::unique_ptr<LifecycleSystem> m_lifecycleSystem{};
         std::unique_ptr<CameraMovementSystem> m_cameraMovementSystem{};
-        std::unique_ptr<HealthBarRenderingSystem> m_healthBarRenderingSystem{};
         std::unique_ptr<BoxColliderRenderingSystem> m_boxColliderRenderingSystem{};
-        std::unique_ptr<TextRenderingSystem> m_textRenderingSystem{};
         std::unique_ptr<ScriptSystem> m_scriptSystem{};
     };
 } // namespace Engine

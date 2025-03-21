@@ -1,50 +1,65 @@
 #include "DeveloperModeGui.h"
 #include <imgui/imgui.h>
+#include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui_impl_sdl3.h>
-#include <imgui/imgui_impl_sdlrenderer3.h>
 
 namespace Engine
 {
-    DeveloperModeGui::DeveloperModeGui(const Window& window, Renderer* renderer)
-        : m_renderer{renderer}
+    void newFrame()
+    {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
+    }
+
+    void render()
+    {
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            SDL_Window* currentWindow{SDL_GL_GetCurrentWindow()};
+            SDL_GLContext currentContext{SDL_GL_GetCurrentContext()};
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            SDL_GL_MakeCurrent(currentWindow, currentContext);
+        }
+    }
+
+    DeveloperModeGui::DeveloperModeGui(const Window& window)
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io{ImGui::GetIO()};
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-        ImGui::StyleColorsDark();
-        ImGui_ImplSDL3_InitForSDLRenderer(window.getWindowPtr(), renderer->getRenderingContext());
-        ImGui_ImplSDLRenderer3_Init(renderer->getRenderingContext());
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         ImFontConfig config{};
         config.SizePixels = 20.0f;
-        ImGui::GetIO().Fonts->AddFontDefault(&config);
-        ImGui::GetStyle().ScaleAllSizes(2.0f);
+        io.Fonts->AddFontDefault(&config);
+        ImGui::StyleColorsDark();
+        ImGuiStyle& style{ImGui::GetStyle()};
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+            style.WindowRounding = 0.0f;
+            style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+        }
+        style.ScaleAllSizes(2.0f);
+        ImGui_ImplSDL3_InitForOpenGL(window.getWindowPtr(), window.getGLContext());
+        ImGui_ImplOpenGL3_Init("#version 330 core");
     }
 
     DeveloperModeGui::~DeveloperModeGui()
     {
-        ImGui_ImplSDLRenderer3_Shutdown();
+        ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplSDL3_Shutdown();
         ImGui::DestroyContext();
     }
 
     void DeveloperModeGui::processEvent(SDL_Event& event) { ImGui_ImplSDL3_ProcessEvent(&event); }
 
-    void DeveloperModeGui::newFrame()
+    void DeveloperModeGui::show()
     {
-        ImGui_ImplSDLRenderer3_NewFrame();
-        ImGui_ImplSDL3_NewFrame();
-        ImGui::NewFrame();
-    }
-
-    void DeveloperModeGui::render()
-    {
-        ImGui::Render();
-        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_renderer->getRenderingContext());
-        if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-        }
+        newFrame();
+        ImGui::ShowDemoWindow();
+        render();
     }
 } // namespace Engine

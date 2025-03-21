@@ -3,11 +3,8 @@
 #include "Game.h"
 #include "core/Timer.h"
 #include "events/Events.h"
-#include "renderer/Color.h"
-#include "renderer/Rect.h"
-#include "renderer/Renderer.h"
+#include "renderer/Renderer2D.h"
 #include <SDL3/SDL.h>
-#include <algorithm>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/rotate_vector.hpp>
@@ -28,44 +25,20 @@ namespace Engine
 
     constexpr glm::vec2 getRenderPosition(const glm::vec2& position, const Camera& camera)
     {
-        return glm::vec2{position.x - static_cast<float>(camera.display.x),
-                         position.y - static_cast<float>(camera.display.y)};
+        return position - camera.position;
     }
 
-    constexpr bool isObjectOutOfMap(const glm::vec2& position, float objectWidth, float objectHeight,
-                                    float mapWidth, float mapHeight)
+    void MovementSystem::update(float timeStep)
     {
-        return position.x + objectWidth < 0 || position.x > mapWidth || position.y + objectHeight < 0 ||
-               position.y > mapHeight;
-    }
-
-    void MovementSystem::update(float timeStep, const SceneData& sceneData)
-    {
-        auto view{getRegistry().view<TransformComponent, RigidBodyComponent>()};
+        auto view{getRegistry().view<TransformComponent, RigidBody2DComponent>()};
         for (auto entity : view) {
             auto& transform{view.get<TransformComponent>(entity)};
-            auto& rigidBody{view.get<RigidBodyComponent>(entity)};
+            auto& rigidBody{view.get<RigidBody2DComponent>(entity)};
             transform.position += rigidBody.velocity * timeStep;
-            const auto* sprite{getRegistry().try_get<SpriteComponent>(entity)};
-            float width{0.0f};
-            float height{0.0f};
-            if (sprite) {
-                width = sprite->width * transform.scale.x;
-                height = sprite->height * transform.scale.y;
-            }
-            bool isPlayer = getRegistry().any_of<Player>(entity);
-            float mapWidth{sceneData.levelData.mapData.width};
-            float mapHeight{sceneData.levelData.mapData.height};
-            if (isPlayer) {
-                transform.position.x = std::clamp(transform.position.x, 0.0f, mapWidth - width);
-                transform.position.y = std::clamp(transform.position.y, 0.0f, mapHeight - height);
-            } else if (isObjectOutOfMap(transform.position, width, height, mapWidth, mapHeight)) {
-                getRegistry().destroy(entity);
-            }
         }
     };
 
-    void SpriteRenderingSystem::update(Renderer& renderer, const AssetManager& assetManager,
+    void SpriteRenderingSystem::update(Renderer2D& renderer, const ResourceManager& resourceManager,
                                        const Camera& camera, float frameExtrapolationTimeStep)
     {
         getRegistry().sort<SpriteComponent>(
@@ -76,7 +49,7 @@ namespace Engine
             const auto& transform{view.get<TransformComponent>(entity)};
             const auto& sprite{view.get<SpriteComponent>(entity)};
             glm::vec2 renderPosition{transform.position};
-            const auto* rigidBody{getRegistry().try_get<RigidBodyComponent>(entity)};
+            const auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)};
             if (rigidBody) {
                 renderPosition = getExtrapolatedPosition(transform.position, rigidBody->velocity,
                                                          frameExtrapolationTimeStep);
@@ -84,49 +57,47 @@ namespace Engine
             if (!sprite.hasFixedPosition) {
                 renderPosition = getRenderPosition(renderPosition, camera);
             }
-            float spriteWidth{static_cast<float>(sprite.width) * transform.scale.x};
-            float spriteHeight{static_cast<float>(sprite.height) * transform.scale.y};
-            if (renderPosition.x + spriteWidth < 0 ||
-                renderPosition.x > static_cast<float>(camera.display.w) ||
-                renderPosition.y + spriteHeight < 0 ||
-                renderPosition.y > static_cast<float>(camera.display.h)) {
+            float spriteWidth{sprite.textureArea.width * transform.scale.x};
+            float spriteHeight{sprite.textureArea.height * transform.scale.y};
+            if (renderPosition.x + spriteWidth < 0 || renderPosition.x > camera.width ||
+                renderPosition.y + spriteHeight < 0 || renderPosition.y > camera.height) {
                 continue;
             }
-            const FRect destinationRect{renderPosition.x, renderPosition.y, spriteWidth, spriteHeight};
-            renderer.drawTexture(assetManager.getTexture(sprite.textureId), sprite.sourceRect,
-                                 destinationRect, 0.0);
+            renderer.drawSprite(renderPosition, spriteWidth, spriteHeight, 0,
+                                resourceManager.getTexture(sprite.textureId), sprite.textureArea);
         }
     }
 
-    void AnimationSystem::update()
+    void SpriteAnimationSystem::update()
     {
-        auto view{getRegistry().view<SpriteComponent, AnimationComponent>()};
+        auto view{getRegistry().view<SpriteComponent, SpriteAnimationComponent>()};
         for (auto entity : view) {
             auto& sprite{view.get<SpriteComponent>(entity)};
-            auto& animation{view.get<AnimationComponent>(entity)};
+            auto& animation{view.get<SpriteAnimationComponent>(entity)};
             animation.currentFrame = (static_cast<int>(Timer::getTicks() - animation.startTime) *
                                       animation.framesPerSecond / 1000) %
                                      animation.framesCount;
-            sprite.sourceRect.x = static_cast<float>(animation.currentFrame) * sprite.width;
+            sprite.textureArea.position.x =
+                static_cast<float>(animation.currentFrame) * sprite.textureArea.width;
         }
     }
 
     void CollisionSystem::update()
     {
-        auto view{getRegistry().view<const TransformComponent, BoxColliderComponent>()};
+        auto view{getRegistry().view<const TransformComponent, BoxCollider2DComponent>()};
         for (auto entity : view) {
-            view.get<BoxColliderComponent>(entity).isColliding = false;
+            view.get<BoxCollider2DComponent>(entity).isColliding = false;
         }
         for (auto i{view.begin()}; i != view.end(); ++i) {
             auto entity{*i};
             const auto& transform{view.get<TransformComponent>(entity)};
-            auto& boxCollider{view.get<BoxColliderComponent>(entity)};
+            auto& boxCollider{view.get<BoxCollider2DComponent>(entity)};
             for (auto j{i}; j != view.end(); ++j) {
                 if (i == j)
                     continue;
                 auto otherEntity{*j};
                 const auto& otherTransform{view.get<TransformComponent>(otherEntity)};
-                auto& otherBoxCollider{view.get<BoxColliderComponent>(otherEntity)};
+                auto& otherBoxCollider{view.get<BoxCollider2DComponent>(otherEntity)};
                 const bool collisionHappened{aabbHasCollided(
                     transform.position.x + boxCollider.offset.x, transform.position.y + boxCollider.offset.y,
                     static_cast<float>(boxCollider.width) * transform.scale.x,
@@ -143,65 +114,31 @@ namespace Engine
         }
     }
 
-    void BoxColliderRenderingSystem::update(Renderer& renderer, const Camera& camera,
+    void BoxColliderRenderingSystem::update(Renderer2D& renderer, const Camera& camera,
                                             float frameExtrapolationTimeStep)
     {
-        auto view{getRegistry().view<const TransformComponent, const BoxColliderComponent>()};
+        auto view{getRegistry().view<const TransformComponent, const BoxCollider2DComponent>()};
         for (auto entity : view) {
             const auto& transform{view.get<TransformComponent>(entity)};
-            const auto& boxCollider{view.get<BoxColliderComponent>(entity)};
+            const auto& boxCollider{view.get<BoxCollider2DComponent>(entity)};
             glm::vec2 renderPosition{transform.position};
-            const auto* rigidBody{getRegistry().try_get<RigidBodyComponent>(entity)};
+            const auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)};
             if (rigidBody) {
                 renderPosition = getExtrapolatedPosition(transform.position, rigidBody->velocity,
                                                          frameExtrapolationTimeStep);
             }
+            glm::vec4 color;
             if (boxCollider.isColliding) {
-                renderer.setDrawColor(Color{255, 0, 0, 255});
+                color = {1.0f, 0.0f, 0.0f, 1.0f};
             } else {
-                renderer.setDrawColor(Color{255, 255, 0, 255});
+                color = {1.0f, 1.0f, 0.0f, 1.0f};
             }
             renderPosition = getRenderPosition(renderPosition, camera);
-            renderer.drawRectangle({renderPosition.x + boxCollider.offset.x,
-                                    renderPosition.y + boxCollider.offset.y,
-                                    static_cast<float>(boxCollider.width) * transform.scale.x,
-                                    static_cast<float>(boxCollider.height) * transform.scale.y},
-                                   false);
+            Rect rect{renderPosition + boxCollider.offset,
+                      static_cast<float>(boxCollider.width) * transform.scale.x,
+                      static_cast<float>(boxCollider.height) * transform.scale.y};
+            renderer.drawRectangle(rect, color, 0);
         }
-    }
-
-    void DamageSystem::subscribeToEvents(EventBus& eventBus)
-    {
-        eventBus.addSubscriber<CollisionEvent, DamageSystem>(this, &DamageSystem::onCollision);
-    }
-
-    void DamageSystem::onCollision(CollisionEvent& event)
-    {
-        if (getRegistry().any_of<EnemyProjectile>(event.entity) &&
-            getRegistry().any_of<Player>(event.otherEntity)) {
-            onProjectileHitsEntity(event.entity, event.otherEntity);
-        } else if (getRegistry().any_of<Player>(event.entity) &&
-                   getRegistry().any_of<EnemyProjectile>(event.otherEntity)) {
-            onProjectileHitsEntity(event.otherEntity, event.entity);
-        } else if (getRegistry().any_of<PlayerProjectile>(event.entity) &&
-                   getRegistry().any_of<Enemy>(event.otherEntity)) {
-            onProjectileHitsEntity(event.entity, event.otherEntity);
-        } else if (getRegistry().any_of<Enemy>(event.entity) &&
-                   getRegistry().any_of<PlayerProjectile>(event.otherEntity)) {
-            onProjectileHitsEntity(event.otherEntity, event.entity);
-        }
-    }
-
-    void DamageSystem::onProjectileHitsEntity(entt::entity& projectile, entt::entity& entity)
-    {
-        auto* health{getRegistry().try_get<HealthComponent>(entity)};
-        const auto* damage{getRegistry().try_get<DamageComponent>(projectile)};
-        if (!health || !damage)
-            return;
-        health->healthPercentage -= damage->value;
-        if (health->healthPercentage <= 0)
-            getRegistry().destroy(entity);
-        getRegistry().destroy(projectile);
     }
 
     void PlayerInputSystem::subscribeToEvents(EventBus& eventBus)
@@ -231,39 +168,23 @@ namespace Engine
             case SDLK_A:
                 move(entity, glm::vec2{-velocityMagnitude, 0}, 3);
                 break;
-            case SDLK_SPACE:
-                const auto* projectileEmitter{getRegistry().try_get<ProjectileEmitterComponent>(entity)};
-                if (projectileEmitter) {
-                    if (projectileEmitter->canShoot()) {
-                        glm::vec2 projectileVelocity{0, -projectileEmitter->projectileVelocity.y};
-                        const auto* transform{getRegistry().try_get<TransformComponent>(entity)};
-                        if (transform) {
-                            projectileVelocity =
-                                glm::rotate(projectileVelocity, glm::radians(transform->rotation));
-                        }
-                        Game::instance().getEventBus().dispatchEvent<ProjectileEmitEvent>(
-                            entity, projectileVelocity, projectileEmitter->projectileDuration,
-                            projectileEmitter->hitPercentageDamage, true);
-                    }
-                }
-                break;
             }
         }
     }
 
     void PlayerInputSystem::move(const entt::entity& entity, glm::vec2 velocity, int spriteIndex)
     {
-        auto* rigidBody{getRegistry().try_get<RigidBodyComponent>(entity)};
+        auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)};
         if (rigidBody) {
-            rigidBody->velocity = velocity;
+            rigidBody->velocity = glm::vec3{velocity, 0.0f};
         }
         auto* sprite{getRegistry().try_get<SpriteComponent>(entity)};
         if (sprite) {
-            sprite->sourceRect.y = sprite->height * static_cast<float>(spriteIndex);
+            sprite->textureArea.position.y = sprite->textureArea.height * static_cast<float>(spriteIndex);
         }
         auto* transform{getRegistry().try_get<TransformComponent>(entity)};
         if (transform) {
-            transform->rotation = static_cast<float>(spriteIndex) * 90.0f;
+            transform->rotation.z = static_cast<float>(spriteIndex) * 90.0f;
         }
     }
 
@@ -272,66 +193,14 @@ namespace Engine
         auto view{getRegistry().view<const CameraFollowComponent, const TransformComponent>()};
         for (auto entity : view) {
             const auto& transform{view.get<TransformComponent>(entity)};
-            Rect& cameraDisplay{sceneData.camera.display};
-            cameraDisplay.x = static_cast<int>(transform.position.x - (cameraDisplay.w / 2.0));
-            cameraDisplay.y = static_cast<int>(transform.position.y - (cameraDisplay.h / 2.0));
-            cameraDisplay.x = std::clamp(
-                cameraDisplay.x, 0, static_cast<int>(sceneData.levelData.mapData.width) - cameraDisplay.w);
-            cameraDisplay.y = std::clamp(
-                cameraDisplay.y, 0, static_cast<int>(sceneData.levelData.mapData.height) - cameraDisplay.h);
+            Camera& camera{sceneData.camera};
+            camera.position.x = transform.position.x - (camera.width / 2.0f);
+            camera.position.y = transform.position.y - (camera.height / 2.0f);
+            camera.position.x =
+                std::clamp(camera.position.x, 0.0f, sceneData.levelData.mapData.width - camera.width);
+            camera.position.y =
+                std::clamp(camera.position.y, 0.0f, sceneData.levelData.mapData.height - camera.height);
         }
-    }
-
-    void ProjectileEmitSystem::subscribeToEvents(EventBus& eventBus)
-    {
-        eventBus.addSubscriber<ProjectileEmitEvent, ProjectileEmitSystem>(
-            this, &ProjectileEmitSystem::onEmitProjectile);
-    }
-
-    void ProjectileEmitSystem::update()
-    {
-        auto view{getRegistry().view<ProjectileEmitterComponent, const TransformComponent>()};
-        for (auto entity : view) {
-            auto& projectileEmitter{view.get<ProjectileEmitterComponent>(entity)};
-            if (projectileEmitter.isAutoShoot && projectileEmitter.canShoot()) {
-                emitProjectile(entity, projectileEmitter.projectileVelocity,
-                               projectileEmitter.projectileDuration, projectileEmitter.hitPercentageDamage,
-                               projectileEmitter.isProjectileFriendly);
-            }
-        }
-    }
-
-    void ProjectileEmitSystem::emitProjectile(const entt::entity& entity, glm::vec2 velocity, int duration,
-                                              int damage, bool isFriendly)
-    {
-        const auto& transform{getRegistry().get<TransformComponent>(entity)};
-        glm::vec2 projectilePosition{transform.position};
-        const auto* sprite{getRegistry().try_get<SpriteComponent>(entity)};
-        if (sprite) {
-            projectilePosition.x += static_cast<float>(sprite->width) * transform.scale.x / 2.0f;
-            projectilePosition.y += static_cast<float>(sprite->height) * transform.scale.y / 2.0f;
-        }
-        auto projectile{getRegistry().create()};
-        std::string group{isFriendly ? "player-projectiles" : "enemy-projectiles"};
-        if (isFriendly) {
-            getRegistry().emplace<PlayerProjectile>(projectile);
-        } else {
-            getRegistry().emplace<EnemyProjectile>(projectile);
-        }
-        getRegistry().emplace<TransformComponent>(projectile, projectilePosition);
-        getRegistry().emplace<RigidBodyComponent>(projectile, velocity);
-        getRegistry().emplace<SpriteComponent>(projectile, "bullet-texture", 4.0f, 4.0f, 4);
-        getRegistry().emplace<BoxColliderComponent>(projectile, 4, 4);
-        getRegistry().emplace<LifecycleComponent>(projectile, duration);
-        getRegistry().emplace<DamageComponent>(projectile, damage);
-        auto& projectileEmitter{getRegistry().get<ProjectileEmitterComponent>(entity)};
-        projectileEmitter.lastEmissionTime = Timer::getTicks();
-    }
-
-    void ProjectileEmitSystem::onEmitProjectile(ProjectileEmitEvent& event)
-    {
-        emitProjectile(event.entity, event.velocity, event.projectileDuration, event.projectileDamage,
-                       event.isProjectileFriendly);
     }
 
     void LifecycleSystem::update()
@@ -345,57 +214,10 @@ namespace Engine
         }
     }
 
-    void TextRenderingSystem::update(Renderer& renderer, const AssetManager& assetManager,
-                                     const Camera& camera)
-    {
-        auto view{getRegistry().view<const TransformComponent, const TextComponent>()};
-        for (auto entity : view) {
-            const auto& transform{view.get<TransformComponent>(entity)};
-            const auto& text{view.get<TextComponent>(entity)};
-            const Font& font{assetManager.getFont(text.fontId)};
-            glm::vec2 renderPosition{transform.position};
-            if (!text.hasFixedPosition) {
-                renderPosition = getRenderPosition(renderPosition, camera);
-            }
-            renderer.drawText(font, text.text, text.color, renderPosition);
-        }
-    }
-
-    void HealthBarRenderingSystem::update(Renderer& renderer, const Font& font, const Camera& camera)
-    {
-        auto view{
-            getRegistry().view<const TransformComponent, const SpriteComponent, const HealthComponent>()};
-        for (auto entity : view) {
-            const auto& transform{view.get<TransformComponent>(entity)};
-            const auto& sprite{view.get<SpriteComponent>(entity)};
-            const auto& health{view.get<HealthComponent>(entity)};
-            Color color;
-            if (health.healthPercentage <= 20) {
-                color = {255, 0, 0, 255};
-            } else if (health.healthPercentage <= 70) {
-                color = {255, 165, 0, 255};
-            } else {
-                color = {0, 255, 0, 255};
-            }
-            std::string text{std::to_string(health.healthPercentage) + '%'};
-            int barHeight{4};
-            glm::vec2 entityPosition{getRenderPosition(transform.position, camera)};
-            glm::vec2 barPosition{entityPosition.x, entityPosition.y - 2.0f - static_cast<float>(barHeight)};
-            glm::vec2 textPosition{barPosition.x, barPosition.y - 18.0f};
-            renderer.setDrawColor(color);
-            renderer.drawText(font, text, color, textPosition);
-            renderer.drawRectangle({barPosition.x, barPosition.y,
-                                    static_cast<float>(sprite.width) * transform.scale.x *
-                                        static_cast<float>(health.healthPercentage) / 100.0f,
-                                    static_cast<float>(barHeight)},
-                                   true);
-        }
-    }
-
     void ScriptSystem::update(float timeStep)
     {
         auto view{getRegistry().view<const ScriptComponent>()};
-        std::uint64_t elapsedTime{Timer::getTicks()};
+        Timer::Ticks elapsedTime{Timer::getTicks()};
         for (auto entity : view) {
             const auto& script{view.get<ScriptComponent>(entity)};
             script.func(entity, timeStep, elapsedTime);
@@ -405,18 +227,17 @@ namespace Engine
     void ScriptSystem::createScriptBindings(sol::state& luaState)
     {
         luaState.new_usertype<entt::entity>("Entity");
-        luaState.new_usertype<glm::vec2>("Vec2",
-                                         sol::constructors<glm::vec2(float), glm::vec2(float, float)>(), "x",
-                                         &glm::vec2::x, "y", &glm::vec2::y);
+        luaState.new_usertype<glm::vec3>(
+            "Vec3", sol::constructors<glm::vec3(float), glm::vec3(float, float, float)>(), "x", &glm::vec3::x,
+            "y", &glm::vec3::y, "z", &glm::vec3::z);
         luaState.set_function("get_position", &ScriptSystem::getEntityPosition, this);
         luaState.set_function("get_velocity", &ScriptSystem::getEntityVelocity, this);
         luaState.set_function("set_position", &ScriptSystem::setEntityPosition, this);
         luaState.set_function("set_velocity", &ScriptSystem::setEntityVelocity, this);
         luaState.set_function("set_rotation", &ScriptSystem::setEntityRotation, this);
-        luaState.set_function("set_projectile_velocity", &ScriptSystem::setProjectileVelocity, this);
     }
 
-    glm::vec2 ScriptSystem::getEntityPosition(entt::entity entity)
+    glm::vec3 ScriptSystem::getEntityPosition(entt::entity entity)
     {
         auto* transform{getRegistry().try_get<TransformComponent>(entity)};
         if (transform) {
@@ -425,16 +246,16 @@ namespace Engine
         return {};
     }
 
-    glm::vec2 ScriptSystem::getEntityVelocity(entt::entity entity)
+    glm::vec3 ScriptSystem::getEntityVelocity(entt::entity entity)
     {
-        auto* rigidBody{getRegistry().try_get<RigidBodyComponent>(entity)};
+        auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)};
         if (rigidBody) {
             return rigidBody->velocity;
         }
         return {};
     }
 
-    void ScriptSystem::setEntityPosition(entt::entity entity, glm::vec2 position)
+    void ScriptSystem::setEntityPosition(entt::entity entity, glm::vec3 position)
     {
         auto* transform{getRegistry().try_get<TransformComponent>(entity)};
         if (transform) {
@@ -442,27 +263,19 @@ namespace Engine
         }
     }
 
-    void ScriptSystem::setEntityVelocity(entt::entity entity, glm::vec2 velocity)
+    void ScriptSystem::setEntityVelocity(entt::entity entity, glm::vec3 velocity)
     {
-        auto* rigidBody{getRegistry().try_get<RigidBodyComponent>(entity)};
+        auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)};
         if (rigidBody) {
             rigidBody->velocity = velocity;
         }
     }
 
-    void ScriptSystem::setEntityRotation(entt::entity entity, float rotation)
+    void ScriptSystem::setEntityRotation(entt::entity entity, glm::vec3 rotation)
     {
         auto* transform{getRegistry().try_get<TransformComponent>(entity)};
         if (transform) {
             transform->rotation = rotation;
-        }
-    }
-
-    void ScriptSystem::setProjectileVelocity(entt::entity entity, glm::vec2 velocity)
-    {
-        auto* projectileEmitter{getRegistry().try_get<ProjectileEmitterComponent>(entity)};
-        if (projectileEmitter) {
-            projectileEmitter->projectileVelocity = velocity;
         }
     }
 } // namespace Engine

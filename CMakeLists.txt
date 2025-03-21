@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(GameEngine LANGUAGES CXX)
+project(GameEngine LANGUAGES CXX C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(ENABLE_DEVELOPER_MODE "Enable developer mode" ON)
@@ -22,14 +22,11 @@ endif()
 option(SDL_VENDORED "Use vendored SDL" OFF)
 if (SDL_VENDORED)
   add_subdirectory(libs/SDL)
-  add_subdirectory(libs/SDL_image)
-  add_subdirectory(libs/SDL_ttf)
 else()
   find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
-  find_package(SDL3_image REQUIRED CONFIG)
-  find_package(SDL3_ttf REQUIRED CONFIG)
 endif()
 
+find_package(OpenGL REQUIRED)
 find_package(Lua REQUIRED)
 
 include(cmake/LinkSDL.cmake)

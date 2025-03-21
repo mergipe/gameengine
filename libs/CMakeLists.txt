@@ -7,16 +7,25 @@ target_include_directories(sol SYSTEM INTERFACE sol/include)
 add_library(entt INTERFACE)
 target_include_directories(entt SYSTEM INTERFACE entt/include)
 
+add_library(glad
+            glad/src/glad.c)
+target_include_directories(glad SYSTEM PUBLIC glad/include)
+
+add_library(stb_image
+            stb_image/src/stb_image.cpp)
+target_include_directories(stb_image SYSTEM PUBLIC stb_image/include)
+
 set(IMGUI_SRC_DIR imgui/include/imgui)
 add_library(
     imgui
     ${IMGUI_SRC_DIR}/imgui.cpp
     ${IMGUI_SRC_DIR}/imgui_draw.cpp
+    ${IMGUI_SRC_DIR}/imgui_impl_opengl3.cpp
     ${IMGUI_SRC_DIR}/imgui_impl_sdl3.cpp
-    ${IMGUI_SRC_DIR}/imgui_impl_sdlrenderer3.cpp
     ${IMGUI_SRC_DIR}/imgui_stdlib.cpp
     ${IMGUI_SRC_DIR}/imgui_tables.cpp
     ${IMGUI_SRC_DIR}/imgui_widgets.cpp
+    ${IMGUI_SRC_DIR}/imgui_demo.cpp
 )
 target_include_directories(imgui SYSTEM PUBLIC imgui/include)
 target_link_sdl(imgui)
