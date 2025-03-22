@@ -5,6 +5,7 @@
 #include "core/Timer.h"
 #include "renderer/Renderer2D.h"
 #include <SDL3/SDL.h>
+#include <functional>
 
 namespace Engine
 {
@@ -32,10 +33,12 @@ namespace Engine
         m_window->init();
         m_renderer = std::make_unique<Renderer2D>(m_window.get());
         m_renderer->init();
+        m_inputHandler = std::make_unique<InputHandler>();
         m_resourceManager = std::make_unique<ResourceManager>();
         m_eventBus = std::make_unique<EventBus>();
-        if (m_hasDeveloperMode) {
-            m_developerModeGui = std::make_unique<DeveloperModeGui>(*m_window);
+        if (m_hasDevMode) {
+            m_devGui = std::make_unique<DevGui>(*m_window);
+            m_inputHandler->bindKeyEventCommand(s_toggleDevModeKey, [this]() { toggleDevMode(); });
         }
         Logger::info("Game initialized");
     }
@@ -52,7 +55,7 @@ namespace Engine
             const Timer::Ticks currentTicks{Timer::getTicks()};
             lag += static_cast<float>(currentTicks - previousTicks);
             previousTicks = currentTicks;
-            processInput();
+            processEvents();
             while (lag >= s_timeStepInMs) {
                 update();
                 lag -= s_timeStepInMs;
@@ -64,35 +67,38 @@ namespace Engine
 
     void Game::shutDown()
     {
-        if (m_hasDeveloperMode) {
-            m_developerModeGui.reset();
+        if (m_devGui) {
+            m_devGui.reset();
         }
         m_eventBus.reset();
         m_resourceManager.reset();
+        m_inputHandler.reset();
         m_renderer.reset();
         m_window.reset();
         Logger::info("Game resources destroyed");
     }
 
-    void Game::processInput()
+    void Game::processEvents()
     {
         SDL_Event event{};
         while (SDL_PollEvent(&event)) {
-            if (m_isDeveloperModeEnabled) {
-                m_developerModeGui->processEvent(event);
+            if (m_devGui) {
+                m_devGui->processEvent(event);
             }
             switch (event.type) {
             case SDL_EVENT_QUIT:
                 m_isRunning = false;
                 break;
             case SDL_EVENT_KEY_DOWN:
-                if (m_hasDeveloperMode && event.key.key == SDLK_F12) {
-                    m_isDeveloperModeEnabled = !m_isDeveloperModeEnabled;
-                }
-                m_eventBus->dispatchEvent<KeyPressedEvent>(event.key.key);
+                if (m_devGui && m_devGui->wantCaptureKeyboard())
+                    break;
+                m_inputHandler->handleInputEvent(event.key.scancode);
+                // m_eventBus->dispatchEvent<KeyPressedEvent>(event.key.key);
                 break;
             }
         }
+        if (!m_devGui || !!m_devGui->wantCaptureKeyboard())
+            m_inputHandler->handleInputState();
     }
 
     void Game::update() { m_currentScene->update(s_timeStepInMs); }
@@ -100,8 +106,12 @@ namespace Engine
     void Game::render(float frameExtrapolationTimeStep)
     {
         m_currentScene->render(frameExtrapolationTimeStep);
-        if (m_isDeveloperModeEnabled) {
-            m_developerModeGui->show();
+        if (m_devGui) {
+            m_devGui->newFrame();
+            if (m_isDevModeEnabled) {
+                m_devGui->show();
+            }
+            m_devGui->render();
         }
         m_renderer->present();
     }

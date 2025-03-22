@@ -18,7 +18,7 @@ namespace Engine
         , m_cameraMovementSystem{std::make_unique<CameraMovementSystem>(m_registry.get())}
         , m_scriptSystem{std::make_unique<ScriptSystem>(m_registry.get())}
     {
-        if (Game::instance().hasDeveloperMode()) {
+        if (Game::instance().hasDevMode()) {
             m_boxColliderRenderingSystem = std::make_unique<BoxColliderRenderingSystem>(m_registry.get());
         }
         LevelLoader levelLoader{};
@@ -52,7 +52,7 @@ namespace Engine
         m_renderer->clear();
         m_spriteRenderingSystem->update(*m_renderer, *m_resourceManager, m_sceneData.camera,
                                         frameExtrapolationTimeStep);
-        if (Game::instance().isDeveloperModeEnabled()) {
+        if (Game::instance().isDevModeEnabled()) {
             m_boxColliderRenderingSystem->update(*m_renderer, m_sceneData.camera, frameExtrapolationTimeStep);
         }
     }
