@@ -1,13 +1,30 @@
 ## TODO
-- Improve the input system (use Command pattern or something similar)
-- Continue developing the scripting system
+### Input system
+- Support mapping and handling the same keys for different scopes/contexts/game states
+- Handle mouse events
+
+### Scripting system
+- Develop an API to integrate Lua and C++ code
+
+### Configuration
 - Add config files to remove hard coded values
-- Add useful developing mode features
-- Font rendering with OpenGL
+
+### Dev mode
+- Entity editor
+- Asset browser
+- Log window
+
+### Rendering
 - Implement a particle system
+- Render fonts
 - Improve cameras
-- Stop resetting the EventBus on every update (implement removal of subscribers)
-- Improve loading and rendering of tilemaps
 - Implement rendering layers
-- Add a 2D physics library
+
+### Events
+- Stop resetting the EventBus on every update (implement removal of subscribers)
+
+### Physics
+- Add Box2D physics library
+
+### Audio
 - Add an audio library
