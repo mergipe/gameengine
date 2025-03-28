@@ -26,6 +26,7 @@ namespace Engine
     struct SpriteComponent final {
         std::string textureId{};
         Rect textureArea{};
+        glm::vec3 color{1.0f};
         int zIndex{0};
         bool hasFixedPosition{false};
     };

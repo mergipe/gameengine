@@ -50,6 +50,7 @@ Scene = {
                     texture_y = 1696,
                     width = 198,
                     height = 188,
+                    color = { r = 1.0, g = 1.0, b = 1.0 },
                     z_index = 4,
                     has_fixed_position = false,
                 },

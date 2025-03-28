@@ -100,7 +100,7 @@ namespace Engine
                     Rect{glm::vec2{tileSize * static_cast<float>(tileId % tilesetCols),
                                    tileSize * static_cast<float>(tileId / tilesetCols)},
                          tileSize, tileSize},
-                    0, false);
+                    glm::vec3{1.0f}, 0, false);
             }
         }
         return MapData{static_cast<float>(mapCols) * tileSize * scale,
@@ -152,6 +152,8 @@ namespace Engine
                         entity, std::string{sprite["texture_id"].get_or(std::string{})},
                         Rect{glm::vec2{sprite["texture_x"].get_or(0.0f), sprite["texture_y"].get_or(0.0f)},
                              sprite["width"].get_or(0.0f), sprite["height"].get_or(0.0f)},
+                        glm::vec3{sprite["color"]["r"].get_or(1.0f), sprite["color"]["g"].get_or(1.0f),
+                                  sprite["color"]["b"].get_or(1.0f)},
                         sprite["z_index"].get_or(0), sprite["has_fixed_position"].get_or(false));
                 }
                 const sol::optional<sol::table> maybeSpriteAnimation{components["sprite_animation"]};

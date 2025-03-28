@@ -64,7 +64,8 @@ namespace Engine
                 continue;
             }
             renderer.drawSprite(renderPosition, spriteWidth, spriteHeight, 0,
-                                resourceManager.getTexture(sprite.textureId), sprite.textureArea);
+                                resourceManager.getTexture(sprite.textureId), sprite.textureArea,
+                                sprite.color);
         }
     }
 
