@@ -13,7 +13,7 @@ namespace Engine
     class ResourceManager final
     {
     public:
-        ResourceManager() = default;
+        ResourceManager();
         ResourceManager(const ResourceManager&) = delete;
         ResourceManager(ResourceManager&&) = delete;
         ResourceManager& operator=(const ResourceManager&) = delete;
@@ -27,6 +27,7 @@ namespace Engine
 
     private:
         std::unordered_map<std::string, std::unique_ptr<Texture2D>> m_textures{};
+        std::unique_ptr<Texture2D> m_fallbackTexture{};
     };
 } // namespace Engine
 

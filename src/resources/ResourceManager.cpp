@@ -6,6 +6,27 @@
 
 namespace Engine
 {
+    ResourceManager::ResourceManager()
+    {
+        constexpr int width{32};
+        constexpr int height{width};
+        constexpr int channels{3};
+        constexpr std::array<unsigned char, 4 * channels> canonicalCheckeredData{0,   0, 0,   255, 0, 255,
+                                                                                 255, 0, 255, 0,   0, 0};
+        std::array<unsigned char, width * height * channels> fallbackTextureData{};
+        for (size_t y{0}; y < height; ++y) {
+            size_t v{y / (height / 2)};
+            for (size_t x{0}; x < width * channels; ++x) {
+                size_t rgbComponent{x % channels};
+                size_t u{(x / (width * channels / 2)) * channels + rgbComponent};
+                fallbackTextureData.at(y * width * channels + x) =
+                    canonicalCheckeredData.at(v * 2 * channels + u);
+            }
+        }
+        m_fallbackTexture = std::make_unique<Texture2D>(TextureConfig{});
+        m_fallbackTexture->create(fallbackTextureData.data(), width, height, GL_RGB);
+    }
+
     std::filesystem::path ResourceManager::getResourcePath(const std::filesystem::path& relativePath) const
     {
         return Filesystem::getResourcesPath() / relativePath;
@@ -48,6 +69,10 @@ namespace Engine
 
     const Texture2D& ResourceManager::getTexture(std::string_view textureId) const
     {
-        return *(m_textures.at(textureId.data()));
+        const auto textureIterator{m_textures.find(textureId.data())};
+        if (textureIterator != m_textures.end()) {
+            return *textureIterator->second;
+        }
+        return *m_fallbackTexture;
     };
 } // namespace Engine
