@@ -1,6 +1,6 @@
 #include "Scene.h"
 #include "Game.h"
-#include "LevelLoader.h"
+#include "SceneLoader.h"
 #include "Systems.h"
 
 namespace Engine
@@ -14,22 +14,18 @@ namespace Engine
         , m_animationSystem{std::make_unique<SpriteAnimationSystem>(m_registry.get())}
         , m_collisionSystem{std::make_unique<CollisionSystem>(m_registry.get())}
         , m_playerInputSystem{std::make_unique<PlayerInputSystem>(m_registry.get())}
-        , m_lifecycleSystem{std::make_unique<LifecycleSystem>(m_registry.get())}
-        , m_cameraMovementSystem{std::make_unique<CameraMovementSystem>(m_registry.get())}
         , m_scriptSystem{std::make_unique<ScriptSystem>(m_registry.get())}
     {
         if (Game::instance().hasDevMode()) {
             m_boxColliderRenderingSystem = std::make_unique<BoxColliderRenderingSystem>(m_registry.get());
         }
-        LevelLoader levelLoader{};
+        SceneLoader sceneLoader{};
         m_lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::os);
         m_scriptSystem->createScriptBindings(m_lua);
-        std::filesystem::path scriptsFolder{m_resourceManager->getResourcePath("scripts")};
-        LevelData levelData{
-            levelLoader.loadLevel(m_lua, scriptsFolder / "level0.lua", *m_registry, *resourceManager)};
+        std::filesystem::path scriptsFolder{m_resourceManager->getResourcePath("scenes")};
+        m_sceneData = sceneLoader.load(m_lua, scriptsFolder / "scene1.lua", *m_registry, *resourceManager);
         m_sceneData.camera = {glm::vec2{0.0f, 0.0f}, static_cast<float>(windowWidth),
                               static_cast<float>(windowHeight)};
-        m_sceneData.levelData = levelData;
     }
 
     Scene::~Scene() { m_resourceManager->clear(); }
@@ -42,8 +38,6 @@ namespace Engine
         m_movementSystem->update(timeStep);
         m_collisionSystem->update();
         m_animationSystem->update();
-        m_lifecycleSystem->update();
-        m_cameraMovementSystem->update(m_sceneData);
         m_scriptSystem->update(timeStep);
     }
 

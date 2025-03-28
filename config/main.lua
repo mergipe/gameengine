@@ -1,8 +1,8 @@
 Config = {
     Window = {
         title = "Game Engine",
-        width = 3200,
-        height = 1800,
+        width = 3840,
+        height = 2160,
         fullscreen = false,
         resizable = false,
         borderless = true,

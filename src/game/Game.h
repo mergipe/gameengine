@@ -25,10 +25,11 @@ namespace Engine
         void init();
         void run();
         void shutDown();
-        EventBus& getEventBus() { return *m_eventBus; }
-        DevGui& getDevGui() { return *m_devGui; }
-        bool hasDevMode() { return m_hasDevMode; }
-        bool isDevModeEnabled() { return m_isDevModeEnabled; }
+        EventBus& getEventBus() const { return *m_eventBus; }
+        DevGui& getDevGui() const { return *m_devGui; }
+        const WindowConfig& getWindowConfig() const { return m_window->getConfig(); }
+        bool hasDevMode() const { return m_hasDevMode; }
+        bool isDevModeEnabled() const { return m_isDevModeEnabled; }
         void toggleDevMode() { m_isDevModeEnabled = !m_isDevModeEnabled; }
         static constexpr SDL_Scancode s_toggleDevModeKey{SDL_SCANCODE_F12};
 

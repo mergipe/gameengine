@@ -9,14 +9,15 @@ namespace Engine::Config
         sol::state lua{};
         lua.open_libraries(sol::lib::base);
         auto filepath{Filesystem::getConfigPath() / "main.lua"};
-        sol::load_result loadResult{lua.load_file(filepath)};
-        if (!loadResult.valid()) {
-            Logger::error("Error loading {} config file: {}", filepath.c_str(),
-                          sol::error{loadResult}.what());
+        auto result{lua.script_file(filepath, sol::script_pass_on_error)};
+        if (!result.valid()) {
+            sol::error error{result};
+            sol::call_status status{result.status()};
+            Logger::error("Error loading config file ({}): {} error\n\t{}", filepath.c_str(),
+                          sol::to_string(status), sol::error{result}.what());
             return {};
         }
-        loadResult();
-        const sol::table configTable{lua["Config"]["Window"]};
+        const auto configTable{lua["Config"]["Window"]};
         if (!configTable.valid()) {
             Logger::error("Error parsing window config from {}", filepath.c_str());
             return {};

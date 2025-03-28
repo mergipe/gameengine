@@ -8,8 +8,8 @@ add_executable(gameengine
                core/Window.cpp
                input/InputHandler.cpp
                game/Game.cpp
-               game/LevelLoader.cpp
                game/Scene.cpp
+               game/SceneLoader.cpp
                game/Systems.cpp
                renderer/Renderer2D.cpp
                renderer/Shader.cpp
@@ -28,6 +28,7 @@ target_link_libraries(gameengine PRIVATE glm sol imgui entt glad stb_image)
 target_link_libraries(gameengine PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 target_link_libraries(gameengine PRIVATE ${LUA_LIBRARIES})
 target_link_libraries(gameengine PRIVATE ${OPENGL_LIBRARIES})
+target_compile_definitions(gameengine PUBLIC SOL_ALL_SAFETIES_ON=1)
 
 if (ENABLE_DEVELOPER_MODE)
     message("Setting developer mode compiler flags")

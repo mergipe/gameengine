@@ -1,14 +1,18 @@
 #ifndef SCENEDATA_H
 #define SCENEDATA_H
 
-#include "LevelLoader.h"
 #include "renderer/Camera.h"
 
 namespace Engine
 {
+    struct MapData {
+        float width;
+        float height;
+    };
+
     struct SceneData {
         Camera camera{};
-        LevelData levelData{};
+        MapData mapData{};
     };
 } // namespace Engine
 

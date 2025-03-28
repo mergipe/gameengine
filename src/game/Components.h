@@ -56,18 +56,6 @@ namespace Engine
     struct PlayerInputComponent final {
     };
 
-    struct CameraFollowComponent final {
-    };
-
-    struct LifecycleComponent final {
-        LifecycleComponent(int duration = 0)
-            : duration{duration}
-        {
-        }
-        Timer::Ticks startTime{Timer::getTicks()};
-        int duration{};
-    };
-
     struct ScriptComponent {
         sol::function func{sol::lua_nil};
     };

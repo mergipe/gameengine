@@ -34,8 +34,6 @@ namespace Engine
         std::unique_ptr<SpriteAnimationSystem> m_animationSystem{};
         std::unique_ptr<CollisionSystem> m_collisionSystem{};
         std::unique_ptr<PlayerInputSystem> m_playerInputSystem{};
-        std::unique_ptr<LifecycleSystem> m_lifecycleSystem{};
-        std::unique_ptr<CameraMovementSystem> m_cameraMovementSystem{};
         std::unique_ptr<BoxColliderRenderingSystem> m_boxColliderRenderingSystem{};
         std::unique_ptr<ScriptSystem> m_scriptSystem{};
     };

@@ -188,32 +188,6 @@ namespace Engine
         }
     }
 
-    void CameraMovementSystem::update(SceneData& sceneData)
-    {
-        auto view{getRegistry().view<const CameraFollowComponent, const TransformComponent>()};
-        for (auto entity : view) {
-            const auto& transform{view.get<TransformComponent>(entity)};
-            Camera& camera{sceneData.camera};
-            camera.position.x = transform.position.x - (camera.width / 2.0f);
-            camera.position.y = transform.position.y - (camera.height / 2.0f);
-            camera.position.x =
-                std::clamp(camera.position.x, 0.0f, sceneData.levelData.mapData.width - camera.width);
-            camera.position.y =
-                std::clamp(camera.position.y, 0.0f, sceneData.levelData.mapData.height - camera.height);
-        }
-    }
-
-    void LifecycleSystem::update()
-    {
-        auto view{getRegistry().view<const LifecycleComponent>()};
-        for (auto entity : view) {
-            const auto& lifecycle{view.get<LifecycleComponent>(entity)};
-            if (static_cast<int>(Timer::getTicks() - lifecycle.startTime) > lifecycle.duration) {
-                getRegistry().destroy(entity);
-            }
-        }
-    }
-
     void ScriptSystem::update(float timeStep)
     {
         auto view{getRegistry().view<const ScriptComponent>()};
@@ -224,17 +198,17 @@ namespace Engine
         }
     }
 
-    void ScriptSystem::createScriptBindings(sol::state& luaState)
+    void ScriptSystem::createScriptBindings(sol::state& lua)
     {
-        luaState.new_usertype<entt::entity>("Entity");
-        luaState.new_usertype<glm::vec3>(
-            "Vec3", sol::constructors<glm::vec3(float), glm::vec3(float, float, float)>(), "x", &glm::vec3::x,
-            "y", &glm::vec3::y, "z", &glm::vec3::z);
-        luaState.set_function("get_position", &ScriptSystem::getEntityPosition, this);
-        luaState.set_function("get_velocity", &ScriptSystem::getEntityVelocity, this);
-        luaState.set_function("set_position", &ScriptSystem::setEntityPosition, this);
-        luaState.set_function("set_velocity", &ScriptSystem::setEntityVelocity, this);
-        luaState.set_function("set_rotation", &ScriptSystem::setEntityRotation, this);
+        lua.new_usertype<entt::entity>("Entity");
+        lua.new_usertype<glm::vec3>("Vec3",
+                                    sol::constructors<glm::vec3(float), glm::vec3(float, float, float)>(),
+                                    "x", &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
+        lua.set_function("get_position", &ScriptSystem::getEntityPosition, this);
+        lua.set_function("get_velocity", &ScriptSystem::getEntityVelocity, this);
+        lua.set_function("set_position", &ScriptSystem::setEntityPosition, this);
+        lua.set_function("set_velocity", &ScriptSystem::setEntityVelocity, this);
+        lua.set_function("set_rotation", &ScriptSystem::setEntityRotation, this);
     }
 
     glm::vec3 ScriptSystem::getEntityPosition(entt::entity entity)

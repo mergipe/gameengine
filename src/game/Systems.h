@@ -8,6 +8,7 @@
 #include "resources/ResourceManager.h"
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
+#include <sol/sol.hpp>
 
 namespace Engine
 {
@@ -94,26 +95,6 @@ namespace Engine
         void move(const entt::entity& entity, glm::vec2 velocity, int spriteIndex);
     };
 
-    class CameraMovementSystem final : public System
-    {
-    public:
-        CameraMovementSystem(entt::registry* registry)
-            : System{registry}
-        {
-        }
-        void update(SceneData& sceneData);
-    };
-
-    class LifecycleSystem final : public System
-    {
-    public:
-        LifecycleSystem(entt::registry* registry)
-            : System{registry}
-        {
-        }
-        void update();
-    };
-
     class ScriptSystem final : public System
     {
     public:
@@ -122,7 +103,7 @@ namespace Engine
         {
         }
         void update(float timeStep);
-        void createScriptBindings(sol::state& luaState);
+        void createScriptBindings(sol::state& lua);
 
     private:
         glm::vec3 getEntityPosition(entt::entity entity);

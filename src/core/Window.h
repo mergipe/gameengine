@@ -27,6 +27,7 @@ namespace Engine
         void init();
         SDL_Window* getWindowPtr() const { return m_window; }
         SDL_GLContext getGLContext() const { return m_glContext; }
+        const WindowConfig& getConfig() const { return m_config; }
         int getWidth() const { return m_config.width; }
         int getHeight() const { return m_config.height; }
 
