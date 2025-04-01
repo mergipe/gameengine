@@ -14,7 +14,7 @@ namespace Engine
     class Scene final
     {
     public:
-        Scene(Renderer2D* renderer, ResourceManager* resourceManager, int windowWidth, int windowHeight);
+        Scene(Renderer2D* renderer, ResourceManager* resourceManager);
         Scene(const Scene&) = delete;
         Scene(Scene&&) = delete;
         Scene& operator=(const Scene&) = delete;
@@ -30,11 +30,11 @@ namespace Engine
         ResourceManager* m_resourceManager{};
         std::unique_ptr<entt::registry> m_registry{};
         std::unique_ptr<MovementSystem> m_movementSystem{};
-        std::unique_ptr<SpriteRenderingSystem> m_spriteRenderingSystem{};
+        std::unique_ptr<RenderingSystem> m_renderingSystem{};
+        std::unique_ptr<DebugRenderingSystem> m_debugRenderingSystem{};
         std::unique_ptr<SpriteAnimationSystem> m_animationSystem{};
         std::unique_ptr<CollisionSystem> m_collisionSystem{};
         std::unique_ptr<PlayerInputSystem> m_playerInputSystem{};
-        std::unique_ptr<BoxColliderRenderingSystem> m_boxColliderRenderingSystem{};
         std::unique_ptr<ScriptSystem> m_scriptSystem{};
     };
 } // namespace Engine

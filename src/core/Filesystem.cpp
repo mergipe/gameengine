@@ -1,5 +1,5 @@
 #include "Filesystem.h"
-#include <SDL3/SDL_filesystem.h>
+#include <SDL3/SDL.h>
 
 namespace Engine
 {

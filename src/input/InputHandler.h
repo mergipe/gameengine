@@ -2,8 +2,7 @@
 #define INPUTHANDLER_H
 
 #include "Command.h"
-#include <SDL3/SDL_events.h>
-#include <SDL3/SDL_scancode.h>
+#include <SDL3/SDL.h>
 #include <functional>
 #include <map>
 #include <memory>

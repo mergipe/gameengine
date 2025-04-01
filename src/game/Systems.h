@@ -1,9 +1,6 @@
 #ifndef SYSTEMS_H
 #define SYSTEMS_H
 
-#include "events/EventBus.h"
-#include "game/SceneData.h"
-#include "renderer/Camera.h"
 #include "renderer/Renderer2D.h"
 #include "resources/ResourceManager.h"
 #include <entt/entt.hpp>
@@ -40,15 +37,25 @@ namespace Engine
         void update(float timeStep);
     };
 
-    class SpriteRenderingSystem final : public System
+    class RenderingSystem final : public System
     {
     public:
-        SpriteRenderingSystem(entt::registry* registry)
+        RenderingSystem(entt::registry* registry)
             : System{registry}
         {
         }
-        void update(Renderer2D& renderer, const ResourceManager& resourceManager, const Camera& camera,
+        void update(Renderer2D& renderer, const ResourceManager& resourceManager,
                     float frameExtrapolationTimeStep);
+    };
+
+    class DebugRenderingSystem final : public System
+    {
+    public:
+        DebugRenderingSystem(entt::registry* registry)
+            : System{registry}
+        {
+        }
+        void update(Renderer2D& renderer, float frameExtrapolationTimeStep);
     };
 
     class SpriteAnimationSystem final : public System
@@ -71,16 +78,6 @@ namespace Engine
         void update();
     };
 
-    class BoxColliderRenderingSystem final : public System
-    {
-    public:
-        BoxColliderRenderingSystem(entt::registry* registry)
-            : System{registry}
-        {
-        }
-        void update(Renderer2D& renderer, const Camera& camera, float frameExtrapolationTimeStep);
-    };
-
     class PlayerInputSystem final : public System
     {
     public:
@@ -88,11 +85,6 @@ namespace Engine
             : System{registry}
         {
         }
-        void subscribeToEvents(EventBus& eventBus);
-        void onKeyPressed(KeyPressedEvent& event);
-
-    private:
-        void move(const entt::entity& entity, glm::vec2 velocity, int spriteIndex);
     };
 
     class ScriptSystem final : public System

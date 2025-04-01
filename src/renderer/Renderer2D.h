@@ -1,12 +1,11 @@
 #ifndef RENDERER2D_H
 #define RENDERER2D_H
 
-#include "Shader.h"
+#include "Camera.h"
 #include "ShaderManager.h"
 #include "Shapes.h"
 #include "core/Window.h"
 #include "resources/Texture2D.h"
-#include <SDL3/SDL.h>
 #include <glm/glm.hpp>
 
 namespace Engine
@@ -23,15 +22,17 @@ namespace Engine
         void init();
         void setViewport(int x, int y, int width, int height);
         void setClearColor(float red, float green, float blue, float alpha);
-        void drawRectangle(const Rect& rect, const glm::vec4& color, float rotation);
-        void drawSprite(const glm::vec2& position, float width, float height, float rotation,
-                        const Texture2D& texture, const Rect& textureArea,
-                        const glm::vec3& color = glm::vec3{1.0f});
+        void setupCamera(const Camera& camera);
+        void drawRectangle(const Rect& rect, const glm::vec4& color, const glm::vec3& rotation);
+        void drawSprite(const Rect& spriteGeomtry, const glm::vec3& rotation, const Texture2D& texture,
+                        const Rect& textureArea, const glm::vec3& color = glm::vec3{1.0f});
         void clear();
         void present();
 
     private:
         std::unique_ptr<ShaderManager> m_shaderManager{};
+        glm::mat4 m_cameraTransformation{};
+        glm::mat4 m_projectionTransformation{};
         Window* m_window{};
         GLuint m_spriteVao{};
         GLuint m_quadVao{};

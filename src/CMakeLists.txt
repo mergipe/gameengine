@@ -11,6 +11,7 @@ add_executable(gameengine
                game/Scene.cpp
                game/SceneLoader.cpp
                game/Systems.cpp
+               renderer/Camera.cpp
                renderer/Renderer2D.cpp
                renderer/Shader.cpp
                renderer/ShaderManager.cpp

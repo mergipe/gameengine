@@ -5,7 +5,6 @@
 #include "core/Timer.h"
 #include "renderer/Renderer2D.h"
 #include <SDL3/SDL.h>
-#include <functional>
 
 namespace Engine
 {
@@ -47,8 +46,7 @@ namespace Engine
     {
         Logger::info("Game started to run");
         m_isRunning = true;
-        m_currentScene = std::make_unique<Scene>(m_renderer.get(), m_resourceManager.get(),
-                                                 m_window->getWidth(), m_window->getHeight());
+        m_currentScene = std::make_unique<Scene>(m_renderer.get(), m_resourceManager.get());
         Timer::Ticks previousTicks{Timer::getTicks()};
         float lag{0.0f};
         while (m_isRunning) {
@@ -93,7 +91,6 @@ namespace Engine
                 if (m_devGui && m_devGui->wantCaptureKeyboard())
                     break;
                 m_inputHandler->handleKeyEvent(event.key);
-                // m_eventBus->dispatchEvent<KeyPressedEvent>(event.key.key);
                 break;
             }
         }
@@ -105,6 +102,7 @@ namespace Engine
 
     void Game::render(float frameExtrapolationTimeStep)
     {
+        m_renderer->clear();
         m_currentScene->render(frameExtrapolationTimeStep);
         if (m_devGui) {
             m_devGui->newFrame();

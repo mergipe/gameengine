@@ -1,7 +1,9 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
+#include "core/Math.h"
 #include "core/Timer.h"
+#include "renderer/Camera.h"
 #include "renderer/Shapes.h"
 #include <glm/glm.hpp>
 #include <sol/sol.hpp>
@@ -14,6 +16,11 @@ namespace Engine
     };
 
     struct TransformComponent final {
+        glm::mat4 getTransformation() const
+        {
+            return Math::getTransformationMatrix(position, rotation, scale);
+        }
+
         glm::vec3 position{0.0f};
         glm::vec3 scale{1.0f};
         glm::vec3 rotation{0.0f};
@@ -28,7 +35,6 @@ namespace Engine
         Rect textureArea{};
         glm::vec3 color{1.0f};
         int zIndex{0};
-        bool hasFixedPosition{false};
     };
 
     struct SpriteAnimationComponent final {
@@ -59,6 +65,10 @@ namespace Engine
 
     struct ScriptComponent {
         sol::function func{sol::lua_nil};
+    };
+
+    struct CameraComponent {
+        std::unique_ptr<Camera> camera{};
     };
 } // namespace Engine
 

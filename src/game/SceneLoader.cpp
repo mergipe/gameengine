@@ -3,9 +3,11 @@
 #include "core/IO.h"
 #include "core/Logger.h"
 #include "game/Game.h"
-#include "resources/ResourceType.h"
+#include "renderer/Camera.h"
+#include "resources/ResourceManager.h"
 #include "resources/Texture2D.h"
 #include <fstream>
+#include <glm/glm.hpp>
 #include <sol/sol.hpp>
 
 namespace Engine
@@ -47,7 +49,7 @@ namespace Engine
             const std::string typeStr{asset["type"].get_or(std::string{})};
             const auto type{getResourceType(typeStr)};
             if (!type) {
-                Logger::error("Asset type '{}' unknown", typeStr);
+                Logger::warn("Asset type '{}' unknown", typeStr);
                 continue;
             }
             const std::string assetId{asset["id"].get_or(std::string{})};
@@ -65,8 +67,8 @@ namespace Engine
     MapData loadMap(const sol::table& scene, entt::registry& registry)
     {
         const sol::optional<sol::table> maybeTilemap{scene["tilemap"]};
+        const auto& windowConfig{Game::instance().getWindowConfig()};
         if (!maybeTilemap) {
-            const auto& windowConfig{Game::instance().getWindowConfig()};
             return {static_cast<float>(windowConfig.width), static_cast<float>(windowConfig.height)};
         }
         const sol::table tilemap{maybeTilemap.value()};
@@ -80,27 +82,29 @@ namespace Engine
         const float scale{tilemap["scale"].get_or(0.0f)};
         std::ifstream tilemapFile{mapFilepath};
         if (!tilemapFile) {
-            Logger::error("Error opening {} file for reading", mapFilepath);
+            Logger::error("Error opening {} map file", mapFilepath);
         }
         const std::vector<std::vector<int>> tilemapCsv{IO::parseIntCsvFile(tilemapFile)};
         tilemapFile.close();
+        const float leftX{-static_cast<float>(windowConfig.width) / 2};
+        const float topY{static_cast<float>(windowConfig.height) / 2};
         for (size_t i{0}; i < tilemapCsv.size(); ++i) {
             const std::vector<int> values{tilemapCsv[i]};
             for (size_t j{0}; j < values.size(); ++j) {
                 auto tile{registry.create()};
                 registry.emplace<TagComponent>(tile, "tile");
-                registry.emplace<TransformComponent>(tile,
-                                                     glm::vec3{static_cast<float>(j) * tileSize * scale,
-                                                               static_cast<float>(i) * tileSize * scale,
-                                                               0.0f},
-                                                     glm::vec3{scale, scale, 0.0f});
+                registry.emplace<TransformComponent>(
+                    tile,
+                    glm::vec3{leftX + static_cast<float>(j) * tileSize * scale,
+                              topY - static_cast<float>(i) * tileSize * scale, 0.0f},
+                    glm::vec3{scale, scale, 0.0f});
                 const int tileId{values[j]};
                 registry.emplace<SpriteComponent>(
                     tile, textureId,
                     Rect{glm::vec2{tileSize * static_cast<float>(tileId % tilesetCols),
                                    tileSize * static_cast<float>(tileId / tilesetCols)},
-                         tileSize, tileSize},
-                    glm::vec3{1.0f}, 0, false);
+                         tileSize, tileSize, glm::vec2{0.0f, 1.0f}},
+                    glm::vec3{1.0f}, 0);
             }
         }
         return MapData{static_cast<float>(mapCols) * tileSize * scale,
@@ -119,23 +123,23 @@ namespace Engine
             const sol::optional<sol::table> maybeComponents{entityTable["components"]};
             if (maybeComponents) {
                 const sol::table components{maybeComponents.value()};
-                const sol::optional<sol::table> maybeTag{components["tag"]};
-                if (maybeTag) {
-                    registry.emplace<TagComponent>(entity, maybeTag.value()["name"].get_or(std::string{}));
+                const std::string tag{components["tag"].get_or(std::string{})};
+                if (!tag.empty()) {
+                    registry.emplace<TagComponent>(entity, tag);
                 }
                 const sol::optional<sol::table> maybeTransform{components["transform"]};
                 if (maybeTransform) {
                     const sol::table transform{maybeTransform.value()};
-                    registry.emplace<TransformComponent>(entity,
-                                                         glm::vec3{transform["position"]["x"].get_or(0.0f),
-                                                                   transform["position"]["y"].get_or(0.0f),
-                                                                   transform["position"]["z"].get_or(0.0f)},
-                                                         glm::vec3{transform["scale"]["x"].get_or(1.0f),
-                                                                   transform["scale"]["y"].get_or(1.0f),
-                                                                   transform["scale"]["z"].get_or(1.0f)},
-                                                         glm::vec3{transform["rotation"]["x"].get_or(0.0f),
-                                                                   transform["rotation"]["y"].get_or(0.0f),
-                                                                   transform["rotation"]["z"].get_or(0.0f)});
+                    registry.emplace<TransformComponent>(
+                        entity,
+                        glm::vec3{transform["position"]["x"].get_or(0.0f),
+                                  transform["position"]["y"].get_or(0.0f),
+                                  transform["position"]["z"].get_or(0.0f)},
+                        glm::vec3{transform["scale"]["x"].get_or(1.0f), transform["scale"]["y"].get_or(1.0f),
+                                  transform["scale"]["z"].get_or(1.0f)},
+                        glm::vec3{glm::radians(transform["rotation"]["x"].get_or(0.0f)),
+                                  glm::radians(transform["rotation"]["y"].get_or(0.0f)),
+                                  glm::radians(transform["rotation"]["z"].get_or(0.0f))});
                 }
                 const sol::optional<sol::table> maybeRigidBody2D{components["rigid_body"]};
                 if (maybeRigidBody2D) {
@@ -151,10 +155,11 @@ namespace Engine
                     registry.emplace<SpriteComponent>(
                         entity, std::string{sprite["texture_id"].get_or(std::string{})},
                         Rect{glm::vec2{sprite["texture_x"].get_or(0.0f), sprite["texture_y"].get_or(0.0f)},
-                             sprite["width"].get_or(0.0f), sprite["height"].get_or(0.0f)},
+                             sprite["width"].get_or(0.0f), sprite["height"].get_or(0.0f),
+                             glm::vec2{0.0f, 1.0f}},
                         glm::vec3{sprite["color"]["r"].get_or(1.0f), sprite["color"]["g"].get_or(1.0f),
                                   sprite["color"]["b"].get_or(1.0f)},
-                        sprite["z_index"].get_or(0), sprite["has_fixed_position"].get_or(false));
+                        sprite["z_index"].get_or(0));
                 }
                 const sol::optional<sol::table> maybeSpriteAnimation{components["sprite_animation"]};
                 if (maybeSpriteAnimation) {
@@ -180,6 +185,30 @@ namespace Engine
                 if (maybeScriptOnUpdate) {
                     registry.emplace<ScriptComponent>(entity, maybeScriptOnUpdate.value());
                 }
+                const sol::optional<sol::table> maybeCamera{components["camera"]};
+                if (maybeCamera) {
+                    const sol::table camera{maybeCamera.value()};
+                    const std::string projectionTypeStr{
+                        camera["projection"].get_or(std::string{"orthographic"})};
+                    const std::optional<ProjectionType> projectionType{getProjectionType(projectionTypeStr)};
+                    const float zNear{camera["z_near"].get_or(-1.0f)};
+                    const float zFar{camera["z_far"].get_or(100.0f)};
+                    const auto& windowConfig{Game::instance().getWindowConfig()};
+                    const float viewportWidth{static_cast<float>(windowConfig.width)};
+                    const float viewportHeight{static_cast<float>(windowConfig.height)};
+                    std::unique_ptr<Camera> cameraPtr{};
+                    if (projectionType == ProjectionType::orthographic) {
+                        cameraPtr =
+                            std::make_unique<OrthographicCamera>(zNear, zFar, viewportWidth, viewportHeight);
+                    } else if (projectionType == ProjectionType::perspective) {
+                        const float fovY{camera["fov_y"].get_or(45.0f)};
+                        cameraPtr = std::make_unique<PerspectiveCamera>(zNear, zFar, viewportWidth,
+                                                                        viewportHeight, glm::radians(fovY));
+                    }
+                    if (cameraPtr) {
+                        registry.emplace<CameraComponent>(entity, std::move(cameraPtr));
+                    }
+                }
             }
         }
     }
@@ -188,10 +217,10 @@ namespace Engine
                                 entt::registry& registry, ResourceManager& resourceManager)
     {
         Logger::info("Loading scene from {}", sceneFilepath.c_str());
-        auto result{lua.script_file(sceneFilepath, sol::script_pass_on_error)};
+        const auto result{lua.script_file(sceneFilepath, sol::script_pass_on_error)};
         if (!result.valid()) {
-            sol::error error{result};
-            sol::call_status status{result.status()};
+            const sol::error error{result};
+            const sol::call_status status{result.status()};
             Logger::error("Error loading scene file {}: {} error\n\t{}", sceneFilepath.c_str(),
                           sol::to_string(status), error.what());
             return {};

@@ -7,12 +7,13 @@
 namespace Engine
 {
     struct WindowConfig {
-        std::string title{"Title"};
+        std::string title{"Untitled"};
         int width{800};
         int height{600};
         bool isFullscreen{false};
         bool isResizable{true};
         bool isBorderless{false};
+        bool isMaximized{false};
     };
 
     class Window

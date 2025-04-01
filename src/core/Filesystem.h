@@ -8,6 +8,7 @@ namespace Engine
     class Filesystem
     {
     public:
+        Filesystem() = delete;
         static std::filesystem::path getBasePath();
         static std::filesystem::path getRelativePath(std::string_view relativePath);
         static std::filesystem::path getLogsPath();

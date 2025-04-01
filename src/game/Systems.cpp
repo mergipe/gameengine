@@ -4,17 +4,14 @@
 #include "core/Timer.h"
 #include "events/Events.h"
 #include "renderer/Renderer2D.h"
-#include <SDL3/SDL.h>
-
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/rotate_vector.hpp>
+#include "resources/ResourceManager.h"
 
 namespace Engine
 {
-    constexpr bool aabbHasCollided(float aX, float aY, float aW, float aH, float bX, float bY, float bW,
-                                   float bH)
+    constexpr bool aabbHasCollided(const Rect& lhs, const Rect& rhs)
     {
-        return (aX < bX + bW && aX + aW > bX && aY < bY + bH && aY + aH > bY);
+        return lhs.getLeftX() < rhs.getRightX() && lhs.getRightX() > rhs.getLeftX() &&
+               lhs.getTopY() > rhs.getBottomY() && lhs.getBottomY() < rhs.getTopY();
     }
 
     constexpr glm::vec2 getExtrapolatedPosition(const glm::vec2& position, const glm::vec2& velocity,
@@ -23,105 +20,68 @@ namespace Engine
         return glm::vec2{position + velocity * extrapolationTimeStep};
     }
 
-    constexpr glm::vec2 getRenderPosition(const glm::vec2& position, const Camera& camera)
+    constexpr bool isOutsideOrthoCameraView(const Camera& camera, const Rect& rect)
     {
-        return position - camera.position;
+        Rect cameraPlaneGeometry{camera.getNearPlaneGeometry()};
+        return rect.getRightX() < cameraPlaneGeometry.getLeftX() ||
+               rect.getLeftX() > cameraPlaneGeometry.getRightX() ||
+               rect.getTopY() < cameraPlaneGeometry.getBottomY() ||
+               rect.getBottomY() > cameraPlaneGeometry.getTopY();
     }
 
     void MovementSystem::update(float timeStep)
     {
-        auto view{getRegistry().view<TransformComponent, RigidBody2DComponent>()};
-        for (auto entity : view) {
-            auto& transform{view.get<TransformComponent>(entity)};
-            auto& rigidBody{view.get<RigidBody2DComponent>(entity)};
+        const auto view{getRegistry().view<TransformComponent, const RigidBody2DComponent>()};
+        for (const auto entity : view) {
+            auto [transform, rigidBody] = view.get<TransformComponent, RigidBody2DComponent>(entity);
             transform.position += rigidBody.velocity * timeStep;
         }
     };
 
-    void SpriteRenderingSystem::update(Renderer2D& renderer, const ResourceManager& resourceManager,
-                                       const Camera& camera, float frameExtrapolationTimeStep)
+    void RenderingSystem::update(Renderer2D& renderer, const ResourceManager& resourceManager,
+                                 float frameExtrapolationTimeStep)
     {
+        const auto cameraView{getRegistry().view<const TransformComponent, const CameraComponent>()};
+        Camera* cameraPtr{};
+        for (const auto entity : cameraView) {
+            auto [transform, camera] = cameraView.get<TransformComponent, CameraComponent>(entity);
+            cameraPtr = camera.camera.get();
+            if (!cameraPtr)
+                continue;
+            cameraPtr->setModelTransformation(transform.getTransformation());
+            break;
+        }
+        if (!cameraPtr)
+            return;
+        renderer.setupCamera(*cameraPtr);
         getRegistry().sort<SpriteComponent>(
             [](const SpriteComponent& lhs, const SpriteComponent& rhs) { return lhs.zIndex < rhs.zIndex; });
-        auto view{getRegistry().view<const TransformComponent, const SpriteComponent>()};
-        view.use<SpriteComponent>();
-        for (auto entity : view) {
-            const auto& transform{view.get<TransformComponent>(entity)};
-            const auto& sprite{view.get<SpriteComponent>(entity)};
+        auto spriteView{getRegistry().view<const TransformComponent, const SpriteComponent>()};
+        spriteView.use<SpriteComponent>();
+        for (const auto entity : spriteView) {
+            auto [transform, sprite] = spriteView.get<TransformComponent, SpriteComponent>(entity);
             glm::vec2 renderPosition{transform.position};
             const auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)};
             if (rigidBody) {
                 renderPosition = getExtrapolatedPosition(transform.position, rigidBody->velocity,
                                                          frameExtrapolationTimeStep);
             }
-            if (!sprite.hasFixedPosition) {
-                renderPosition = getRenderPosition(renderPosition, camera);
-            }
-            float spriteWidth{sprite.textureArea.width * transform.scale.x};
-            float spriteHeight{sprite.textureArea.height * transform.scale.y};
-            if (renderPosition.x + spriteWidth < 0 || renderPosition.x > camera.width ||
-                renderPosition.y + spriteHeight < 0 || renderPosition.y > camera.height) {
-                continue;
-            }
-            renderer.drawSprite(renderPosition, spriteWidth, spriteHeight, 0,
-                                resourceManager.getTexture(sprite.textureId), sprite.textureArea,
-                                sprite.color);
-        }
-    }
-
-    void SpriteAnimationSystem::update()
-    {
-        auto view{getRegistry().view<SpriteComponent, SpriteAnimationComponent>()};
-        for (auto entity : view) {
-            auto& sprite{view.get<SpriteComponent>(entity)};
-            auto& animation{view.get<SpriteAnimationComponent>(entity)};
-            animation.currentFrame = (static_cast<int>(Timer::getTicks() - animation.startTime) *
-                                      animation.framesPerSecond / 1000) %
-                                     animation.framesCount;
-            sprite.textureArea.position.x =
-                static_cast<float>(animation.currentFrame) * sprite.textureArea.width;
-        }
-    }
-
-    void CollisionSystem::update()
-    {
-        auto view{getRegistry().view<const TransformComponent, BoxCollider2DComponent>()};
-        for (auto entity : view) {
-            view.get<BoxCollider2DComponent>(entity).isColliding = false;
-        }
-        for (auto i{view.begin()}; i != view.end(); ++i) {
-            auto entity{*i};
-            const auto& transform{view.get<TransformComponent>(entity)};
-            auto& boxCollider{view.get<BoxCollider2DComponent>(entity)};
-            for (auto j{i}; j != view.end(); ++j) {
-                if (i == j)
-                    continue;
-                auto otherEntity{*j};
-                const auto& otherTransform{view.get<TransformComponent>(otherEntity)};
-                auto& otherBoxCollider{view.get<BoxCollider2DComponent>(otherEntity)};
-                const bool collisionHappened{aabbHasCollided(
-                    transform.position.x + boxCollider.offset.x, transform.position.y + boxCollider.offset.y,
-                    static_cast<float>(boxCollider.width) * transform.scale.x,
-                    static_cast<float>(boxCollider.height) * transform.scale.y,
-                    otherTransform.position.x + otherBoxCollider.offset.x,
-                    otherTransform.position.y + otherBoxCollider.offset.y,
-                    static_cast<float>(otherBoxCollider.width) * otherTransform.scale.x,
-                    static_cast<float>(otherBoxCollider.height) * otherTransform.scale.y)};
-                if (collisionHappened) {
-                    boxCollider.isColliding = otherBoxCollider.isColliding = true;
-                    Game::instance().getEventBus().dispatchEvent<CollisionEvent>(entity, otherEntity);
-                }
+            const float spriteWidth{sprite.textureArea.width * transform.scale.x};
+            const float spriteHeight{sprite.textureArea.height * transform.scale.y};
+            const Rect spriteGeometry{renderPosition, spriteWidth, spriteHeight};
+            if (!isOutsideOrthoCameraView(*cameraPtr, spriteGeometry)) {
+                renderer.drawSprite(spriteGeometry, transform.rotation,
+                                    resourceManager.getTexture(sprite.textureId), sprite.textureArea,
+                                    sprite.color);
             }
         }
     }
 
-    void BoxColliderRenderingSystem::update(Renderer2D& renderer, const Camera& camera,
-                                            float frameExtrapolationTimeStep)
+    void DebugRenderingSystem::update(Renderer2D& renderer, float frameExtrapolationTimeStep)
     {
-        auto view{getRegistry().view<const TransformComponent, const BoxCollider2DComponent>()};
-        for (auto entity : view) {
-            const auto& transform{view.get<TransformComponent>(entity)};
-            const auto& boxCollider{view.get<BoxCollider2DComponent>(entity)};
+        const auto view{getRegistry().view<const TransformComponent, const BoxCollider2DComponent>()};
+        for (const auto entity : view) {
+            auto [transform, boxCollider] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
             glm::vec2 renderPosition{transform.position};
             const auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)};
             if (rigidBody) {
@@ -134,66 +94,61 @@ namespace Engine
             } else {
                 color = {1.0f, 1.0f, 0.0f, 1.0f};
             }
-            renderPosition = getRenderPosition(renderPosition, camera);
             Rect rect{renderPosition + boxCollider.offset,
                       static_cast<float>(boxCollider.width) * transform.scale.x,
                       static_cast<float>(boxCollider.height) * transform.scale.y};
-            renderer.drawRectangle(rect, color, 0);
+            renderer.drawRectangle(rect, color, glm::vec3{0.0f});
         }
     }
 
-    void PlayerInputSystem::subscribeToEvents(EventBus& eventBus)
+    void SpriteAnimationSystem::update()
     {
-        eventBus.addSubscriber<KeyPressedEvent, PlayerInputSystem>(this, &PlayerInputSystem::onKeyPressed);
+        const auto view{getRegistry().view<SpriteComponent, SpriteAnimationComponent>()};
+        for (const auto entity : view) {
+            auto [sprite, spriteAnimation] = view.get<SpriteComponent, SpriteAnimationComponent>(entity);
+            spriteAnimation.currentFrame = (static_cast<int>(Timer::getTicks() - spriteAnimation.startTime) *
+                                            spriteAnimation.framesPerSecond / 1000) %
+                                           spriteAnimation.framesCount;
+            sprite.textureArea.position.x =
+                static_cast<float>(spriteAnimation.currentFrame) * sprite.textureArea.width;
+        }
     }
 
-    void PlayerInputSystem::onKeyPressed(KeyPressedEvent& event)
+    void CollisionSystem::update()
     {
-        float velocityMagnitude{0.2f};
-        auto view{getRegistry().view<const PlayerInputComponent>()};
-        for (auto entity : view) {
-            switch (event.keyCode) {
-            case SDLK_UP:
-            case SDLK_W:
-                move(entity, glm::vec2{0, -velocityMagnitude}, 0);
-                break;
-            case SDLK_RIGHT:
-            case SDLK_D:
-                move(entity, glm::vec2{velocityMagnitude, 0}, 1);
-                break;
-            case SDLK_DOWN:
-            case SDLK_S:
-                move(entity, glm::vec2{0, velocityMagnitude}, 2);
-                break;
-            case SDLK_LEFT:
-            case SDLK_A:
-                move(entity, glm::vec2{-velocityMagnitude, 0}, 3);
-                break;
+        const auto view{getRegistry().view<const TransformComponent, BoxCollider2DComponent>()};
+        for (const auto entity : view) {
+            view.get<BoxCollider2DComponent>(entity).isColliding = false;
+        }
+        for (auto i{view.begin()}; i != view.end(); ++i) {
+            const auto entity{*i};
+            auto [transform, boxCollider] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
+            for (auto j{i}; j != view.end(); ++j) {
+                if (i == j)
+                    continue;
+                const auto otherEntity{*j};
+                auto [otherTransform, otherBoxCollider] =
+                    view.get<TransformComponent, BoxCollider2DComponent>(otherEntity);
+                const bool collisionHappened{aabbHasCollided(
+                    Rect{glm::vec2{transform.position} + boxCollider.offset,
+                         static_cast<float>(boxCollider.width) * transform.scale.x,
+                         static_cast<float>(boxCollider.height) * transform.scale.y},
+                    Rect{glm::vec2{otherTransform.position} + otherBoxCollider.offset,
+                         static_cast<float>(otherBoxCollider.width) * otherTransform.scale.x,
+                         static_cast<float>(otherBoxCollider.height) * otherTransform.scale.y})};
+                if (collisionHappened) {
+                    boxCollider.isColliding = otherBoxCollider.isColliding = true;
+                    Game::instance().getEventBus().dispatchEvent<CollisionEvent>(entity, otherEntity);
+                }
             }
-        }
-    }
-
-    void PlayerInputSystem::move(const entt::entity& entity, glm::vec2 velocity, int spriteIndex)
-    {
-        auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)};
-        if (rigidBody) {
-            rigidBody->velocity = glm::vec3{velocity, 0.0f};
-        }
-        auto* sprite{getRegistry().try_get<SpriteComponent>(entity)};
-        if (sprite) {
-            sprite->textureArea.position.y = sprite->textureArea.height * static_cast<float>(spriteIndex);
-        }
-        auto* transform{getRegistry().try_get<TransformComponent>(entity)};
-        if (transform) {
-            transform->rotation.z = static_cast<float>(spriteIndex) * 90.0f;
         }
     }
 
     void ScriptSystem::update(float timeStep)
     {
-        auto view{getRegistry().view<const ScriptComponent>()};
-        Timer::Ticks elapsedTime{Timer::getTicks()};
-        for (auto entity : view) {
+        const auto view{getRegistry().view<const ScriptComponent>()};
+        const Timer::Ticks elapsedTime{Timer::getTicks()};
+        for (const auto entity : view) {
             const auto& script{view.get<ScriptComponent>(entity)};
             script.func(entity, timeStep, elapsedTime);
         }

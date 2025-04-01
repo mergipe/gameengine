@@ -30,6 +30,8 @@ namespace Engine
             flags |= SDL_WINDOW_RESIZABLE;
         if (m_config.isBorderless)
             flags |= SDL_WINDOW_BORDERLESS;
+        if (m_config.isMaximized)
+            flags |= SDL_WINDOW_MAXIMIZED;
         m_window = SDL_CreateWindow(m_config.title.c_str(), m_config.width, m_config.height, flags);
         if (!m_window) {
             Logger::critical("Failed to create a window: {}", SDL_GetError());
