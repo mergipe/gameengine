@@ -36,6 +36,7 @@ Scene = {
   entities = {
     {
       components = {
+        id = "Camera",
         tag = "camera",
         transform = {
           position = { x = 0, y = 0, z = 3 },
@@ -50,6 +51,7 @@ Scene = {
     },
     {
       components = {
+        id = "Player1",
         tag = "player",
         transform = {
           position = { x = -1500, y = 800 },
@@ -81,6 +83,7 @@ Scene = {
     },
     {
       components = {
+        id = "Player2",
         tag = "player",
         transform = {
           position = { x = 1500, y = 800 },
@@ -112,6 +115,7 @@ Scene = {
     },
     {
       components = {
+        id = "Planet",
         tag = "planet",
         transform = {
           position = { x = 0, y = 0 },

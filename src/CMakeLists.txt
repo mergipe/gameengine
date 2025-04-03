@@ -4,6 +4,7 @@ add_executable(gameengine
                core/Filesystem.cpp
                core/IO.cpp
                core/Logger.cpp
+               core/StringId.cpp
                core/Timer.cpp
                core/Window.cpp
                input/InputHandler.cpp
@@ -25,7 +26,7 @@ set_target_properties(gameengine PROPERTIES
                       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 target_include_directories(gameengine PUBLIC .)
 target_link_sdl(gameengine)
-target_link_libraries(gameengine PRIVATE glm sol imgui entt glad stb_image)
+target_link_libraries(gameengine PRIVATE glm sol imgui entt glad stb_image rapidhash)
 target_link_libraries(gameengine PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
 target_link_libraries(gameengine PRIVATE ${LUA_LIBRARIES})
 target_link_libraries(gameengine PRIVATE ${OPENGL_LIBRARIES})

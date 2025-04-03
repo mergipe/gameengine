@@ -2,6 +2,7 @@
 #include "Components.h"
 #include "core/IO.h"
 #include "core/Logger.h"
+#include "core/StringId.h"
 #include "game/Game.h"
 #include "renderer/Camera.h"
 #include "resources/ResourceManager.h"
@@ -56,7 +57,7 @@ namespace Engine
             const std::string filepath{asset["file"].get_or(std::string{})};
             switch (type.value()) {
             case ResourceType::texture:
-                resourceManager.loadTexture(assetId, filepath, getTextureConfig(asset));
+                resourceManager.loadTexture(internString(assetId), filepath, getTextureConfig(asset));
                 break;
             default:
                 break;
@@ -92,7 +93,7 @@ namespace Engine
             const std::vector<int> values{tilemapCsv[i]};
             for (size_t j{0}; j < values.size(); ++j) {
                 auto tile{registry.create()};
-                registry.emplace<TagComponent>(tile, "tile");
+                registry.emplace<TagComponent>(tile, internString("tile"));
                 registry.emplace<TransformComponent>(
                     tile,
                     glm::vec3{leftX + static_cast<float>(j) * tileSize * scale,
@@ -100,7 +101,7 @@ namespace Engine
                     glm::vec3{scale, scale, 0.0f});
                 const int tileId{values[j]};
                 registry.emplace<SpriteComponent>(
-                    tile, textureId,
+                    tile, internString(textureId),
                     Rect{glm::vec2{tileSize * static_cast<float>(tileId % tilesetCols),
                                    tileSize * static_cast<float>(tileId / tilesetCols)},
                          tileSize, tileSize, glm::vec2{0.0f, 1.0f}},
@@ -123,9 +124,13 @@ namespace Engine
             const sol::optional<sol::table> maybeComponents{entityTable["components"]};
             if (maybeComponents) {
                 const sol::table components{maybeComponents.value()};
+                const std::string id{components["id"].get_or(std::string{})};
+                if (!id.empty()) {
+                    registry.emplace<IdComponent>(entity, internString(id));
+                }
                 const std::string tag{components["tag"].get_or(std::string{})};
                 if (!tag.empty()) {
-                    registry.emplace<TagComponent>(entity, tag);
+                    registry.emplace<TagComponent>(entity, internString(tag));
                 }
                 const sol::optional<sol::table> maybeTransform{components["transform"]};
                 if (maybeTransform) {
@@ -152,8 +157,9 @@ namespace Engine
                 const sol::optional<sol::table> maybeSprite{components["sprite"]};
                 if (maybeSprite) {
                     const sol::table sprite{maybeSprite.value()};
+                    const std::string textureId{sprite["texture_id"].get_or(std::string{})};
                     registry.emplace<SpriteComponent>(
-                        entity, std::string{sprite["texture_id"].get_or(std::string{})},
+                        entity, internString(textureId),
                         Rect{glm::vec2{sprite["texture_x"].get_or(0.0f), sprite["texture_y"].get_or(0.0f)},
                              sprite["width"].get_or(0.0f), sprite["height"].get_or(0.0f),
                              glm::vec2{0.0f, 1.0f}},

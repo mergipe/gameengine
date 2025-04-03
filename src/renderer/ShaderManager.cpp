@@ -6,7 +6,7 @@ namespace Engine
 {
     void ShaderManager::clear() { m_shaders.clear(); }
 
-    const Shader& ShaderManager::loadShader(std::string_view shaderId,
+    const Shader& ShaderManager::loadShader(const StringId& shaderId,
                                             const std::filesystem::path& vertexShaderRelativePath,
                                             const std::filesystem::path& fragmentShaderRelativePath,
                                             std::optional<std::filesystem::path> geometryShaderRelativePath)
@@ -21,13 +21,13 @@ namespace Engine
         auto shader{std::make_unique<Shader>()};
         shader->compile(vertexShaderCode.c_str(), fragmentShaderCode.c_str(),
                         geometryShaderRelativePath ? geometryShaderCode.c_str() : nullptr);
-        m_shaders.insert(std::make_pair(shaderId, std::move(shader)));
-        Logger::info("'{}' shader loaded", shaderId.data());
-        return *m_shaders.at(shaderId.data());
+        m_shaders.insert(std::make_pair(shaderId.id, std::move(shader)));
+        Logger::info("'{}' shader loaded", shaderId.str.data());
+        return *m_shaders.at(shaderId.id);
     }
 
-    const Shader& ShaderManager::getShader(std::string_view shaderId) const
+    const Shader& ShaderManager::getShader(const StringId& shaderId) const
     {
-        return *(m_shaders.at(shaderId.data()));
+        return *(m_shaders.at(shaderId.id));
     }
 } // namespace Engine

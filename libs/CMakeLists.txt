@@ -7,6 +7,9 @@ target_include_directories(sol SYSTEM INTERFACE sol/include)
 add_library(entt INTERFACE)
 target_include_directories(entt SYSTEM INTERFACE entt/include)
 
+add_library(rapidhash INTERFACE)
+target_include_directories(rapidhash SYSTEM INTERFACE rapidhash/include)
+
 add_library(glad
             glad/src/glad.c)
 target_include_directories(glad SYSTEM PUBLIC glad/include)

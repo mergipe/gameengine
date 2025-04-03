@@ -11,6 +11,7 @@
 -I./libs/glad/include
 -I./libs/glm/include
 -I./libs/imgui/include
+-I./libs/rapidhash/include
 -I./libs/sol/include
 -I./libs/spdlog/include
 -I./libs/stb_image/include

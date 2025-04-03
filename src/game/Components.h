@@ -2,17 +2,21 @@
 #define COMPONENTS_H
 
 #include "core/Math.h"
+#include "core/StringId.h"
 #include "core/Timer.h"
 #include "renderer/Camera.h"
 #include "renderer/Shapes.h"
 #include <glm/glm.hpp>
 #include <sol/sol.hpp>
-#include <string>
 
 namespace Engine
 {
+    struct IdComponent final {
+        StringId id{};
+    };
+
     struct TagComponent final {
-        std::string name{};
+        StringId name{};
     };
 
     struct TransformComponent final {
@@ -31,7 +35,7 @@ namespace Engine
     };
 
     struct SpriteComponent final {
-        std::string textureId{};
+        StringId textureId{};
         Rect textureArea{};
         glm::vec3 color{1.0f};
         int zIndex{0};

@@ -3,10 +3,9 @@
 
 #include "Shader.h"
 #include "core/Filesystem.h"
+#include "core/StringId.h"
 #include <filesystem>
 #include <memory>
-#include <string>
-#include <string_view>
 #include <unordered_map>
 
 namespace Engine
@@ -21,14 +20,14 @@ namespace Engine
         ShaderManager& operator=(ShaderManager&&) = delete;
         ~ShaderManager() = default;
         void clear();
-        const Shader& loadShader(std::string_view shaderId,
+        const Shader& loadShader(const StringId& shaderId,
                                  const std::filesystem::path& vertexShaderRelativePath,
                                  const std::filesystem::path& fragmentShaderRelativePath,
                                  std::optional<std::filesystem::path> geometryShaderRelativePath = {});
-        const Shader& getShader(std::string_view shaderId) const;
+        const Shader& getShader(const StringId& shaderId) const;
 
     private:
-        std::unordered_map<std::string, std::unique_ptr<Shader>> m_shaders{};
+        std::unordered_map<StringIdType, std::unique_ptr<Shader>> m_shaders{};
         const std::filesystem::path m_shadersPath{Filesystem::getResourcesPath() / "shaders"};
     };
 } // namespace Engine
