@@ -8,14 +8,15 @@ namespace Engine
 
     StringId internString(std::string_view str)
     {
-        StringId sid{hash(str, str.length())};
-        if (!g_stringIdTable.contains(sid.id)) {
-            g_stringIdTable[sid.id] = std::string{str};
-            Logger::debug("Interned ('{}', SID={})", str, sid.id);
-        } else if (str != g_stringIdTable[sid.id]) {
-            Logger::error("Hash collision (SID={}) between {} and {}", sid.id, str.data(),
-                          g_stringIdTable[sid.id].data());
+        const StringIdType id{hash(str, str.length())};
+        if (!g_stringIdTable.contains(id)) {
+            g_stringIdTable[id] = std::string{str};
+            Logger::debug("Interned ('{}', SID={})", str, id);
+        } else if (str != g_stringIdTable[id]) {
+            Logger::error("Hash collision (SID={}) between '{}' and '{}'", id, str.data(),
+                          g_stringIdTable[id].data());
+            return StringId{str, id};
         }
-        return sid;
+        return StringId{g_stringIdTable[id], id};
     }
 } // namespace Engine

@@ -16,12 +16,12 @@ namespace Engine
 
 #define SID(str) str##_sid
 
-    constexpr StringId hash(std::string_view str, std::size_t len)
-    {
-        return StringId{str, rapidhash(str.data(), len)};
-    }
+    constexpr StringIdType hash(std::string_view str, std::size_t len) { return rapidhash(str.data(), len); }
 
-    constexpr StringId operator""_sid(const char* str, std::size_t len) { return hash(str, len); }
+    constexpr StringId operator""_sid(const char* str, std::size_t len)
+    {
+        return StringId{str, hash(str, len)};
+    }
 
     StringId internString(std::string_view str);
 } // namespace Engine
