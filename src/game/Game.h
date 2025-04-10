@@ -2,12 +2,12 @@
 #define GAME_H
 
 #include "core/Window.h"
+#include "debug/DevGui.h"
 #include "events/EventBus.h"
 #include "game/Scene.h"
 #include "input/InputHandler.h"
 #include "renderer/Renderer2D.h"
 #include "resources/ResourceManager.h"
-#include "tools/DevGui.h"
 #include <memory>
 
 namespace Engine

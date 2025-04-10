@@ -7,6 +7,7 @@ add_executable(gameengine
                core/StringId.cpp
                core/Timer.cpp
                core/Window.cpp
+               debug/DevGui.cpp
                input/InputHandler.cpp
                game/Entity.cpp
                game/Game.cpp
@@ -20,8 +21,7 @@ add_executable(gameengine
                renderer/ShaderManager.cpp
                resources/Font.cpp
                resources/ResourceManager.cpp
-               resources/Texture2D.cpp
-               tools/DevGui.cpp)
+               resources/Texture2D.cpp)
 target_compile_features(gameengine PRIVATE cxx_std_23)
 set_target_properties(gameengine PROPERTIES
                       CXX_EXTENSIONS OFF

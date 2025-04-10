@@ -74,12 +74,12 @@ namespace Engine
     void DevGui::show()
     {
         if (ImGui::BeginMainMenuBar()) {
-            if (ImGui::BeginMenu("Tools")) {
+            if (ImGui::BeginMenu("Profile/Debug")) {
                 ImGui::MenuItem("Metrics overlay", nullptr, &m_data.showMetricsOverlay);
                 ImGui::MenuItem("Metrics/Debugger", nullptr, &m_data.showMetricsWindow);
-                ImGui::MenuItem("Demo window", nullptr, &m_data.showDemoWindow);
                 ImGui::EndMenu();
             }
+            ImGui::MenuItem("ImGui Demo", nullptr, &m_data.showDemoWindow);
             ImGui::EndMainMenuBar();
         }
         if (m_data.showMetricsOverlay) {
