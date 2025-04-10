@@ -112,21 +112,27 @@ namespace Engine
                        static_cast<float>(mapRows) * tileSize * scale};
     }
 
-    void loadEntities(const sol::table& scene, entt::registry& registry)
+    void loadEntities(const sol::table& scene, entt::registry& registry, ScriptingSystem& scriptingSystem)
     {
         const sol::optional<sol::table> maybeEntities{scene["entities"]};
         if (!maybeEntities) {
             return;
         }
         for (const auto& entry : maybeEntities.value()) {
+            if (!entry.second.is<sol::table>()) {
+                continue;
+            }
             const sol::table entityTable{entry.second};
-            auto entity{registry.create()};
             const sol::optional<sol::table> maybeComponents{entityTable["components"]};
             if (maybeComponents) {
+                auto entity{registry.create()};
                 const sol::table components{maybeComponents.value()};
-                const std::string id{components["id"].get_or(std::string{})};
-                if (!id.empty()) {
-                    registry.emplace<IdComponent>(entity, internString(id));
+                const std::string idStr{components["id"].get_or(std::string{})};
+                if (!idStr.empty()) {
+                    registry.emplace<IdComponent>(entity, internString(idStr));
+                } else {
+                    Logger::warn("Ignoring entity without id");
+                    continue;
                 }
                 const std::string tag{components["tag"].get_or(std::string{})};
                 if (!tag.empty()) {
@@ -187,9 +193,25 @@ namespace Engine
                 if (maybePlayerInput) {
                     registry.emplace<PlayerInputComponent>(entity);
                 }
-                const sol::optional<sol::function> maybeScriptOnUpdate{components["script"]["on_update"]};
-                if (maybeScriptOnUpdate) {
-                    registry.emplace<ScriptComponent>(entity, maybeScriptOnUpdate.value());
+                const sol::optional<sol::table> maybeScripts{components["scripts"]};
+                if (maybeScripts) {
+                    std::vector<Script> scripts{};
+                    for (const auto& entry : maybeScripts.value()) {
+                        if (!entry.second.is<sol::table>()) {
+                            continue;
+                        }
+                        const sol::table scriptTable{entry.second};
+                        const std::string filepath{scriptTable["filepath"].get_or(std::string{})};
+                        const std::string className{scriptTable["class_name"].get_or(std::string{})};
+                        if (!filepath.empty() && !className.empty()) {
+                            std::optional<Script> maybeScript{
+                                scriptingSystem.loadScript(entity, filepath, className)};
+                            if (maybeScript) {
+                                scripts.push_back(maybeScript.value());
+                            }
+                        }
+                    }
+                    registry.emplace<ScriptComponent>(entity, scripts);
                 }
                 const sol::optional<sol::table> maybeCamera{components["camera"]};
                 if (maybeCamera) {
@@ -219,10 +241,12 @@ namespace Engine
         }
     }
 
-    SceneData SceneLoader::load(sol::state& lua, const std::filesystem::path& sceneFilepath,
-                                entt::registry& registry, ResourceManager& resourceManager)
+    SceneData SceneLoader::load(const std::filesystem::path& sceneFilepath, entt::registry& registry,
+                                ResourceManager& resourceManager, ScriptingSystem& scriptingSystem)
     {
         Logger::info("Loading scene from {}", sceneFilepath.c_str());
+        sol::state lua{};
+        lua.open_libraries(sol::lib::base);
         const auto result{lua.script_file(sceneFilepath, sol::script_pass_on_error)};
         if (!result.valid()) {
             const sol::error error{result};
@@ -240,7 +264,7 @@ namespace Engine
         loadAssets(scene, resourceManager);
         SceneData sceneData{};
         sceneData.mapData = loadMap(scene, registry);
-        loadEntities(scene, registry);
+        loadEntities(scene, registry, scriptingSystem);
         return sceneData;
     }
 } // namespace Engine

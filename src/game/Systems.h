@@ -1,6 +1,7 @@
 #ifndef SYSTEMS_H
 #define SYSTEMS_H
 
+#include "Script.h"
 #include "renderer/Renderer2D.h"
 #include "resources/ResourceManager.h"
 #include <entt/entt.hpp>
@@ -87,22 +88,18 @@ namespace Engine
         }
     };
 
-    class ScriptSystem final : public System
+    class ScriptingSystem final : public System
     {
     public:
-        ScriptSystem(entt::registry* registry)
-            : System{registry}
-        {
-        }
+        ScriptingSystem(entt::registry* registry);
+        std::optional<Script> loadScript(entt::entity entity, const std::filesystem::path& filepath,
+                                         std::string_view className);
+        void start();
         void update(float timeStep);
-        void createScriptBindings(sol::state& lua);
 
     private:
-        glm::vec3 getEntityPosition(entt::entity entity);
-        glm::vec3 getEntityVelocity(entt::entity entity);
-        void setEntityPosition(entt::entity entity, glm::vec3 position);
-        void setEntityVelocity(entt::entity entity, glm::vec3 velocity);
-        void setEntityRotation(entt::entity entity, glm::vec3 rotation);
+        void createScriptBindings();
+        sol::state m_lua{};
     };
 } // namespace Engine
 

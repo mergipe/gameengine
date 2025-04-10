@@ -31,4 +31,16 @@ namespace Engine
         static std::filesystem::path s_resourcesPath{getBasePath() / "resources"};
         return s_resourcesPath;
     }
+
+    std::filesystem::path Filesystem::getModulesPath()
+    {
+        static std::filesystem::path s_modulesPath{getBasePath() / "modules"};
+        return s_modulesPath;
+    }
+
+    std::filesystem::path Filesystem::getScriptingLibraryPath()
+    {
+        static std::filesystem::path s_scriptsPath{getModulesPath() / "lua_scripting"};
+        return s_scriptsPath;
+    }
 } // namespace Engine

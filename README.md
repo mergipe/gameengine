@@ -1,12 +1,18 @@
 ## TODO
+- Improve folder structure
+- Separate sample game code from engine code
+
 ### Input system
 - Support mapping and handling the same keys for different scopes/contexts/game states
 - Handle mouse events
 
 ### Scripting system
-- Develop an API to integrate Lua and C++ code
+- Expose more types and functions
+- Make script variables configurable via scene file
+- Address lua uint64 problem
 
 ### Configuration
+- Change the format of config/scene files (probably JSON)
 - Add config files to remove hard coded values
 
 ### Dev mode
@@ -18,8 +24,8 @@
 ### Rendering
 - UI rendering
 - Tilemaps
-- Implement a particle system
-- Render fonts
+- Particle system
+- Fonts
 - Support for multiple resolutions
 - Custom rendering layers
 

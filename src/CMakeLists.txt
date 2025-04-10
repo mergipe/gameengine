@@ -8,9 +8,11 @@ add_executable(gameengine
                core/Timer.cpp
                core/Window.cpp
                input/InputHandler.cpp
+               game/Entity.cpp
                game/Game.cpp
                game/Scene.cpp
                game/SceneLoader.cpp
+               game/Script.cpp
                game/Systems.cpp
                renderer/Camera.cpp
                renderer/Renderer2D.cpp

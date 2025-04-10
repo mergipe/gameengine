@@ -24,7 +24,6 @@ namespace Engine
         void render(float frameExtrapolationTimeStep);
 
     private:
-        sol::state m_lua{};
         SceneData m_sceneData{};
         Renderer2D* m_renderer{};
         ResourceManager* m_resourceManager{};
@@ -35,7 +34,7 @@ namespace Engine
         std::unique_ptr<SpriteAnimationSystem> m_animationSystem{};
         std::unique_ptr<CollisionSystem> m_collisionSystem{};
         std::unique_ptr<PlayerInputSystem> m_playerInputSystem{};
-        std::unique_ptr<ScriptSystem> m_scriptSystem{};
+        std::unique_ptr<ScriptingSystem> m_scriptingSystem{};
     };
 } // namespace Engine
 

@@ -1,6 +1,9 @@
 #include "Systems.h"
 #include "Components.h"
+#include "Entity.h"
 #include "Game.h"
+#include "ScriptingApi.h"
+#include "core/Logger.h"
 #include "core/Timer.h"
 #include "events/Events.h"
 #include "renderer/Renderer2D.h"
@@ -144,68 +147,127 @@ namespace Engine
         }
     }
 
-    void ScriptSystem::update(float timeStep)
+    ScriptingSystem::ScriptingSystem(entt::registry* registry)
+        : System{registry}
     {
-        const auto view{getRegistry().view<const ScriptComponent>()};
-        const Timer::Ticks elapsedTime{Timer::getTicks()};
+        m_lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
+        const std::string packagePath{m_lua["package"]["path"]};
+        m_lua["package"]["path"] = packagePath + (packagePath.empty() ? "" : ";") +
+                                   (Filesystem::getScriptingLibraryPath() / "?.lua").string();
+        m_lua.require_file("utils", Filesystem::getScriptingLibraryPath() / "utils.lua");
+        m_lua.script_file(Filesystem::getScriptingLibraryPath() / "entity_script.lua");
+        createScriptBindings();
+        m_lua.create_named_table("scripts");
+    }
+
+    std::optional<Script> ScriptingSystem::loadScript(entt::entity entity,
+                                                      const std::filesystem::path& filepath,
+                                                      std::string_view className)
+    {
+        const auto absoluteFilepath{Filesystem::getResourcesPath() / filepath};
+        const auto result{m_lua.script_file(absoluteFilepath, sol::script_pass_on_error)};
+        if (!result.valid()) {
+            const sol::error error{result};
+            const sol::call_status status{result.status()};
+            Logger::error("Error loading script {}: {} error\n\t{}", absoluteFilepath.c_str(),
+                          sol::to_string(status), error.what());
+            return {};
+        }
+        const sol::optional<sol::table> maybeScriptClass{m_lua[className]};
+        if (!maybeScriptClass) {
+            Logger::warn("Script '{}' doesn't have '{}' class", filepath.c_str(), className);
+            return {};
+        }
+        sol::table scriptClass{maybeScriptClass.value()};
+        const sol::table entityScriptClass{m_lua["EntityScript"]};
+        const auto isEntityScript{m_lua["utils"]["instance_of"](scriptClass, entityScriptClass)};
+        if (!isEntityScript.get<bool>()) {
+            Logger::warn("Script '{}' doesn't inherit from EntityScript", className);
+            return {};
+        }
+        const sol::optional<sol::function> maybeScriptClassConstructor{scriptClass["new"]};
+        if (!maybeScriptClassConstructor) {
+            Logger::warn("Script '{}' doesn't have 'new' function", className);
+            return {};
+        }
+        const sol::optional<sol::table> maybeScriptInstance{maybeScriptClassConstructor.value()(scriptClass)};
+        if (!maybeScriptInstance) {
+            Logger::warn("Failed to instantiate '{}' script", className);
+            return {};
+        }
+        sol::table scriptInstance{maybeScriptInstance.value()};
+        scriptInstance["entity"] = Entity{entity, &getRegistry()};
+        sol::table scripts{m_lua["scripts"]};
+        scripts[scripts.size()] = scriptInstance;
+        return Script{scriptInstance};
+    }
+
+    void ScriptingSystem::start()
+    {
+        const auto view{getRegistry().view<ScriptComponent>()};
         for (const auto entity : view) {
-            const auto& script{view.get<ScriptComponent>(entity)};
-            script.func(entity, timeStep, elapsedTime);
+            auto& scriptComponent = view.get<ScriptComponent>(entity);
+            for (auto& script : scriptComponent.scripts) {
+                script.onStart();
+            }
         }
     }
 
-    void ScriptSystem::createScriptBindings(sol::state& lua)
+    void ScriptingSystem::update(float timeStep)
     {
-        lua.new_usertype<entt::entity>("Entity");
-        lua.new_usertype<glm::vec3>("Vec3",
-                                    sol::constructors<glm::vec3(float), glm::vec3(float, float, float)>(),
-                                    "x", &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
-        lua.set_function("get_position", &ScriptSystem::getEntityPosition, this);
-        lua.set_function("get_velocity", &ScriptSystem::getEntityVelocity, this);
-        lua.set_function("set_position", &ScriptSystem::setEntityPosition, this);
-        lua.set_function("set_velocity", &ScriptSystem::setEntityVelocity, this);
-        lua.set_function("set_rotation", &ScriptSystem::setEntityRotation, this);
-    }
-
-    glm::vec3 ScriptSystem::getEntityPosition(entt::entity entity)
-    {
-        auto* transform{getRegistry().try_get<TransformComponent>(entity)};
-        if (transform) {
-            return transform->position;
-        }
-        return {};
-    }
-
-    glm::vec3 ScriptSystem::getEntityVelocity(entt::entity entity)
-    {
-        auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)};
-        if (rigidBody) {
-            return rigidBody->velocity;
-        }
-        return {};
-    }
-
-    void ScriptSystem::setEntityPosition(entt::entity entity, glm::vec3 position)
-    {
-        auto* transform{getRegistry().try_get<TransformComponent>(entity)};
-        if (transform) {
-            transform->position = position;
+        const auto view{getRegistry().view<ScriptComponent>()};
+        for (const auto entity : view) {
+            auto& scriptComponent = view.get<ScriptComponent>(entity);
+            for (auto& script : scriptComponent.scripts) {
+                script.onUpdate(timeStep);
+            }
         }
     }
 
-    void ScriptSystem::setEntityVelocity(entt::entity entity, glm::vec3 velocity)
+    void ScriptingSystem::createScriptBindings()
     {
-        auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)};
-        if (rigidBody) {
-            rigidBody->velocity = velocity;
-        }
-    }
-
-    void ScriptSystem::setEntityRotation(entt::entity entity, glm::vec3 rotation)
-    {
-        auto* transform{getRegistry().try_get<TransformComponent>(entity)};
-        if (transform) {
-            transform->rotation = rotation;
-        }
+        m_lua.new_usertype<StringId>("StringId", "id", &StringId::id, "str", &StringId::str);
+        m_lua.new_usertype<Entity>("Entity", "id", sol::property(&Entity::getId));
+        m_lua.new_usertype<glm::vec2>("Vec2", sol::constructors<glm::vec2(float), glm::vec2(float, float)>(),
+                                      "x", &glm::vec2::x, "y", &glm::vec2::y);
+        m_lua.new_usertype<glm::vec3>("Vec3",
+                                      sol::constructors<glm::vec3(float), glm::vec3(float, float, float)>(),
+                                      "x", &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
+        m_lua.new_usertype<Rect>("Rect", "position", &Rect::position, "width", &Rect::width, "height",
+                                 &Rect::height, "pivot_point", &Rect::pivotPoint);
+        m_lua.new_usertype<IdComponent>("IdComponent", "sid", &IdComponent::sid);
+        m_lua.new_usertype<TagComponent>("TagComponent", "name", &TagComponent::name);
+        m_lua.new_usertype<TransformComponent>(
+            "TransformComponent", "position", &TransformComponent::position, "scale",
+            &TransformComponent::scale, "rotation", &TransformComponent::rotation);
+        m_lua.new_usertype<RigidBody2DComponent>("RigidBody2DComponent", "velocity",
+                                                 &RigidBody2DComponent::velocity);
+        m_lua.new_usertype<SpriteComponent>("SpriteComponent", "texture_id", &SpriteComponent::textureId,
+                                            "texture_area", &SpriteComponent::textureArea, "color",
+                                            &SpriteComponent::color, "z_index", &SpriteComponent::zIndex);
+        m_lua.new_usertype<SpriteAnimationComponent>(
+            "SpriteAnimationComponent", "start_time", &SpriteAnimationComponent::startTime, "current_frame",
+            &SpriteAnimationComponent::currentFrame, "frames_count", &SpriteAnimationComponent::framesCount,
+            "frames_per_second", &SpriteAnimationComponent::framesPerSecond, "should_loop",
+            &SpriteAnimationComponent::shouldLoop);
+        m_lua.new_usertype<BoxCollider2DComponent>(
+            "BoxCollider2DComponent", "offset", &BoxCollider2DComponent::offset, "width",
+            &BoxCollider2DComponent::width, "height", &BoxCollider2DComponent::height, "is_colliding",
+            &BoxCollider2DComponent::isColliding);
+        m_lua.new_usertype<PlayerInputComponent>("PlayerInputComponent");
+        m_lua.new_usertype<CameraComponent>("CameraComponent");
+        m_lua.set_function("api_get_component_id", ScriptingApi::getComponent<IdComponent>);
+        m_lua.set_function("api_get_component_tag", ScriptingApi::getComponent<TagComponent>);
+        m_lua.set_function("api_get_component_transform", ScriptingApi::getComponent<TransformComponent>);
+        m_lua.set_function("api_get_component_rigidbody2d", ScriptingApi::getComponent<RigidBody2DComponent>);
+        m_lua.set_function("api_get_component_sprite", ScriptingApi::getComponent<SpriteComponent>);
+        m_lua.set_function("api_get_component_spriteanimation",
+                           ScriptingApi::getComponent<SpriteAnimationComponent>);
+        m_lua.set_function("api_get_component_boxcollider2d",
+                           ScriptingApi::getComponent<BoxCollider2DComponent>);
+        // m_lua.set_function("api_get_component_playerinput",
+        // ScriptingApi::getComponent<PlayerInputComponent>);
+        m_lua.set_function("api_get_component_script", ScriptingApi::getComponent<ScriptComponent>);
+        m_lua.set_function("api_get_component_camera", ScriptingApi::getComponent<CameraComponent>);
     }
 } // namespace Engine

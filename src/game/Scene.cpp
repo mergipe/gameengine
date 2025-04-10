@@ -14,19 +14,24 @@ namespace Engine
         , m_animationSystem{std::make_unique<SpriteAnimationSystem>(m_registry.get())}
         , m_collisionSystem{std::make_unique<CollisionSystem>(m_registry.get())}
         , m_playerInputSystem{std::make_unique<PlayerInputSystem>(m_registry.get())}
-        , m_scriptSystem{std::make_unique<ScriptSystem>(m_registry.get())}
+        , m_scriptingSystem{std::make_unique<ScriptingSystem>(m_registry.get())}
     {
         if (Game::instance().hasDevMode()) {
             m_debugRenderingSystem = std::make_unique<DebugRenderingSystem>(m_registry.get());
         }
         SceneLoader sceneLoader{};
-        m_lua.open_libraries(sol::lib::base, sol::lib::math, sol::lib::os);
-        m_scriptSystem->createScriptBindings(m_lua);
-        std::filesystem::path scriptsFolder{m_resourceManager->getResourcePath("scenes")};
-        m_sceneData = sceneLoader.load(m_lua, scriptsFolder / "scene1.lua", *m_registry, *resourceManager);
+        std::filesystem::path scenesFolder{m_resourceManager->getResourcePath("scenes")};
+        m_sceneData = sceneLoader.load(scenesFolder / "scene1.lua", *m_registry, *m_resourceManager,
+                                       *m_scriptingSystem);
+        m_scriptingSystem->start();
     }
 
-    Scene::~Scene() { m_resourceManager->clear(); }
+    Scene::~Scene()
+    {
+        m_resourceManager->clear();
+        m_registry.reset();
+        m_scriptingSystem.reset();
+    }
 
     void Scene::update(float timeStep)
     {
@@ -35,7 +40,7 @@ namespace Engine
         m_movementSystem->update(timeStep);
         m_collisionSystem->update();
         m_animationSystem->update();
-        m_scriptSystem->update(timeStep);
+        m_scriptingSystem->update(timeStep);
     }
 
     void Scene::render(float frameExtrapolationTimeStep)

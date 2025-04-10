@@ -79,6 +79,12 @@ Scene = {
           offset = { x = 0, y = 0 },
         },
         player_input = {},
+        scripts = {
+          {
+            filepath = "scripts/player/player_controller.lua",
+            class_name = "PlayerController",
+          },
+        },
       },
     },
     {
@@ -111,6 +117,12 @@ Scene = {
           offset = { x = 0, y = 0 },
         },
         player_input = {},
+        scripts = {
+          {
+            filepath = "scripts/player/player_controller.lua",
+            class_name = "PlayerController",
+          },
+        },
       },
     },
     {

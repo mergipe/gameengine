@@ -1,6 +1,7 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
+#include "Script.h"
 #include "core/Math.h"
 #include "core/StringId.h"
 #include "core/Timer.h"
@@ -12,7 +13,7 @@
 namespace Engine
 {
     struct IdComponent final {
-        StringId id{};
+        StringId sid{};
     };
 
     struct TagComponent final {
@@ -67,11 +68,11 @@ namespace Engine
     struct PlayerInputComponent final {
     };
 
-    struct ScriptComponent {
-        sol::function func{sol::lua_nil};
+    struct ScriptComponent final {
+        std::vector<Script> scripts{};
     };
 
-    struct CameraComponent {
+    struct CameraComponent final {
         std::unique_ptr<Camera> camera{};
     };
 } // namespace Engine

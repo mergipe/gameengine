@@ -1,4 +1,4 @@
 Checks: cppcoreguidelines-*,-cppcoreguidelines-pro-type-union-access
 HeaderFilterRegex: src/**
-ExcludeHeaderFilterRegex: libs/**
+ExcludeHeaderFilterRegex: thirdparty/**
 UseColor: true

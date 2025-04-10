@@ -14,6 +14,8 @@ namespace Engine
         static std::filesystem::path getLogsPath();
         static std::filesystem::path getConfigPath();
         static std::filesystem::path getResourcesPath();
+        static std::filesystem::path getModulesPath();
+        static std::filesystem::path getScriptingLibraryPath();
     };
 } // namespace Engine
 
