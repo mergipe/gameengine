@@ -1,12 +1,12 @@
 #include "InputHandler.h"
+#include "core/Assert.h"
 #include <SDL3/SDL_keyboard.h>
 
 namespace Engine
 {
     void InputHandler::bindKeyStateCommand(SDL_Scancode key, const std::function<void()>& command)
     {
-        if (key >= s_keyCount)
-            return;
+        ASSERT(key >= 0 && key < s_keyCount);
         m_keyEventCommands[key] = nullptr;
         m_keyStateCommands.emplace(key, std::make_unique<Command>(command, true));
     }
@@ -14,8 +14,7 @@ namespace Engine
     void InputHandler::bindKeyEventCommand(SDL_Scancode key, const std::function<void()>& command,
                                            bool allowRepeat)
     {
-        if (key >= s_keyCount)
-            return;
+        ASSERT(key >= 0 && key < s_keyCount);
         if (m_keyStateCommands.contains(key)) {
             m_keyStateCommands.erase(key);
         }
