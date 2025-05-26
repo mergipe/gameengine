@@ -14,9 +14,9 @@ namespace Engine
 
     glm::mat4 Camera::getCameraTransformation() const
     {
-        glm::vec3 position{getModelTransformation()[3]};
-        glm::vec3 gaze{-(getModelTransformation() * glm::vec4{0.0f, 0.0f, 1.0f, 0.0f})};
-        glm::vec3 up{getModelTransformation() * glm::vec4{0.0f, 1.0f, 0.0f, 0.0f}};
+        const glm::vec3 position{getModelTransformation()[3]};
+        const glm::vec3 gaze{-(getModelTransformation() * glm::vec4{0.0f, 0.0f, 1.0f, 0.0f})};
+        const glm::vec3 up{getModelTransformation() * glm::vec4{0.0f, 1.0f, 0.0f, 0.0f}};
         return glm::lookAt(position, position + gaze, up);
     }
 
@@ -33,7 +33,7 @@ namespace Engine
 
     glm::mat4 OrthographicCamera::getProjectionTransformation() const
     {
-        Rect nearPlaneGeometry{getNearPlaneGeometry()};
+        const Rect nearPlaneGeometry{getNearPlaneGeometry()};
         return glm::ortho(nearPlaneGeometry.getLeftX(), nearPlaneGeometry.getRightX(),
                           nearPlaneGeometry.getBottomY(), nearPlaneGeometry.getTopY(), getZNear(), getZFar());
     }
@@ -58,13 +58,13 @@ namespace Engine
 
     Rect PerspectiveCamera::getNearPlaneGeometry() const
     {
-        float height{glm::tan(m_fovY / 2) * getZNear() * 2};
+        const float height{glm::tan(m_fovY / 2) * getZNear() * 2};
         return Rect{getPosition(), height * getAspectRatio(), height};
     }
 
     Rect PerspectiveCamera::getFarPlaneGeometry() const
     {
-        float height{glm::tan(m_fovY / 2) * getZFar() * 2};
+        const float height{glm::tan(m_fovY / 2) * getZFar() * 2};
         return Rect{getPosition(), height * getAspectRatio(), height};
     }
 

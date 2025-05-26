@@ -12,8 +12,6 @@ namespace Engine
         Font& operator=(const Font&) = delete;
         Font& operator=(Font&&) = delete;
         ~Font() = default;
-
-    private:
     };
 } // namespace Engine
 

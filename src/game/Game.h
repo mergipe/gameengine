@@ -36,7 +36,7 @@ namespace Engine
     private:
         void processEvents();
         void update();
-        void render(float frameExtrapolationFactor);
+        void render(float frameExtrapolationTimeStep);
         static constexpr float s_updateRate{144.0f};
         static constexpr float s_timeStepInMs{1000.0f / s_updateRate};
         std::unique_ptr<Window> m_window{};

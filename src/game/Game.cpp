@@ -37,7 +37,7 @@ namespace Engine
         m_eventBus = std::make_unique<EventBus>();
         if (m_hasDevMode) {
             m_devGui = std::make_unique<DevGui>(*m_window);
-            m_inputHandler->bindKeyEventCommand(s_toggleDevModeKey, [this]() { toggleDevMode(); }, false);
+            m_inputHandler->bindKeyEventCommand(s_toggleDevModeKey, [this] { toggleDevMode(); }, false);
         }
         Logger::info("Game initialized");
     }
@@ -91,6 +91,8 @@ namespace Engine
                 if (m_devGui && m_devGui->wantCaptureKeyboard())
                     break;
                 m_inputHandler->handleKeyEvent(event.key);
+                break;
+            default:
                 break;
             }
         }

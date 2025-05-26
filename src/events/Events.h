@@ -3,7 +3,6 @@
 
 #include <SDL3/SDL.h>
 #include <entt/entt.hpp>
-#include <glm/glm.hpp>
 
 namespace Engine
 {
@@ -30,7 +29,7 @@ namespace Engine
     };
 
     struct KeyPressedEvent final : public Event {
-        KeyPressedEvent(SDL_Keycode keyCode)
+        explicit KeyPressedEvent(SDL_Keycode keyCode)
             : keyCode{keyCode}
         {
         }

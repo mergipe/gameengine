@@ -14,13 +14,13 @@ namespace Engine
     class DevGui
     {
     public:
-        DevGui(const Window& window);
+        explicit DevGui(const Window& window);
         DevGui(const DevGui&) = delete;
         DevGui(DevGui&&) = delete;
         DevGui& operator=(const DevGui&) = delete;
         DevGui& operator=(DevGui&&) = delete;
         ~DevGui();
-        void processEvent(SDL_Event& event);
+        void processEvent(const SDL_Event& event);
         bool wantCaptureKeyboard();
         bool wantCaptureMouse();
         void newFrame();

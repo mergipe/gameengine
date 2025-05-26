@@ -2,7 +2,6 @@
 #define CONFIG_H
 
 #include "Window.h"
-#include <sol/sol.hpp>
 
 namespace Engine::Config
 {

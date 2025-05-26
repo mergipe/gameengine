@@ -37,7 +37,7 @@ namespace Engine
         ImGui::DestroyContext();
     }
 
-    void DevGui::processEvent(SDL_Event& event)
+    void DevGui::processEvent(const SDL_Event& event)
     {
         if (event.type == SDL_EVENT_KEY_DOWN && wantCaptureKeyboard()) {
             if (event.key.scancode == Game::s_toggleDevModeKey && !event.key.repeat) {
@@ -95,9 +95,9 @@ namespace Engine
 
     void showMetricsOverlay(bool* show)
     {
-        ImGuiWindowFlags windowFlags{ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking |
-                                     ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
-                                     ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav};
+        constexpr ImGuiWindowFlags windowFlags{
+            ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_AlwaysAutoResize |
+            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav};
         ImGui::SetNextWindowBgAlpha(0.35f);
         if (ImGui::Begin("Metrics overlay", show, windowFlags)) {
             ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);

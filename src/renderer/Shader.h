@@ -17,8 +17,8 @@ namespace Engine
         Shader& operator=(Shader&&) = delete;
         ~Shader();
         GLuint getId() const { return m_id; }
-        void compile(const char* vertexSourceCode, const char* fragmentSourceCode,
-                     const char* geometrySourceCode = nullptr);
+        void compile(const char* vertexShaderCode, const char* fragmentShaderCode,
+                     const char* geometryShaderCode = nullptr);
         const Shader& use() const;
         const Shader& setUniform(std::string_view name, bool value) const;
         const Shader& setUniform(std::string_view name, GLint value) const;
@@ -28,7 +28,7 @@ namespace Engine
         const Shader& setUniform(std::string_view name, const glm::vec4& vector) const;
 
     private:
-        void checkCompileErrors(GLuint id, std::string_view type);
+        static void checkCompileErrors(GLuint id, std::string_view type);
         static constexpr GLsizei s_infoLogBufferMaxLength{1024};
         GLuint m_id{};
     };

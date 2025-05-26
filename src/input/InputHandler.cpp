@@ -32,7 +32,7 @@ namespace Engine
         }
     }
 
-    void InputHandler::handleKeyEvent(SDL_KeyboardEvent event)
+    void InputHandler::handleKeyEvent(const SDL_KeyboardEvent& event) const
     {
         if (m_keyEventCommands.at(event.scancode)) {
             const auto& command{*m_keyEventCommands[event.scancode].get()};

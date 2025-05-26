@@ -5,7 +5,6 @@
 #include "renderer/Renderer2D.h"
 #include "resources/ResourceManager.h"
 #include <entt/entt.hpp>
-#include <glm/glm.hpp>
 #include <sol/sol.hpp>
 
 namespace Engine
@@ -13,7 +12,7 @@ namespace Engine
     class System
     {
     public:
-        System(entt::registry* registry)
+        explicit System(entt::registry* registry)
             : m_registry{registry}
         {
         }
@@ -31,7 +30,7 @@ namespace Engine
     class MovementSystem final : public System
     {
     public:
-        MovementSystem(entt::registry* registry)
+        explicit MovementSystem(entt::registry* registry)
             : System{registry}
         {
         }
@@ -41,7 +40,7 @@ namespace Engine
     class RenderingSystem final : public System
     {
     public:
-        RenderingSystem(entt::registry* registry)
+        explicit RenderingSystem(entt::registry* registry)
             : System{registry}
         {
         }
@@ -52,7 +51,7 @@ namespace Engine
     class DebugRenderingSystem final : public System
     {
     public:
-        DebugRenderingSystem(entt::registry* registry)
+        explicit DebugRenderingSystem(entt::registry* registry)
             : System{registry}
         {
         }
@@ -62,7 +61,7 @@ namespace Engine
     class SpriteAnimationSystem final : public System
     {
     public:
-        SpriteAnimationSystem(entt::registry* registry)
+        explicit SpriteAnimationSystem(entt::registry* registry)
             : System{registry}
         {
         }
@@ -72,7 +71,7 @@ namespace Engine
     class CollisionSystem final : public System
     {
     public:
-        CollisionSystem(entt::registry* registry)
+        explicit CollisionSystem(entt::registry* registry)
             : System{registry}
         {
         }
@@ -82,7 +81,7 @@ namespace Engine
     class PlayerInputSystem final : public System
     {
     public:
-        PlayerInputSystem(entt::registry* registry)
+        explicit PlayerInputSystem(entt::registry* registry)
             : System{registry}
         {
         }
@@ -91,7 +90,7 @@ namespace Engine
     class ScriptingSystem final : public System
     {
     public:
-        ScriptingSystem(entt::registry* registry);
+        explicit ScriptingSystem(entt::registry* registry);
         std::optional<Script> loadScript(entt::entity entity, const std::filesystem::path& filepath,
                                          std::string_view className);
         void start();

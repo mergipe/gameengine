@@ -15,10 +15,10 @@ namespace Engine
                                                                                  255, 0, 255, 0,   0, 0};
         std::array<unsigned char, width * height * channels> fallbackTextureData{};
         for (size_t y{0}; y < height; ++y) {
-            size_t v{y / (height / 2)};
+            const size_t v{y / (height / 2)};
             for (size_t x{0}; x < width * channels; ++x) {
-                size_t rgbComponent{x % channels};
-                size_t u{(x / (width * channels / 2)) * channels + rgbComponent};
+                const size_t rgbComponent{x % channels};
+                const size_t u{x / (width * channels / 2) * channels + rgbComponent};
                 fallbackTextureData.at(y * width * channels + x) =
                     canonicalCheckeredData.at(v * 2 * channels + u);
             }
@@ -37,7 +37,7 @@ namespace Engine
     void ResourceManager::loadTexture(const StringId& textureId, const std::filesystem::path& relativePath,
                                       const TextureConfig& textureConfig)
     {
-        std::filesystem::path path{Filesystem::getResourcesPath() / relativePath};
+        const std::filesystem::path path{Filesystem::getResourcesPath() / relativePath};
         int width{};
         int height{};
         int channels{};
@@ -74,5 +74,5 @@ namespace Engine
             return *textureIterator->second;
         }
         return *m_fallbackTexture;
-    };
+    }
 } // namespace Engine

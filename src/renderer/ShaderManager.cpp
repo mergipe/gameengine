@@ -6,10 +6,10 @@ namespace Engine
 {
     void ShaderManager::clear() { m_shaders.clear(); }
 
-    const Shader& ShaderManager::loadShader(const StringId& shaderId,
-                                            const std::filesystem::path& vertexShaderRelativePath,
-                                            const std::filesystem::path& fragmentShaderRelativePath,
-                                            std::optional<std::filesystem::path> geometryShaderRelativePath)
+    const Shader&
+    ShaderManager::loadShader(const StringId& shaderId, const std::filesystem::path& vertexShaderRelativePath,
+                              const std::filesystem::path& fragmentShaderRelativePath,
+                              const std::optional<std::filesystem::path>& geometryShaderRelativePath)
     {
         const std::string vertexShaderCode{IO::readStringFromFile(m_shadersPath / vertexShaderRelativePath)};
         const std::string fragmentShaderCode{
@@ -28,6 +28,6 @@ namespace Engine
 
     const Shader& ShaderManager::getShader(const StringId& shaderId) const
     {
-        return *(m_shaders.at(shaderId.id));
+        return *m_shaders.at(shaderId.id);
     }
 } // namespace Engine

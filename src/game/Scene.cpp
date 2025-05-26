@@ -20,7 +20,7 @@ namespace Engine
             m_debugRenderingSystem = std::make_unique<DebugRenderingSystem>(m_registry.get());
         }
         SceneLoader sceneLoader{};
-        std::filesystem::path scenesFolder{m_resourceManager->getResourcePath("scenes")};
+        const std::filesystem::path scenesFolder{m_resourceManager->getResourcePath("scenes")};
         m_sceneData = sceneLoader.load(scenesFolder / "scene1.lua", *m_registry, *m_resourceManager,
                                        *m_scriptingSystem);
         m_scriptingSystem->start();

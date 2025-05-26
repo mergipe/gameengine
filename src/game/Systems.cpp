@@ -25,7 +25,7 @@ namespace Engine
 
     constexpr bool isOutsideOrthoCameraView(const Camera& camera, const Rect& rect)
     {
-        Rect cameraPlaneGeometry{camera.getNearPlaneGeometry()};
+        const Rect cameraPlaneGeometry{camera.getNearPlaneGeometry()};
         return rect.getRightX() < cameraPlaneGeometry.getLeftX() ||
                rect.getLeftX() > cameraPlaneGeometry.getRightX() ||
                rect.getTopY() < cameraPlaneGeometry.getBottomY() ||
@@ -39,7 +39,7 @@ namespace Engine
             auto [transform, rigidBody] = view.get<TransformComponent, RigidBody2DComponent>(entity);
             transform.position += rigidBody.velocity * timeStep;
         }
-    };
+    }
 
     void RenderingSystem::update(Renderer2D& renderer, const ResourceManager& resourceManager,
                                  float frameExtrapolationTimeStep)
@@ -134,11 +134,10 @@ namespace Engine
                     view.get<TransformComponent, BoxCollider2DComponent>(otherEntity);
                 const bool collisionHappened{aabbHasCollided(
                     Rect{glm::vec2{transform.position} + boxCollider.offset,
-                         static_cast<float>(boxCollider.width) * transform.scale.x,
-                         static_cast<float>(boxCollider.height) * transform.scale.y},
+                         boxCollider.width * transform.scale.x, boxCollider.height * transform.scale.y},
                     Rect{glm::vec2{otherTransform.position} + otherBoxCollider.offset,
-                         static_cast<float>(otherBoxCollider.width) * otherTransform.scale.x,
-                         static_cast<float>(otherBoxCollider.height) * otherTransform.scale.y})};
+                         otherBoxCollider.width * otherTransform.scale.x,
+                         otherBoxCollider.height * otherTransform.scale.y})};
                 if (collisionHappened) {
                     boxCollider.isColliding = otherBoxCollider.isColliding = true;
                     Game::instance().getEventBus().dispatchEvent<CollisionEvent>(entity, otherEntity);

@@ -19,7 +19,7 @@ namespace Engine
     class Window
     {
     public:
-        Window(const WindowConfig& config);
+        explicit Window(const WindowConfig& config);
         Window(const Window&) = delete;
         Window(Window&&) = delete;
         Window& operator=(const Window&) = delete;

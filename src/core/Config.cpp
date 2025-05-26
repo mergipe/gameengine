@@ -1,6 +1,7 @@
 #include "Config.h"
 #include "Filesystem.h"
 #include "Logger.h"
+#include <sol/sol.hpp>
 
 namespace Engine::Config
 {
@@ -21,7 +22,7 @@ namespace Engine::Config
         if (!maybeWindowConfig) {
             return {};
         }
-        const sol::table windowConfig{maybeWindowConfig.value()};
+        const sol::table& windowConfig{maybeWindowConfig.value()};
         WindowConfig config{};
         config.title = windowConfig["title"].get_or(std::string{"Untitled"});
         config.width = windowConfig["width"].get_or(800);

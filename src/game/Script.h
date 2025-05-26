@@ -8,7 +8,7 @@ namespace Engine
     class Script
     {
     public:
-        Script(const sol::table& instance);
+        explicit Script(const sol::table& instance);
         void onStart();
         void onUpdate(float timeStep);
 

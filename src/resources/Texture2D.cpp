@@ -12,7 +12,7 @@ namespace Engine
 
     Texture2D::~Texture2D() { glDeleteTextures(1, &m_id); }
 
-    void Texture2D::create(unsigned char* data, GLsizei width, GLsizei height, GLint imageFormat)
+    void Texture2D::create(const unsigned char* data, GLsizei width, GLsizei height, GLint imageFormat)
     {
         m_width = width;
         m_height = height;

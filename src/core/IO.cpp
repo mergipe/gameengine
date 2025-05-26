@@ -28,7 +28,7 @@ namespace Engine::IO
             stringStream << fileStream.rdbuf();
             fileStream.close();
             return stringStream.str();
-        } catch (const std::exception& e) {
+        } catch (const std::exception& _) {
             Logger::error("Error reading string from file {}", filepath.c_str());
             return {};
         }

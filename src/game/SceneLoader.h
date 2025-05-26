@@ -6,7 +6,6 @@
 #include "resources/ResourceManager.h"
 #include <entt/entt.hpp>
 #include <filesystem>
-#include <sol/sol.hpp>
 
 namespace Engine
 {

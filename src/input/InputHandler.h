@@ -15,7 +15,7 @@ namespace Engine
         void bindKeyStateCommand(SDL_Scancode key, const std::function<void()>& command);
         void bindKeyEventCommand(SDL_Scancode key, const std::function<void()>& command, bool allowRepeat);
         void handleInputState();
-        void handleKeyEvent(SDL_KeyboardEvent event);
+        void handleKeyEvent(const SDL_KeyboardEvent& event) const;
 
     private:
         static constexpr int s_keyCount{SDL_SCANCODE_COUNT};

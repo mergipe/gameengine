@@ -2,7 +2,6 @@
 #define SCRIPTINGAPI_H
 
 #include "Entity.h"
-#include <entt/entt.hpp>
 
 namespace Engine::ScriptingApi
 {

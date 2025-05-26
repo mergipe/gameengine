@@ -17,10 +17,10 @@ namespace Engine
 
     glm::mat4 getTextureTransformation(const Texture2D& texture, const Rect& textureArea)
     {
-        float widthRatio{textureArea.width / static_cast<float>(texture.getWidth())};
-        float heightRatio{textureArea.height / static_cast<float>(texture.getHeight())};
-        glm::vec2 position{textureArea.getLeftX() / static_cast<float>(texture.getWidth()),
-                           textureArea.getTopY() / static_cast<float>(texture.getHeight())};
+        const float widthRatio{textureArea.width / static_cast<float>(texture.getWidth())};
+        const float heightRatio{textureArea.height / static_cast<float>(texture.getHeight())};
+        const glm::vec2 position{textureArea.getLeftX() / static_cast<float>(texture.getWidth()),
+                                 textureArea.getTopY() / static_cast<float>(texture.getHeight())};
         return Math::getTransformationMatrix(glm::vec3{position, 0.0f}, glm::vec3{0.0f},
                                              glm::vec3{widthRatio, heightRatio, 1.0f});
     }
@@ -39,7 +39,7 @@ namespace Engine
 
     void Renderer2D::init()
     {
-        if (!gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress)) {
+        if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress))) {
             Logger::critical("Failed to initialize GLAD");
             std::abort();
         }
@@ -47,7 +47,7 @@ namespace Engine
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         setViewport(0, 0, m_window->getWidth(), m_window->getHeight());
         setClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        std::array<GLfloat, 24> spriteVertexData{
+        constexpr std::array<GLfloat, 24> spriteVertexData{
             -0.5f, 0.5f,  0.0f, 1.0f, // top left
             0.5f,  -0.5f, 1.0f, 0.0f, // bottom right
             -0.5f, -0.5f, 0.0f, 0.0f, // bottom left
@@ -62,10 +62,11 @@ namespace Engine
         glBufferData(GL_ARRAY_BUFFER, sizeof(spriteVertexData), spriteVertexData.data(), GL_STATIC_DRAW);
         glBindVertexArray(m_spriteVao);
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*) 0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), static_cast<void*>(nullptr));
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*) (2 * sizeof(GLfloat)));
-        std::array<GLfloat, 8> quadVertices{
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat),
+                              reinterpret_cast<void*>(2 * sizeof(GLfloat)));
+        constexpr std::array<GLfloat, 8> quadVertices{
             -0.5f, -0.5f, // bottom left
             -0.5f, 0.5f,  // top left
             0.5f,  0.5f,  // top right
@@ -77,7 +78,7 @@ namespace Engine
         glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices.data(), GL_STATIC_DRAW);
         glBindVertexArray(m_quadVao);
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*) 0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), static_cast<void*>(nullptr));
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
         m_shaderManager = std::make_unique<ShaderManager>();

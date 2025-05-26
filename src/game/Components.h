@@ -43,7 +43,8 @@ namespace Engine
     };
 
     struct SpriteAnimationComponent final {
-        SpriteAnimationComponent(int framesCount = 1, int framesPerSecond = 1, bool shouldLoop = true)
+        explicit SpriteAnimationComponent(int framesCount = 1, int framesPerSecond = 1,
+                                          bool shouldLoop = true)
             : framesCount{framesCount}, framesPerSecond{framesPerSecond}, shouldLoop{shouldLoop}
         {
         }
@@ -55,7 +56,8 @@ namespace Engine
     };
 
     struct BoxCollider2DComponent final {
-        BoxCollider2DComponent(float width = 0, float height = 0, const glm::vec2& offset = glm::vec2{0.0f})
+        explicit BoxCollider2DComponent(float width = 0, float height = 0,
+                                        const glm::vec2& offset = glm::vec2{0.0f})
             : offset{offset}, width{width}, height{height}
         {
         }

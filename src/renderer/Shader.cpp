@@ -9,11 +9,11 @@ namespace Engine
     void Shader::compile(const char* vertexShaderCode, const char* fragmentShaderCode,
                          const char* geometryShaderCode)
     {
-        GLuint vertexShader{glCreateShader(GL_VERTEX_SHADER)};
+        const GLuint vertexShader{glCreateShader(GL_VERTEX_SHADER)};
         glShaderSource(vertexShader, 1, &vertexShaderCode, nullptr);
         glCompileShader(vertexShader);
         checkCompileErrors(vertexShader, "vertex");
-        GLuint fragmentShader{glCreateShader(GL_FRAGMENT_SHADER)};
+        const GLuint fragmentShader{glCreateShader(GL_FRAGMENT_SHADER)};
         glShaderSource(fragmentShader, 1, &fragmentShaderCode, nullptr);
         glCompileShader(fragmentShader);
         checkCompileErrors(vertexShader, "fragment");

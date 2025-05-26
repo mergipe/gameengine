@@ -52,7 +52,7 @@ namespace Engine
         float m_aspectRatio{};
     };
 
-    class OrthographicCamera : public Camera
+    class OrthographicCamera final : public Camera
     {
     public:
         OrthographicCamera(float zNear, float zFar, float viewportWidth, float viewportHeight);
@@ -61,7 +61,7 @@ namespace Engine
         Rect getFarPlaneGeometry() const override;
     };
 
-    class PerspectiveCamera : public Camera
+    class PerspectiveCamera final : public Camera
     {
     public:
         PerspectiveCamera(float zNear, float zFar, float viewportWidth, float viewportHeight, float fovY);

@@ -46,7 +46,7 @@ namespace Engine
     class Texture2D
     {
     public:
-        Texture2D(const TextureConfig& config);
+        explicit Texture2D(const TextureConfig& config);
         Texture2D(const Texture2D&) = delete;
         Texture2D(Texture2D&&) = delete;
         Texture2D& operator=(const Texture2D&) = delete;
@@ -54,7 +54,7 @@ namespace Engine
         ~Texture2D();
         GLsizei getWidth() const { return m_width; }
         GLsizei getHeight() const { return m_height; }
-        void create(unsigned char* data, GLsizei width, GLsizei height, GLint imageFormat);
+        void create(const unsigned char* data, GLsizei width, GLsizei height, GLint imageFormat);
         void bind() const;
 
     private:

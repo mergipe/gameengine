@@ -72,7 +72,7 @@ namespace Engine
         if (!maybeTilemap) {
             return {static_cast<float>(windowConfig.width), static_cast<float>(windowConfig.height)};
         }
-        const sol::table tilemap{maybeTilemap.value()};
+        const sol::table& tilemap{maybeTilemap.value()};
         const std::string mapFilepath{tilemap["map_file"].get_or(std::string{})};
         Logger::info("Loading map from {}", mapFilepath);
         const std::string textureId{tilemap["texture_id"].get_or(std::string{})};
@@ -90,7 +90,7 @@ namespace Engine
         const float leftX{-static_cast<float>(windowConfig.width) / 2};
         const float topY{static_cast<float>(windowConfig.height) / 2};
         for (size_t i{0}; i < tilemapCsv.size(); ++i) {
-            const std::vector<int> values{tilemapCsv[i]};
+            const std::vector<int>& values{tilemapCsv[i]};
             for (size_t j{0}; j < values.size(); ++j) {
                 auto tile{registry.create()};
                 registry.emplace<TagComponent>(tile, internString("tile"));
@@ -103,7 +103,7 @@ namespace Engine
                 registry.emplace<SpriteComponent>(
                     tile, internString(textureId),
                     Rect{glm::vec2{tileSize * static_cast<float>(tileId % tilesetCols),
-                                   tileSize * static_cast<float>(tileId / tilesetCols)},
+                                   tileSize * static_cast<float>(tileId) / static_cast<float>(tilesetCols)},
                          tileSize, tileSize, glm::vec2{0.0f, 1.0f}},
                     glm::vec3{1.0f}, 0);
             }
@@ -118,15 +118,15 @@ namespace Engine
         if (!maybeEntities) {
             return;
         }
-        for (const auto& entry : maybeEntities.value()) {
-            if (!entry.second.is<sol::table>()) {
+        for (const auto& entityEntry : maybeEntities.value()) {
+            if (!entityEntry.second.is<sol::table>()) {
                 continue;
             }
-            const sol::table entityTable{entry.second};
+            const sol::table entityTable{entityEntry.second};
             const sol::optional<sol::table> maybeComponents{entityTable["components"]};
             if (maybeComponents) {
                 auto entity{registry.create()};
-                const sol::table components{maybeComponents.value()};
+                const sol::table& components{maybeComponents.value()};
                 const std::string idStr{components["id"].get_or(std::string{})};
                 if (!idStr.empty()) {
                     registry.emplace<IdComponent>(entity, internString(idStr));
@@ -140,7 +140,7 @@ namespace Engine
                 }
                 const sol::optional<sol::table> maybeTransform{components["transform"]};
                 if (maybeTransform) {
-                    const sol::table transform{maybeTransform.value()};
+                    const sol::table& transform{maybeTransform.value()};
                     registry.emplace<TransformComponent>(
                         entity,
                         glm::vec3{transform["position"]["x"].get_or(0.0f),
@@ -154,7 +154,7 @@ namespace Engine
                 }
                 const sol::optional<sol::table> maybeRigidBody2D{components["rigid_body"]};
                 if (maybeRigidBody2D) {
-                    const sol::table rigidBody2D{maybeRigidBody2D.value()};
+                    const sol::table& rigidBody2D{maybeRigidBody2D.value()};
                     registry.emplace<RigidBody2DComponent>(
                         entity, glm::vec3{rigidBody2D["velocity"]["x"].get_or(0.0f),
                                           rigidBody2D["velocity"]["y"].get_or(0.0f),
@@ -162,7 +162,7 @@ namespace Engine
                 }
                 const sol::optional<sol::table> maybeSprite{components["sprite"]};
                 if (maybeSprite) {
-                    const sol::table sprite{maybeSprite.value()};
+                    const sol::table& sprite{maybeSprite.value()};
                     const std::string textureId{sprite["texture_id"].get_or(std::string{})};
                     registry.emplace<SpriteComponent>(
                         entity, internString(textureId),
@@ -175,7 +175,7 @@ namespace Engine
                 }
                 const sol::optional<sol::table> maybeSpriteAnimation{components["sprite_animation"]};
                 if (maybeSpriteAnimation) {
-                    const sol::table spriteAnimation{maybeSpriteAnimation.value()};
+                    const sol::table& spriteAnimation{maybeSpriteAnimation.value()};
                     registry.emplace<SpriteAnimationComponent>(entity,
                                                                spriteAnimation["frames_count"].get_or(1),
                                                                spriteAnimation["frames_per_second"].get_or(1),
@@ -183,7 +183,7 @@ namespace Engine
                 }
                 const sol::optional<sol::table> maybeBoxCollider2D{components["box_collider"]};
                 if (maybeBoxCollider2D) {
-                    const sol::table boxCollider2D{maybeBoxCollider2D.value()};
+                    const sol::table& boxCollider2D{maybeBoxCollider2D.value()};
                     registry.emplace<BoxCollider2DComponent>(
                         entity, boxCollider2D["width"].get_or(0.0f), boxCollider2D["height"].get_or(0.0f),
                         glm::vec2{boxCollider2D["offset"]["x"].get_or(0.0f),
@@ -196,11 +196,11 @@ namespace Engine
                 const sol::optional<sol::table> maybeScripts{components["scripts"]};
                 if (maybeScripts) {
                     std::vector<Script> scripts{};
-                    for (const auto& entry : maybeScripts.value()) {
-                        if (!entry.second.is<sol::table>()) {
+                    for (const auto& scriptEntry : maybeScripts.value()) {
+                        if (!scriptEntry.second.is<sol::table>()) {
                             continue;
                         }
-                        const sol::table scriptTable{entry.second};
+                        const sol::table scriptTable{scriptEntry.second};
                         const std::string filepath{scriptTable["filepath"].get_or(std::string{})};
                         const std::string className{scriptTable["class_name"].get_or(std::string{})};
                         if (!filepath.empty() && !className.empty()) {
@@ -215,7 +215,7 @@ namespace Engine
                 }
                 const sol::optional<sol::table> maybeCamera{components["camera"]};
                 if (maybeCamera) {
-                    const sol::table camera{maybeCamera.value()};
+                    const sol::table& camera{maybeCamera.value()};
                     const std::string projectionTypeStr{
                         camera["projection"].get_or(std::string{"orthographic"})};
                     const std::optional<ProjectionType> projectionType{getProjectionType(projectionTypeStr)};
@@ -260,7 +260,7 @@ namespace Engine
             Logger::error("Error parsing scene: Scene table not found!", sceneFilepath.c_str());
             return {};
         }
-        const sol::table scene{maybeScene.value()};
+        const sol::table& scene{maybeScene.value()};
         loadAssets(scene, resourceManager);
         SceneData sceneData{};
         sceneData.mapData = loadMap(scene, registry);
