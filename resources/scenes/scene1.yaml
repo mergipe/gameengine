@@ -1,0 +1,150 @@
+assets:
+  - type: texture
+    id: spritesheet-texture
+    file: textures/space-shooter-spritesheet.png
+    min_filter: linear
+    mag_filter: linear
+    wrap_x: repeat
+    wrap_y: repeat
+  - type: texture
+    id: planet-texture
+    file: textures/planet00.png
+    min_filter: linear
+    mag_filter: linear
+entities:
+  - components:
+      id: Camera
+      tag: Camera
+      transform:
+        position:
+          x: 0
+          y: 0
+          z: 3
+        scale:
+          x: 1
+          y: 1
+          z: 1
+        rotation:
+          x: 0
+          y: 0
+          z: 0
+      camera:
+        projection: orthographic
+        z_near: 0.1
+        z_far: 100
+        #fov_y: 45
+  - components:
+      id: Player1
+      tag: player
+      transform:
+        position:
+          x: -1500
+          y: 800
+          z: 0
+        scale:
+          x: 0.4
+          y: 0.4
+          z: 0
+        rotation:
+          x: 0
+          y: 0
+          z: 0
+      rigid_body:
+        velocity:
+          x: 0.0
+          y: 0.0
+      sprite:
+        texture_id: spritesheet-texture
+        texture_x: 896
+        texture_y: 305
+        width: 228
+        height: 163
+        color:
+          r: 1.0
+          g: 1.0
+          b: 1.0
+        z_index: 4
+      box_collider:
+        width: 228
+        height: 163
+        offset:
+          x: 0
+          y: 0
+      player_input:
+      scripts:
+        - filepath: scripts/player/player_controller.lua
+          class_name: PlayerController
+  - components:
+      id: Player2
+      tag: player
+      transform:
+        position:
+          x: 1500
+          y: 800
+          z: 0
+        scale:
+          x: 0.4
+          y: 0.4
+          z: 0
+        rotation:
+          x: 0
+          y: 0
+          z: 0
+      rigid_body:
+        velocity:
+          x: 0.0
+          y: 0.0
+      sprite:
+        texture_id: spritesheet-texture
+        texture_x: 896
+        texture_y: 0
+        width: 252
+        height: 216
+        color:
+          r: 1.0
+          g: 1.0
+          b: 1.0
+        z_index: 4
+      box_collider:
+        width: 252
+        height: 216
+        offset:
+          x: 0
+          y: 0
+      player_input:
+      scripts:
+        - filepath: scripts/player/player_controller.lua
+          class_name: PlayerController
+  - components:
+      id: Planet
+      tag: planet
+      transform:
+        position:
+          x: 0
+          y: 0
+          z: 0
+        scale:
+          x: 1.0
+          y: 1.0
+          z: 0
+        rotation:
+          x: 0
+          y: 0
+          z: 0
+      sprite:
+        texture_id: planet-texture
+        texture_x: 0
+        texture_y: 0
+        width: 1280
+        height: 1280
+        z_index: 1
+        color:
+          r: 1
+          g: 1
+          b: 1
+      box_collider:
+        width: 1030
+        height: 1030
+        offset:
+          x: 0
+          y: 0

@@ -21,7 +21,7 @@ namespace Engine
         }
         SceneLoader sceneLoader{};
         const std::filesystem::path scenesFolder{m_resourceManager->getResourcePath("scenes")};
-        m_sceneData = sceneLoader.load(scenesFolder / "scene1.lua", *m_registry, *m_resourceManager,
+        m_sceneData = sceneLoader.load(scenesFolder / "scene1.yaml", *m_registry, *m_resourceManager,
                                        *m_scriptingSystem);
         m_scriptingSystem->start();
     }

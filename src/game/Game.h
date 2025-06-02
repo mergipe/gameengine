@@ -27,7 +27,7 @@ namespace Engine
         void shutDown();
         EventBus& getEventBus() const { return *m_eventBus; }
         DevGui& getDevGui() const { return *m_devGui; }
-        const WindowConfig& getWindowConfig() const { return m_window->getConfig(); }
+        const Config::WindowConfig& getWindowConfig() const { return m_window->getConfig(); }
         bool hasDevMode() const { return m_hasDevMode; }
         bool isDevModeEnabled() const { return m_isDevModeEnabled; }
         void toggleDevMode() { m_isDevModeEnabled = !m_isDevModeEnabled; }

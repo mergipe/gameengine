@@ -10,54 +10,62 @@
 #include <fstream>
 #include <glm/glm.hpp>
 #include <sol/sol.hpp>
+#include <yaml-cpp/yaml.h>
 
 namespace Engine
 {
-    TextureConfig getTextureConfig(const sol::table& texture)
+    TextureConfig getTextureConfig(const YAML::Node& textureNode)
     {
         TextureConfig config{};
-        const std::optional<TextureFiltering> minFilter{
-            getTextureFiltering(texture["min_filter"].get_or(std::string{}))};
-        if (minFilter) {
-            config.minFilter = *minFilter;
+        if (textureNode["min_filter"]) {
+            const std::optional minFilter{
+                getTextureFiltering(textureNode["min_filter"].as<std::string>(std::string{}))};
+            if (minFilter) {
+                config.minFilter = *minFilter;
+            }
         }
-        const std::optional<TextureFiltering> magFilter{
-            getTextureFiltering(texture["mag_filter"].get_or(std::string{}))};
-        if (magFilter) {
-            config.magFilter = *magFilter;
+        if (textureNode["mag_filter"]) {
+            const std::optional magFilter{
+                getTextureFiltering(textureNode["mag_filter"].as<std::string>(std::string{}))};
+            if (magFilter) {
+                config.magFilter = *magFilter;
+            }
         }
-        const std::optional<TextureWrapping> wrapX{
-            getTextureWrapping(texture["wrap_x"].get_or(std::string{}))};
-        if (wrapX) {
-            config.wrapX = *wrapX;
+        if (textureNode["wrap_x"]) {
+            const std::optional wrapX{
+                getTextureWrapping(textureNode["wrap_x"].as<std::string>(std::string{}))};
+            if (wrapX) {
+                config.wrapX = *wrapX;
+            }
         }
-        const std::optional<TextureWrapping> wrapY{
-            getTextureWrapping(texture["wrap_y"].get_or(std::string{}))};
-        if (wrapY) {
-            config.wrapY = *wrapY;
+        if (textureNode["wrap_y"]) {
+            const std::optional wrapY{
+                getTextureWrapping(textureNode["wrap_y"].as<std::string>(std::string{}))};
+            if (wrapY) {
+                config.wrapY = *wrapY;
+            }
         }
         return config;
     }
 
-    void loadAssets(const sol::table& scene, ResourceManager& resourceManager)
+    void loadAssets(const YAML::Node& assetsNode, ResourceManager& resourceManager)
     {
-        const sol::optional<sol::table> maybeAssets{scene["assets"]};
-        if (!maybeAssets) {
+        if (!assetsNode.IsDefined()) {
             return;
         }
-        for (const auto& entry : maybeAssets.value()) {
-            const sol::table asset{entry.second};
-            const std::string typeStr{asset["type"].get_or(std::string{})};
+        for (YAML::const_iterator it{assetsNode.begin()}; it != assetsNode.end(); ++it) {
+            const YAML::Node assetNode{*it};
+            const std::string typeStr{assetNode["type"].as<std::string>(std::string{})};
             const auto type{getResourceType(typeStr)};
             if (!type) {
                 Logger::warn("Asset type '{}' unknown", typeStr);
                 continue;
             }
-            const std::string assetId{asset["id"].get_or(std::string{})};
-            const std::string filepath{asset["file"].get_or(std::string{})};
+            const std::string assetId{assetNode["id"].as<std::string>(std::string{})};
+            const std::string filepath{assetNode["file"].as<std::string>(std::string{})};
             switch (type.value()) {
             case ResourceType::texture:
-                resourceManager.loadTexture(internString(assetId), filepath, getTextureConfig(asset));
+                resourceManager.loadTexture(internString(assetId), filepath, getTextureConfig(assetNode));
                 break;
             default:
                 break;
@@ -65,22 +73,20 @@ namespace Engine
         }
     }
 
-    MapData loadMap(const sol::table& scene, entt::registry& registry)
+    MapData loadTilemap(const YAML::Node& tilemapNode, entt::registry& registry)
     {
-        const sol::optional<sol::table> maybeTilemap{scene["tilemap"]};
         const auto& windowConfig{Game::instance().getWindowConfig()};
-        if (!maybeTilemap) {
+        if (!tilemapNode.IsDefined()) {
             return {static_cast<float>(windowConfig.width), static_cast<float>(windowConfig.height)};
         }
-        const sol::table& tilemap{maybeTilemap.value()};
-        const std::string mapFilepath{tilemap["map_file"].get_or(std::string{})};
+        const std::string mapFilepath{tilemapNode["map_file"].as<std::string>(std::string{})};
         Logger::info("Loading map from {}", mapFilepath);
-        const std::string textureId{tilemap["texture_id"].get_or(std::string{})};
-        const int mapRows{tilemap["map_rows"].get_or(0)};
-        const int mapCols{tilemap["map_cols"].get_or(0)};
-        const int tilesetCols{tilemap["tileset_cols"].get_or(0)};
-        const float tileSize{tilemap["tile_size"].get_or(0.0f)};
-        const float scale{tilemap["scale"].get_or(0.0f)};
+        const std::string textureId{tilemapNode["texture_id"].as<std::string>(std::string{})};
+        const int mapRows{tilemapNode["map_rows"].as<int>(0)};
+        const int mapCols{tilemapNode["map_cols"].as<int>(0)};
+        const int tilesetCols{tilemapNode["tileset_cols"].as<int>(0)};
+        const float tileSize{tilemapNode["tile_size"].as<float>(0.0f)};
+        const float scale{tilemapNode["scale"].as<float>(0.0f)};
         std::ifstream tilemapFile{mapFilepath};
         if (!tilemapFile) {
             Logger::error("Error opening {} map file", mapFilepath);
@@ -112,99 +118,91 @@ namespace Engine
                        static_cast<float>(mapRows) * tileSize * scale};
     }
 
-    void loadEntities(const sol::table& scene, entt::registry& registry, ScriptingSystem& scriptingSystem)
+    void loadEntities(const YAML::Node& entitiesNode, entt::registry& registry,
+                      ScriptingSystem& scriptingSystem)
     {
-        const sol::optional<sol::table> maybeEntities{scene["entities"]};
-        if (!maybeEntities) {
+        if (!entitiesNode.IsDefined()) {
             return;
         }
-        for (const auto& entityEntry : maybeEntities.value()) {
-            if (!entityEntry.second.is<sol::table>()) {
-                continue;
-            }
-            const sol::table entityTable{entityEntry.second};
-            const sol::optional<sol::table> maybeComponents{entityTable["components"]};
-            if (maybeComponents) {
+        for (YAML::const_iterator it{entitiesNode.begin()}; it != entitiesNode.end(); ++it) {
+            const YAML::Node entityNode{*it};
+            const YAML::Node componentsNode{entityNode["components"]};
+            if (componentsNode.IsDefined()) {
                 auto entity{registry.create()};
-                const sol::table& components{maybeComponents.value()};
-                const std::string idStr{components["id"].get_or(std::string{})};
+                const std::string idStr{componentsNode["id"].as<std::string>(std::string{})};
                 if (!idStr.empty()) {
                     registry.emplace<IdComponent>(entity, internString(idStr));
                 } else {
                     Logger::warn("Ignoring entity without id");
                     continue;
                 }
-                const std::string tag{components["tag"].get_or(std::string{})};
+                const std::string tag{componentsNode["tag"].as<std::string>(std::string{})};
                 if (!tag.empty()) {
                     registry.emplace<TagComponent>(entity, internString(tag));
                 }
-                const sol::optional<sol::table> maybeTransform{components["transform"]};
-                if (maybeTransform) {
-                    const sol::table& transform{maybeTransform.value()};
+                const YAML::Node transformNode{componentsNode["transform"]};
+                if (transformNode.IsDefined()) {
                     registry.emplace<TransformComponent>(
                         entity,
-                        glm::vec3{transform["position"]["x"].get_or(0.0f),
-                                  transform["position"]["y"].get_or(0.0f),
-                                  transform["position"]["z"].get_or(0.0f)},
-                        glm::vec3{transform["scale"]["x"].get_or(1.0f), transform["scale"]["y"].get_or(1.0f),
-                                  transform["scale"]["z"].get_or(1.0f)},
-                        glm::vec3{glm::radians(transform["rotation"]["x"].get_or(0.0f)),
-                                  glm::radians(transform["rotation"]["y"].get_or(0.0f)),
-                                  glm::radians(transform["rotation"]["z"].get_or(0.0f))});
+                        glm::vec3{transformNode["position"]["x"].as<float>(0.0f),
+                                  transformNode["position"]["y"].as<float>(0.0f),
+                                  transformNode["position"]["z"].as<float>(0.0f)},
+                        glm::vec3{transformNode["scale"]["x"].as<float>(1.0f),
+                                  transformNode["scale"]["y"].as<float>(1.0f),
+                                  transformNode["scale"]["z"].as<float>(1.0f)},
+                        glm::vec3{glm::radians(transformNode["rotation"]["x"].as<float>(0.0f)),
+                                  glm::radians(transformNode["rotation"]["y"].as<float>(0.0f)),
+                                  glm::radians(transformNode["rotation"]["z"].as<float>(0.0f))});
                 }
-                const sol::optional<sol::table> maybeRigidBody2D{components["rigid_body"]};
-                if (maybeRigidBody2D) {
-                    const sol::table& rigidBody2D{maybeRigidBody2D.value()};
+                const YAML::Node rigidBody2DNode{componentsNode["rigid_body"]};
+                if (rigidBody2DNode.IsDefined()) {
                     registry.emplace<RigidBody2DComponent>(
-                        entity, glm::vec3{rigidBody2D["velocity"]["x"].get_or(0.0f),
-                                          rigidBody2D["velocity"]["y"].get_or(0.0f),
-                                          rigidBody2D["velocity"]["z"].get_or(0.0f)});
+                        entity, glm::vec3{rigidBody2DNode["velocity"]["x"].as<float>(0.0f),
+                                          rigidBody2DNode["velocity"]["y"].as<float>(0.0f),
+                                          rigidBody2DNode["velocity"]["z"].as<float>(0.0f)});
                 }
-                const sol::optional<sol::table> maybeSprite{components["sprite"]};
-                if (maybeSprite) {
-                    const sol::table& sprite{maybeSprite.value()};
-                    const std::string textureId{sprite["texture_id"].get_or(std::string{})};
-                    registry.emplace<SpriteComponent>(
-                        entity, internString(textureId),
-                        Rect{glm::vec2{sprite["texture_x"].get_or(0.0f), sprite["texture_y"].get_or(0.0f)},
-                             sprite["width"].get_or(0.0f), sprite["height"].get_or(0.0f),
-                             glm::vec2{0.0f, 1.0f}},
-                        glm::vec3{sprite["color"]["r"].get_or(1.0f), sprite["color"]["g"].get_or(1.0f),
-                                  sprite["color"]["b"].get_or(1.0f)},
-                        sprite["z_index"].get_or(0));
+                const YAML::Node spriteNode{componentsNode["sprite"]};
+                if (spriteNode.IsDefined()) {
+                    const std::string textureId{spriteNode["texture_id"].as<std::string>(std::string{})};
+                    registry.emplace<SpriteComponent>(entity, internString(textureId),
+                                                      Rect{glm::vec2{spriteNode["texture_x"].as<float>(0.0f),
+                                                                     spriteNode["texture_y"].as<float>(0.0f)},
+                                                           spriteNode["width"].as<float>(0.0f),
+                                                           spriteNode["height"].as<float>(0.0f),
+                                                           glm::vec2{0.0f, 1.0f}},
+                                                      glm::vec3{spriteNode["color"]["r"].as<float>(1.0f),
+                                                                spriteNode["color"]["g"].as<float>(1.0f),
+                                                                spriteNode["color"]["b"].as<float>(1.0f)},
+                                                      spriteNode["z_index"].as<int>(0));
                 }
-                const sol::optional<sol::table> maybeSpriteAnimation{components["sprite_animation"]};
-                if (maybeSpriteAnimation) {
-                    const sol::table& spriteAnimation{maybeSpriteAnimation.value()};
-                    registry.emplace<SpriteAnimationComponent>(entity,
-                                                               spriteAnimation["frames_count"].get_or(1),
-                                                               spriteAnimation["frames_per_second"].get_or(1),
-                                                               spriteAnimation["should_loop"].get_or(true));
+                const YAML::Node spriteAnimationNode{componentsNode["sprite_animation"]};
+                if (spriteAnimationNode.IsDefined()) {
+                    registry.emplace<SpriteAnimationComponent>(
+                        entity, spriteAnimationNode["frames_count"].as<int>(1),
+                        spriteAnimationNode["frames_per_second"].as<int>(1),
+                        spriteAnimationNode["should_loop"].as<bool>(true));
                 }
-                const sol::optional<sol::table> maybeBoxCollider2D{components["box_collider"]};
-                if (maybeBoxCollider2D) {
-                    const sol::table& boxCollider2D{maybeBoxCollider2D.value()};
+                const YAML::Node boxCollider2DNode{componentsNode["box_collider"]};
+                if (boxCollider2DNode.IsDefined()) {
                     registry.emplace<BoxCollider2DComponent>(
-                        entity, boxCollider2D["width"].get_or(0.0f), boxCollider2D["height"].get_or(0.0f),
-                        glm::vec2{boxCollider2D["offset"]["x"].get_or(0.0f),
-                                  boxCollider2D["offset"]["y"].get_or(0.0f)});
+                        entity, boxCollider2DNode["width"].as<float>(0.0f),
+                        boxCollider2DNode["height"].as<float>(0.0f),
+                        glm::vec2{boxCollider2DNode["offset"]["x"].as<float>(0.0f),
+                                  boxCollider2DNode["offset"]["y"].as<float>(0.0f)});
                 }
-                const sol::optional<sol::table> maybePlayerInput{components["player_input"]};
-                if (maybePlayerInput) {
+                const YAML::Node playerInputNode{componentsNode["player_input"]};
+                if (playerInputNode.IsDefined()) {
                     registry.emplace<PlayerInputComponent>(entity);
                 }
-                const sol::optional<sol::table> maybeScripts{components["scripts"]};
-                if (maybeScripts) {
+                const YAML::Node scriptsNode{componentsNode["scripts"]};
+                if (scriptsNode.IsDefined()) {
                     std::vector<Script> scripts{};
-                    for (const auto& scriptEntry : maybeScripts.value()) {
-                        if (!scriptEntry.second.is<sol::table>()) {
-                            continue;
-                        }
-                        const sol::table scriptTable{scriptEntry.second};
-                        const std::string filepath{scriptTable["filepath"].get_or(std::string{})};
-                        const std::string className{scriptTable["class_name"].get_or(std::string{})};
+                    for (YAML::const_iterator it{scriptsNode.begin()}; it != scriptsNode.end(); ++it) {
+                        const YAML::Node scriptNode{*it};
+                        const std::string filepath{scriptNode["filepath"].as<std::string>(std::string{})};
+                        const std::string className{scriptNode["class_name"].as<std::string>(std::string{})};
                         if (!filepath.empty() && !className.empty()) {
-                            std::optional<Script> maybeScript{
+                            std::optional maybeScript{
                                 scriptingSystem.loadScript(entity, filepath, className)};
                             if (maybeScript) {
                                 scripts.push_back(maybeScript.value());
@@ -213,14 +211,13 @@ namespace Engine
                     }
                     registry.emplace<ScriptComponent>(entity, scripts);
                 }
-                const sol::optional<sol::table> maybeCamera{components["camera"]};
-                if (maybeCamera) {
-                    const sol::table& camera{maybeCamera.value()};
+                const YAML::Node cameraNode{componentsNode["camera"]};
+                if (cameraNode.IsDefined()) {
                     const std::string projectionTypeStr{
-                        camera["projection"].get_or(std::string{"orthographic"})};
-                    const std::optional<ProjectionType> projectionType{getProjectionType(projectionTypeStr)};
-                    const float zNear{camera["z_near"].get_or(-1.0f)};
-                    const float zFar{camera["z_far"].get_or(100.0f)};
+                        cameraNode["projection"].as<std::string>(std::string{"orthographic"})};
+                    const std::optional projectionType{getProjectionType(projectionTypeStr)};
+                    const float zNear{cameraNode["z_near"].as<float>(-1.0f)};
+                    const float zFar{cameraNode["z_far"].as<float>(100.0f)};
                     const auto& windowConfig{Game::instance().getWindowConfig()};
                     const float viewportWidth{static_cast<float>(windowConfig.width)};
                     const float viewportHeight{static_cast<float>(windowConfig.height)};
@@ -229,7 +226,7 @@ namespace Engine
                         cameraPtr =
                             std::make_unique<OrthographicCamera>(zNear, zFar, viewportWidth, viewportHeight);
                     } else if (projectionType == ProjectionType::perspective) {
-                        const float fovY{camera["fov_y"].get_or(45.0f)};
+                        const float fovY{cameraNode["fov_y"].as<float>(45.0f)};
                         cameraPtr = std::make_unique<PerspectiveCamera>(zNear, zFar, viewportWidth,
                                                                         viewportHeight, glm::radians(fovY));
                     }
@@ -245,26 +242,11 @@ namespace Engine
                                 ResourceManager& resourceManager, ScriptingSystem& scriptingSystem)
     {
         Logger::info("Loading scene from {}", sceneFilepath.c_str());
-        sol::state lua{};
-        lua.open_libraries(sol::lib::base);
-        const auto result{lua.script_file(sceneFilepath, sol::script_pass_on_error)};
-        if (!result.valid()) {
-            const sol::error error{result};
-            const sol::call_status status{result.status()};
-            Logger::error("Error loading scene file {}: {} error\n\t{}", sceneFilepath.c_str(),
-                          sol::to_string(status), error.what());
-            return {};
-        }
-        const sol::optional<sol::table> maybeScene{lua["Scene"]};
-        if (!maybeScene) {
-            Logger::error("Error parsing scene: Scene table not found!", sceneFilepath.c_str());
-            return {};
-        }
-        const sol::table& scene{maybeScene.value()};
-        loadAssets(scene, resourceManager);
+        const YAML::Node rootNode{YAML::LoadFile(sceneFilepath)};
+        loadAssets(rootNode["assets"], resourceManager);
         SceneData sceneData{};
-        sceneData.mapData = loadMap(scene, registry);
-        loadEntities(scene, registry, scriptingSystem);
+        sceneData.mapData = loadTilemap(rootNode["tilemap"], registry);
+        loadEntities(rootNode["entities"], registry, scriptingSystem);
         return sceneData;
     }
 } // namespace Engine

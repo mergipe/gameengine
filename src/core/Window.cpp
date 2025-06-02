@@ -3,7 +3,7 @@
 
 namespace Engine
 {
-    Window::Window(const WindowConfig& config)
+    Window::Window(const Config::WindowConfig& config)
         : m_config{config}
     {
         if (m_config.width <= 0 || m_config.height <= 0) {

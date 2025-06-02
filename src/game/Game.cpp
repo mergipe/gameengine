@@ -28,7 +28,7 @@ namespace Engine
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-        m_window = std::make_unique<Window>(Config::loadWindowConfig());
+        m_window = std::make_unique<Window>(Config::loadVideoConfig().windowConfig);
         m_window->init();
         m_renderer = std::make_unique<Renderer2D>(m_window.get());
         m_renderer->init();
