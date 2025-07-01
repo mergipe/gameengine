@@ -4,7 +4,6 @@ add_executable(${PROJECT_NAME}
         core/Filesystem.cpp
         core/IO.cpp
         core/Logger.cpp
-        core/StringId.cpp
         core/Timer.cpp
         core/Window.cpp
         debug/DevGui.cpp
@@ -28,7 +27,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 target_link_sdl(${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME} PRIVATE glm sol imgui entt glad stb_image rapidhash spdlog yaml-cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE entt glad glm imgui sol spdlog stb_image wyhash yaml-cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LUA_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${OPENGL_LIBRARIES})
 target_compile_definitions(${PROJECT_NAME} PUBLIC SOL_ALL_SAFETIES_ON=1)

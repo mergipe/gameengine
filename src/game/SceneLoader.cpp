@@ -65,7 +65,8 @@ namespace Engine
             const std::string filepath{assetNode["file"].as<std::string>(std::string{})};
             switch (type.value()) {
             case ResourceType::texture:
-                resourceManager.loadTexture(internString(assetId), filepath, getTextureConfig(assetNode));
+                resourceManager.loadTexture(StringId::generate(assetId), filepath,
+                                            getTextureConfig(assetNode));
                 break;
             default:
                 break;
@@ -99,7 +100,7 @@ namespace Engine
             const std::vector<int>& values{tilemapCsv[i]};
             for (size_t j{0}; j < values.size(); ++j) {
                 auto tile{registry.create()};
-                registry.emplace<TagComponent>(tile, internString("tile"));
+                registry.emplace<TagComponent>(tile, SID("tile"));
                 registry.emplace<TransformComponent>(
                     tile,
                     glm::vec3{leftX + static_cast<float>(j) * tileSize * scale,
@@ -107,7 +108,7 @@ namespace Engine
                     glm::vec3{scale, scale, 0.0f});
                 const int tileId{values[j]};
                 registry.emplace<SpriteComponent>(
-                    tile, internString(textureId),
+                    tile, StringId::generate(textureId),
                     Rect{glm::vec2{tileSize * static_cast<float>(tileId % tilesetCols),
                                    tileSize * static_cast<float>(tileId) / static_cast<float>(tilesetCols)},
                          tileSize, tileSize, glm::vec2{0.0f, 1.0f}},
@@ -131,14 +132,14 @@ namespace Engine
                 auto entity{registry.create()};
                 const std::string idStr{componentsNode["id"].as<std::string>(std::string{})};
                 if (!idStr.empty()) {
-                    registry.emplace<IdComponent>(entity, internString(idStr));
+                    registry.emplace<IdComponent>(entity, StringId::generate(idStr));
                 } else {
                     Logger::warn("Ignoring entity without id");
                     continue;
                 }
                 const std::string tag{componentsNode["tag"].as<std::string>(std::string{})};
                 if (!tag.empty()) {
-                    registry.emplace<TagComponent>(entity, internString(tag));
+                    registry.emplace<TagComponent>(entity, StringId::generate(tag));
                 }
                 const YAML::Node transformNode{componentsNode["transform"]};
                 if (transformNode.IsDefined()) {
@@ -164,7 +165,7 @@ namespace Engine
                 const YAML::Node spriteNode{componentsNode["sprite"]};
                 if (spriteNode.IsDefined()) {
                     const std::string textureId{spriteNode["texture_id"].as<std::string>(std::string{})};
-                    registry.emplace<SpriteComponent>(entity, internString(textureId),
+                    registry.emplace<SpriteComponent>(entity, StringId::generate(textureId),
                                                       Rect{glm::vec2{spriteNode["texture_x"].as<float>(0.0f),
                                                                      spriteNode["texture_y"].as<float>(0.0f)},
                                                            spriteNode["width"].as<float>(0.0f),

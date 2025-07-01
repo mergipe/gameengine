@@ -11,9 +11,10 @@
 -I./thirdparty/glad/include
 -I./thirdparty/glm/include
 -I./thirdparty/imgui/include
--I./thirdparty/rapidhash/include
 -I./thirdparty/sol/include
 -I./thirdparty/spdlog/include
 -I./thirdparty/stb_image/include
+-I./thirdparty/wyhash/include
+-I./thirdparty/yaml-cpp/include
 -I./src
 -I/usr/include/SDL3

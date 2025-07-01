@@ -38,7 +38,7 @@ namespace Engine
         const Texture2D& getTexture(const StringId& textureId) const;
 
     private:
-        std::unordered_map<StringIdType, std::unique_ptr<Texture2D>> m_textures{};
+        std::unordered_map<StringId, std::unique_ptr<Texture2D>> m_textures{};
         std::unique_ptr<Texture2D> m_fallbackTexture{};
     };
 } // namespace Engine

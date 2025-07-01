@@ -21,13 +21,10 @@ namespace Engine
         auto shader{std::make_unique<Shader>()};
         shader->compile(vertexShaderCode.c_str(), fragmentShaderCode.c_str(),
                         geometryShaderRelativePath ? geometryShaderCode.c_str() : nullptr);
-        m_shaders.insert(std::make_pair(shaderId.id, std::move(shader)));
-        Logger::info("'{}' shader loaded", shaderId.str.data());
-        return *m_shaders.at(shaderId.id);
+        m_shaders.insert(std::make_pair(shaderId, std::move(shader)));
+        Logger::info("'{}' shader loaded", shaderId.getString());
+        return *m_shaders.at(shaderId);
     }
 
-    const Shader& ShaderManager::getShader(const StringId& shaderId) const
-    {
-        return *m_shaders.at(shaderId.id);
-    }
+    const Shader& ShaderManager::getShader(const StringId& shaderId) const { return *m_shaders.at(shaderId); }
 } // namespace Engine

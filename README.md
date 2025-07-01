@@ -10,7 +10,6 @@
 ### Scripting system
 
 - Make script variables configurable via scene file
-- Address lua uint64 problem
 
 ### Dev mode
 

@@ -63,13 +63,13 @@ namespace Engine
         auto texture{std::make_unique<Texture2D>(textureConfig)};
         texture->create(data, width, height, imageFormat);
         stbi_image_free(data);
-        m_textures.insert(std::make_pair(textureId.id, std::move(texture)));
-        Logger::info("Texture loaded from {}  as '{}'", path.c_str(), textureId.id);
+        m_textures.insert(std::make_pair(textureId, std::move(texture)));
+        Logger::info("Texture loaded from {} as '{}'", path.c_str(), textureId.getSid());
     }
 
     const Texture2D& ResourceManager::getTexture(const StringId& textureId) const
     {
-        const auto textureIterator{m_textures.find(textureId.id)};
+        const auto textureIterator{m_textures.find(textureId)};
         if (textureIterator != m_textures.end()) {
             return *textureIterator->second;
         }

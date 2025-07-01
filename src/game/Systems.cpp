@@ -225,7 +225,7 @@ namespace Engine
 
     void ScriptingSystem::createScriptBindings()
     {
-        m_lua.new_usertype<StringId>("StringId", "id", &StringId::id, "str", &StringId::str);
+        m_lua.new_usertype<StringId>("StringId", "id", &StringId::getSid, "str", &StringId::getString);
         m_lua.new_usertype<Entity>("Entity", "id", sol::property(&Entity::getId));
         m_lua.new_usertype<glm::vec2>("Vec2", sol::constructors<glm::vec2(float), glm::vec2(float, float)>(),
                                       "x", &glm::vec2::x, "y", &glm::vec2::y);

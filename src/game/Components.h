@@ -13,11 +13,11 @@
 namespace Engine
 {
     struct IdComponent final {
-        StringId sid{};
+        StringId sid;
     };
 
     struct TagComponent final {
-        StringId name{};
+        StringId name;
     };
 
     struct TransformComponent final {
@@ -36,7 +36,7 @@ namespace Engine
     };
 
     struct SpriteComponent final {
-        StringId textureId{};
+        StringId textureId;
         Rect textureArea{};
         glm::vec3 color{1.0f};
         int zIndex{0};

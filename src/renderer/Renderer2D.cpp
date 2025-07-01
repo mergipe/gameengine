@@ -82,10 +82,10 @@ namespace Engine
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
         m_shaderManager = std::make_unique<ShaderManager>();
-        m_shaderManager->loadShader(internString("sprite"), "sprite.vert", "sprite.frag")
+        m_shaderManager->loadShader(SID("sprite"), "sprite.vert", "sprite.frag")
             .use()
             .setUniform("textureSampler", 0);
-        m_shaderManager->loadShader(internString("primitives"), "primitives.vert", "primitives.frag").use();
+        m_shaderManager->loadShader(SID("primitives"), "primitives.vert", "primitives.frag").use();
         Logger::info("2D Renderer initialized");
     }
 

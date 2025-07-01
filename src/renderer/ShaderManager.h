@@ -27,7 +27,7 @@ namespace Engine
         const Shader& getShader(const StringId& shaderId) const;
 
     private:
-        std::unordered_map<StringIdType, std::unique_ptr<Shader>> m_shaders{};
+        std::unordered_map<StringId, std::unique_ptr<Shader>> m_shaders{};
         const std::filesystem::path m_shadersPath{Filesystem::getResourcesPath() / "shaders"};
     };
 } // namespace Engine
