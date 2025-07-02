@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "ShaderManager.h"
 #include "Shapes.h"
+#include "core/StringId.h"
 #include "core/Window.h"
 #include "resources/Texture2D.h"
 #include <glm/glm.hpp>
@@ -36,6 +37,8 @@ namespace Engine
         Window* m_window{};
         GLuint m_spriteVao{};
         GLuint m_quadVao{};
+        StringId m_spriteShaderId{"sprite-shader"};
+        StringId m_primitivesShaderId{"primitives-shader"};
     };
 } // namespace Engine
 

@@ -3,7 +3,6 @@
 #include "Shapes.h"
 #include "core/Logger.h"
 #include "core/Math.h"
-#include "core/StringId.h"
 #include <SDL3/SDL.h>
 #include <glad/glad.h>
 
@@ -82,10 +81,10 @@ namespace Engine
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
         m_shaderManager = std::make_unique<ShaderManager>();
-        m_shaderManager->loadShader(SID("sprite"), "sprite.vert", "sprite.frag")
+        m_shaderManager->loadShader(m_spriteShaderId, "sprite.vert", "sprite.frag")
             .use()
             .setUniform("textureSampler", 0);
-        m_shaderManager->loadShader(SID("primitives"), "primitives.vert", "primitives.frag").use();
+        m_shaderManager->loadShader(m_primitivesShaderId, "primitives.vert", "primitives.frag").use();
         Logger::info("2D Renderer initialized");
     }
 
@@ -104,7 +103,7 @@ namespace Engine
 
     void Renderer2D::drawRectangle(const Rect& rect, const glm::vec4& color, const glm::vec3& rotation)
     {
-        m_shaderManager->getShader(SID("primitives"))
+        m_shaderManager->getShader(m_primitivesShaderId)
             .use()
             .setUniform("model", getModelTransformation(rect, rotation))
             .setUniform("camera", m_cameraTransformation)
@@ -118,7 +117,7 @@ namespace Engine
     void Renderer2D::drawSprite(const Rect& spriteGeometry, const glm::vec3& rotation,
                                 const Texture2D& texture, const Rect& textureArea, const glm::vec3& color)
     {
-        m_shaderManager->getShader(SID("sprite"))
+        m_shaderManager->getShader(m_spriteShaderId)
             .use()
             .setUniform("model", getModelTransformation(spriteGeometry, rotation))
             .setUniform("camera", m_cameraTransformation)

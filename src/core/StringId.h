@@ -5,46 +5,47 @@
 #include <cstdint>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 
 namespace Engine
 {
     using StringIdType = std::uint32_t;
 
     /**
-     * Class that wraps a string and its hashed value. The idea is to be able to use strings as IDs without
-     * the performance penalty of string comparison.
+     * Stores interned strings mapped by its hash values.
+     */
+    class StringIdTable
+    {
+    public:
+        static StringIdType internString(std::string_view sv);
+        StringIdTable() = delete;
+
+    private:
+        static inline std::unordered_map<StringIdType, std::string> s_table{};
+    };
+
+    /**
+     * Wraps a view to an interned string and its hashed value.
      */
     class StringId
     {
     public:
-        static StringId generate(const char* str, std::size_t len) { return StringId{str, len}; }
-        static StringId generate(std::string_view str) { return generate(str.data(), str.size()); }
+        StringId()
+            : StringId{""}
+        {
+        }
+        explicit StringId(std::string_view sv)
+            : m_str{sv}, m_sid{StringIdTable::internString(sv)}
+        {
+        }
         bool operator==(const StringId& other) const { return m_sid == other.m_sid; }
         std::string_view getString() const { return m_str; }
         StringIdType getSid() const { return m_sid; }
 
     private:
-        StringId(std::string_view str, std::size_t len)
-            : m_str{str}, m_sid{Hash::hash32(str.data(), len)}
-        {
-        }
-        std::string m_str{};
+        std::string_view m_str{};
         StringIdType m_sid{};
     };
-
-    /**
-     * User-defined literal that transforms the syntax "any_string"_sid into a StringId object at compile
-     * time.
-     */
-    constexpr StringId operator""_sid(const char* str, std::size_t len)
-    {
-        return StringId::generate(str, len);
-    }
-
-    /**
-     * Macro that transforms SID("any_string") into "any_string"_sid.
-     */
-#define SID(str) str##_sid
 } // namespace Engine
 
 template <>

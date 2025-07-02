@@ -4,6 +4,7 @@ add_executable(${PROJECT_NAME}
         core/Filesystem.cpp
         core/IO.cpp
         core/Logger.cpp
+        core/StringId.cpp
         core/Timer.cpp
         core/Window.cpp
         debug/DevGui.cpp

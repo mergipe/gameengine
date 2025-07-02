@@ -1,0 +1,17 @@
+#include "StringId.h"
+#include "Hash.h"
+#include "Logger.h"
+#include <unordered_map>
+
+namespace Engine
+{
+    StringIdType StringIdTable::internString(std::string_view sv)
+    {
+        const StringIdType sid{Hash::hash32(sv.data(), sv.size())};
+        if (!s_table.contains(sid)) {
+            s_table[sid] = std::string{sv};
+            Logger::debug("[StringId] Interned '{}' as '{}'", sv, sid);
+        }
+        return sid;
+    }
+} // namespace Engine
