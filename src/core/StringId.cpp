@@ -14,4 +14,13 @@ namespace Engine
         }
         return sid;
     }
+
+    std::string_view StringIdTable::getString(StringIdType id)
+    {
+        const auto it{s_table.find(id)};
+        if (it != s_table.end()) {
+            return it->second;
+        }
+        return {};
+    }
 } // namespace Engine

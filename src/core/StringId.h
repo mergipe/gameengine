@@ -18,6 +18,7 @@ namespace Engine
     {
     public:
         static StringIdType internString(std::string_view sv);
+        static std::string_view getString(StringIdType id);
         StringIdTable() = delete;
 
     private:
@@ -30,13 +31,11 @@ namespace Engine
     class StringId
     {
     public:
-        StringId()
-            : StringId{""}
-        {
-        }
+        StringId() = default;
         explicit StringId(std::string_view sv)
-            : m_str{sv}, m_sid{StringIdTable::internString(sv)}
+            : m_sid{StringIdTable::internString(sv)}
         {
+            m_str = StringIdTable::getString(m_sid);
         }
         bool operator==(const StringId& other) const { return m_sid == other.m_sid; }
         std::string_view getString() const { return m_str; }
