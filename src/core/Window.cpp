@@ -1,5 +1,5 @@
 #include "Window.h"
-#include "Logger.h"
+#include "Locator.h"
 
 namespace Engine
 {
@@ -18,7 +18,7 @@ namespace Engine
         m_glContext = nullptr;
         SDL_DestroyWindow(m_window);
         m_window = nullptr;
-        Logger::info("Window destroyed");
+        Locator::getLogger()->info("Window destroyed");
     }
 
     void Window::init()
@@ -34,15 +34,15 @@ namespace Engine
             flags |= SDL_WINDOW_MAXIMIZED;
         m_window = SDL_CreateWindow(m_config.title.c_str(), m_config.width, m_config.height, flags);
         if (!m_window) {
-            Logger::critical("Failed to create a window: {}", SDL_GetError());
+            Locator::getLogger()->critical("Failed to create a window: {}", SDL_GetError());
             std::abort();
         }
         m_glContext = SDL_GL_CreateContext(m_window);
         if (!m_glContext) {
-            Logger::critical("Failed to create OpenGL context: {}", SDL_GetError());
+            Locator::getLogger()->critical("Failed to create OpenGL context: {}", SDL_GetError());
             std::abort();
         }
         SDL_GL_MakeCurrent(m_window, m_glContext);
-        Logger::info("Window initialized");
+        Locator::getLogger()->info("Window initialized");
     }
 } // namespace Engine

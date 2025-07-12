@@ -8,7 +8,8 @@ namespace Engine
 {
     void showMetricsOverlay(bool* show);
 
-    DevGui::DevGui(const Window& window)
+    DevGuiImpl::DevGuiImpl(const Window& window)
+        : DevGui{}
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -30,14 +31,14 @@ namespace Engine
         ImGui_ImplOpenGL3_Init("#version 330 core");
     }
 
-    DevGui::~DevGui()
+    DevGuiImpl::~DevGuiImpl()
     {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplSDL3_Shutdown();
         ImGui::DestroyContext();
     }
 
-    void DevGui::processEvent(const SDL_Event& event)
+    void DevGuiImpl::processEvent(const SDL_Event& event)
     {
         if (event.type == SDL_EVENT_KEY_DOWN && wantCaptureKeyboard()) {
             if (event.key.scancode == Game::s_toggleDevModeKey && !event.key.repeat) {
@@ -47,18 +48,18 @@ namespace Engine
         ImGui_ImplSDL3_ProcessEvent(&event);
     }
 
-    bool DevGui::wantCaptureKeyboard() { return ImGui::GetIO().WantCaptureKeyboard; }
+    bool DevGuiImpl::wantCaptureKeyboard() { return ImGui::GetIO().WantCaptureKeyboard; }
 
-    bool DevGui::wantCaptureMouse() { return ImGui::GetIO().WantCaptureMouse; }
+    bool DevGuiImpl::wantCaptureMouse() { return ImGui::GetIO().WantCaptureMouse; }
 
-    void DevGui::newFrame()
+    void DevGuiImpl::newFrame()
     {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
     }
 
-    void DevGui::render()
+    void DevGuiImpl::render()
     {
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -71,7 +72,7 @@ namespace Engine
         }
     }
 
-    void DevGui::show()
+    void DevGuiImpl::show()
     {
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("Profile/Debug")) {

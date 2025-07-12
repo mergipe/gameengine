@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "core/Logger.h"
 #include "core/Window.h"
 #include "debug/DevGui.h"
 #include "events/EventBus.h"
@@ -25,8 +26,6 @@ namespace Engine
         void init();
         void run();
         void shutDown();
-        EventBus& getEventBus() const { return *m_eventBus; }
-        DevGui& getDevGui() const { return *m_devGui; }
         const Config::WindowConfig& getWindowConfig() const { return m_window->getConfig(); }
         bool hasDevMode() const { return m_hasDevMode; }
         bool isDevModeEnabled() const { return m_isDevModeEnabled; }
@@ -39,6 +38,7 @@ namespace Engine
         void render(float frameExtrapolationTimeStep);
         static constexpr float s_updateRate{144.0f};
         static constexpr float s_timeStepInMs{1000.0f / s_updateRate};
+        std::unique_ptr<Logger> m_logger{};
         std::unique_ptr<Window> m_window{};
         std::unique_ptr<Renderer2D> m_renderer{};
         std::unique_ptr<InputHandler> m_inputHandler{};

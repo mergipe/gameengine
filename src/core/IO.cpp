@@ -1,5 +1,5 @@
 #include "IO.h"
-#include "Logger.h"
+#include "Locator.h"
 #include <sstream>
 
 namespace Engine::IO
@@ -29,7 +29,7 @@ namespace Engine::IO
             fileStream.close();
             return stringStream.str();
         } catch (const std::exception& _) {
-            Logger::error("Error reading string from file {}", filepath.c_str());
+            Locator::getLogger()->error("Error reading string from file {}", filepath.c_str());
             return {};
         }
     }

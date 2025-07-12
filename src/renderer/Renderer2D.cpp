@@ -1,7 +1,7 @@
 #include "Renderer2D.h"
 #include "ShaderManager.h"
 #include "Shapes.h"
-#include "core/Logger.h"
+#include "core/Locator.h"
 #include "core/Math.h"
 #include <SDL3/SDL.h>
 #include <glad/glad.h>
@@ -33,13 +33,13 @@ namespace Engine
     {
         glDeleteVertexArrays(1, &m_spriteVao);
         glDeleteVertexArrays(1, &m_quadVao);
-        Logger::info("2D Renderer destroyed");
+        Locator::getLogger()->info("2D Renderer destroyed");
     }
 
     void Renderer2D::init()
     {
         if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress))) {
-            Logger::critical("Failed to initialize GLAD");
+            Locator::getLogger()->critical("Failed to initialize GLAD");
             std::abort();
         }
         glEnable(GL_BLEND);
@@ -85,7 +85,7 @@ namespace Engine
             .use()
             .setUniform("textureSampler", 0);
         m_shaderManager->loadShader(m_primitivesShaderId, "primitives.vert", "primitives.frag").use();
-        Logger::info("2D Renderer initialized");
+        Locator::getLogger()->info("2D Renderer initialized");
     }
 
     void Renderer2D::setViewport(int x, int y, int width, int height) { glViewport(x, y, width, height); }

@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "SceneLoader.h"
 #include "Systems.h"
+#include "core/Locator.h"
 
 namespace Engine
 {
@@ -35,8 +36,7 @@ namespace Engine
 
     void Scene::update(float timeStep)
     {
-        EventBus& eventBus{Game::instance().getEventBus()};
-        eventBus.reset();
+        Locator::getEventBus()->reset();
         m_movementSystem->update(timeStep);
         m_collisionSystem->update();
         m_animationSystem->update();

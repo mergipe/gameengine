@@ -1,6 +1,6 @@
 #include "ShaderManager.h"
 #include "core/IO.h"
-#include "core/Logger.h"
+#include "core/Locator.h"
 
 namespace Engine
 {
@@ -22,7 +22,7 @@ namespace Engine
         shader->compile(vertexShaderCode.c_str(), fragmentShaderCode.c_str(),
                         geometryShaderRelativePath ? geometryShaderCode.c_str() : nullptr);
         m_shaders.insert(std::make_pair(shaderId, std::move(shader)));
-        Logger::info("'{}' shader loaded", shaderId.getString());
+        Locator::getLogger()->info("'{}' shader loaded", shaderId.getString());
         return *m_shaders.at(shaderId);
     }
 

@@ -3,7 +3,7 @@
 #include "Entity.h"
 #include "Game.h"
 #include "ScriptingApi.h"
-#include "core/Logger.h"
+#include "core/Locator.h"
 #include "core/Timer.h"
 #include "events/Events.h"
 #include "renderer/Renderer2D.h"
@@ -140,7 +140,7 @@ namespace Engine
                          otherBoxCollider.height * otherTransform.scale.y})};
                 if (collisionHappened) {
                     boxCollider.isColliding = otherBoxCollider.isColliding = true;
-                    Game::instance().getEventBus().dispatchEvent<CollisionEvent>(entity, otherEntity);
+                    Locator::getEventBus()->dispatchEvent<CollisionEvent>(entity, otherEntity);
                 }
             }
         }
@@ -168,30 +168,30 @@ namespace Engine
         if (!result.valid()) {
             const sol::error error{result};
             const sol::call_status status{result.status()};
-            Logger::error("Error loading script {}: {} error\n\t{}", absoluteFilepath.c_str(),
-                          sol::to_string(status), error.what());
+            Locator::getLogger()->error("Error loading script {}: {} error\n\t{}", absoluteFilepath.c_str(),
+                                        sol::to_string(status), error.what());
             return {};
         }
         const sol::optional<sol::table> maybeScriptClass{m_lua[className]};
         if (!maybeScriptClass) {
-            Logger::warn("Script '{}' doesn't have '{}' class", filepath.c_str(), className);
+            Locator::getLogger()->warn("Script '{}' doesn't have '{}' class", filepath.c_str(), className);
             return {};
         }
         sol::table scriptClass{maybeScriptClass.value()};
         const sol::table entityScriptClass{m_lua["EntityScript"]};
         const auto isEntityScript{m_lua["utils"]["instance_of"](scriptClass, entityScriptClass)};
         if (!isEntityScript.get<bool>()) {
-            Logger::warn("Script '{}' doesn't inherit from EntityScript", className);
+            Locator::getLogger()->warn("Script '{}' doesn't inherit from EntityScript", className);
             return {};
         }
         const sol::optional<sol::function> maybeScriptClassConstructor{scriptClass["new"]};
         if (!maybeScriptClassConstructor) {
-            Logger::warn("Script '{}' doesn't have 'new' function", className);
+            Locator::getLogger()->warn("Script '{}' doesn't have 'new' function", className);
             return {};
         }
         const sol::optional<sol::table> maybeScriptInstance{maybeScriptClassConstructor.value()(scriptClass)};
         if (!maybeScriptInstance) {
-            Logger::warn("Failed to instantiate '{}' script", className);
+            Locator::getLogger()->warn("Failed to instantiate '{}' script", className);
             return {};
         }
         sol::table scriptInstance{maybeScriptInstance.value()};

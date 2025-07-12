@@ -1,7 +1,7 @@
 #include "SceneLoader.h"
 #include "Components.h"
 #include "core/IO.h"
-#include "core/Logger.h"
+#include "core/Locator.h"
 #include "core/StringId.h"
 #include "game/Game.h"
 #include "renderer/Camera.h"
@@ -58,7 +58,7 @@ namespace Engine
             const std::string typeStr{assetNode["type"].as<std::string>(std::string{})};
             const auto type{getResourceType(typeStr)};
             if (!type) {
-                Logger::warn("Asset type '{}' unknown", typeStr);
+                Locator::getLogger()->warn("Asset type '{}' unknown", typeStr);
                 continue;
             }
             const std::string assetId{assetNode["id"].as<std::string>(std::string{})};
@@ -80,7 +80,7 @@ namespace Engine
             return {static_cast<float>(windowConfig.width), static_cast<float>(windowConfig.height)};
         }
         const std::string mapFilepath{tilemapNode["map_file"].as<std::string>(std::string{})};
-        Logger::info("Loading map from {}", mapFilepath);
+        Locator::getLogger()->info("Loading map from {}", mapFilepath);
         const std::string textureId{tilemapNode["texture_id"].as<std::string>(std::string{})};
         const int mapRows{tilemapNode["map_rows"].as<int>(0)};
         const int mapCols{tilemapNode["map_cols"].as<int>(0)};
@@ -89,7 +89,7 @@ namespace Engine
         const float scale{tilemapNode["scale"].as<float>(0.0f)};
         std::ifstream tilemapFile{mapFilepath};
         if (!tilemapFile) {
-            Logger::error("Error opening {} map file", mapFilepath);
+            Locator::getLogger()->error("Error opening {} map file", mapFilepath);
         }
         const std::vector<std::vector<int>> tilemapCsv{IO::parseIntCsvFile(tilemapFile)};
         tilemapFile.close();
@@ -133,7 +133,7 @@ namespace Engine
                 if (!idStr.empty()) {
                     registry.emplace<IdComponent>(entity, StringId{idStr});
                 } else {
-                    Logger::warn("Ignoring entity without id");
+                    Locator::getLogger()->warn("Ignoring entity without id");
                     continue;
                 }
                 const std::string tag{componentsNode["tag"].as<std::string>(std::string{})};
@@ -241,7 +241,7 @@ namespace Engine
     SceneData SceneLoader::load(const std::filesystem::path& sceneFilepath, entt::registry& registry,
                                 ResourceManager& resourceManager, ScriptingSystem& scriptingSystem)
     {
-        Logger::info("Loading scene from {}", sceneFilepath.c_str());
+        Locator::getLogger()->info("Loading scene from {}", sceneFilepath.c_str());
         const YAML::Node rootNode{YAML::LoadFile(sceneFilepath)};
         loadAssets(rootNode["assets"], resourceManager);
         SceneData sceneData{};

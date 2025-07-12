@@ -1,6 +1,6 @@
 #include "StringId.h"
 #include "Hash.h"
-#include "Logger.h"
+#include "Locator.h"
 #include <unordered_map>
 
 namespace Engine
@@ -10,7 +10,7 @@ namespace Engine
         const StringIdType sid{Hash::hash32(sv.data(), sv.size())};
         if (!s_table.contains(sid)) {
             s_table[sid] = std::string{sv};
-            Logger::debug("[StringId] Interned '{}' as '{}'", sv, sid);
+            Locator::getLogger()->debug("[StringId] Interned '{}' as '{}'", sv, sid);
         }
         return sid;
     }

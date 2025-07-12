@@ -1,5 +1,5 @@
 #include "Shader.h"
-#include "core/Logger.h"
+#include "core/Locator.h"
 #include <glm/gtc/type_ptr.hpp>
 
 namespace Engine
@@ -89,13 +89,13 @@ namespace Engine
             glGetProgramiv(id, GL_LINK_STATUS, &success);
             if (!success) {
                 glGetProgramInfoLog(id, s_infoLogBufferMaxLength, nullptr, infoLog.data());
-                Logger::error("Error linking shader program: {}", infoLog.data());
+                Locator::getLogger()->error("Error linking shader program: {}", infoLog.data());
             }
         } else {
             glGetShaderiv(id, GL_COMPILE_STATUS, &success);
             if (!success) {
                 glGetShaderInfoLog(id, s_infoLogBufferMaxLength, nullptr, infoLog.data());
-                Logger::error("Error compiling {} shader: {}", type, infoLog.data());
+                Locator::getLogger()->error("Error compiling {} shader: {}", type, infoLog.data());
             }
         }
     }
