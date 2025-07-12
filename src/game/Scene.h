@@ -13,7 +13,9 @@ namespace Engine
     class Scene final
     {
     public:
-        Scene(Renderer2D* renderer, ResourceManager* resourceManager);
+        Scene(Renderer2D* renderer, ResourceManager* resourceManager,
+              std::unique_ptr<entt::registry> registry, std::unique_ptr<ScriptingSystem> scriptingSystem,
+              const SceneData& sceneData);
         Scene(const Scene&) = delete;
         Scene(Scene&&) = delete;
         Scene& operator=(const Scene&) = delete;
@@ -23,17 +25,17 @@ namespace Engine
         void render(float frameExtrapolationTimeStep);
 
     private:
-        SceneData m_sceneData{};
         Renderer2D* m_renderer{};
         ResourceManager* m_resourceManager{};
         std::unique_ptr<entt::registry> m_registry{};
+        std::unique_ptr<ScriptingSystem> m_scriptingSystem{};
         std::unique_ptr<MovementSystem> m_movementSystem{};
         std::unique_ptr<RenderingSystem> m_renderingSystem{};
         std::unique_ptr<DebugRenderingSystem> m_debugRenderingSystem{};
         std::unique_ptr<SpriteAnimationSystem> m_animationSystem{};
         std::unique_ptr<CollisionSystem> m_collisionSystem{};
         std::unique_ptr<PlayerInputSystem> m_playerInputSystem{};
-        std::unique_ptr<ScriptingSystem> m_scriptingSystem{};
+        SceneData m_sceneData{};
     };
 } // namespace Engine
 

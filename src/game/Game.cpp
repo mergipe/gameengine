@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "SceneLoader.h"
 #include "core/Config.h"
 #include "core/Filesystem.h"
 #include "core/Locator.h"
@@ -51,7 +52,8 @@ namespace Engine
     {
         Locator::getLogger()->info("Game started to run");
         m_isRunning = true;
-        m_currentScene = std::make_unique<Scene>(m_renderer.get(), m_resourceManager.get());
+        m_currentScene = SceneLoader::load(m_resourceManager->getResourcePath("scenes") / "scene1.yaml",
+                                           *m_renderer, *m_resourceManager);
         Timer::Ticks previousTicks{Timer::getTicks()};
         float lag{0.0f};
         while (m_isRunning) {

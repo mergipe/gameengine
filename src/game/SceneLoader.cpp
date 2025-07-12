@@ -238,15 +238,18 @@ namespace Engine
         }
     }
 
-    SceneData SceneLoader::load(const std::filesystem::path& sceneFilepath, entt::registry& registry,
-                                ResourceManager& resourceManager, ScriptingSystem& scriptingSystem)
+    std::unique_ptr<Scene> SceneLoader::load(const std::filesystem::path& sceneFilepath, Renderer2D& renderer,
+                                             ResourceManager& resourceManager)
     {
+        auto registry{std::make_unique<entt::registry>()};
+        auto scriptingSystem{std::make_unique<ScriptingSystem>(registry.get())};
         Locator::getLogger()->info("Loading scene from {}", sceneFilepath.c_str());
         const YAML::Node rootNode{YAML::LoadFile(sceneFilepath)};
         loadAssets(rootNode["assets"], resourceManager);
         SceneData sceneData{};
-        sceneData.mapData = loadTilemap(rootNode["tilemap"], registry);
-        loadEntities(rootNode["entities"], registry, scriptingSystem);
-        return sceneData;
+        sceneData.mapData = loadTilemap(rootNode["tilemap"], *registry);
+        loadEntities(rootNode["entities"], *registry, *scriptingSystem);
+        return std::make_unique<Scene>(&renderer, &resourceManager, std::move(registry),
+                                       std::move(scriptingSystem), sceneData);
     }
 } // namespace Engine
