@@ -1,3 +1,4 @@
+vsync: true
 window:
   title: Game Engine
   width: 3840

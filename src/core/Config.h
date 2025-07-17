@@ -17,6 +17,7 @@ namespace Engine::Config
 
     struct VideoConfig {
         WindowConfig windowConfig;
+        bool vsync{true};
     };
 
     VideoConfig loadVideoConfig();

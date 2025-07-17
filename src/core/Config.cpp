@@ -9,29 +9,33 @@ namespace Engine::Config
     {
         const auto filepath{Filesystem::getConfigPath() / "video.yaml"};
         const YAML::Node rootNode{YAML::LoadFile(filepath)};
-        WindowConfig windowConfig{};
+        VideoConfig config{};
+        if (rootNode["vsync"]) {
+            config.vsync = rootNode["vsync"].as<bool>();
+        }
+        config.windowConfig = WindowConfig{};
         const YAML::Node windowNode{rootNode["window"]};
         if (windowNode["title"]) {
-            windowConfig.title = windowNode["title"].as<std::string>();
+            config.windowConfig.title = windowNode["title"].as<std::string>();
         }
         if (windowNode["width"]) {
-            windowConfig.width = windowNode["width"].as<int>();
+            config.windowConfig.width = windowNode["width"].as<int>();
         }
         if (windowNode["height"]) {
-            windowConfig.height = windowNode["height"].as<int>();
+            config.windowConfig.height = windowNode["height"].as<int>();
         }
         if (windowNode["fullscreen"]) {
-            windowConfig.isFullscreen = windowNode["fullscreen"].as<bool>();
+            config.windowConfig.isFullscreen = windowNode["fullscreen"].as<bool>();
         }
         if (windowNode["resizable"]) {
-            windowConfig.isResizable = windowNode["resizable"].as<bool>();
+            config.windowConfig.isResizable = windowNode["resizable"].as<bool>();
         }
         if (windowNode["borderless"]) {
-            windowConfig.isBorderless = windowNode["borderless"].as<bool>();
+            config.windowConfig.isBorderless = windowNode["borderless"].as<bool>();
         }
         if (windowNode["maximized"]) {
-            windowConfig.isMaximized = windowNode["maximized"].as<bool>();
+            config.windowConfig.isMaximized = windowNode["maximized"].as<bool>();
         }
-        return VideoConfig{windowConfig};
+        return config;
     }
 } // namespace Engine::Config
