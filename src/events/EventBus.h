@@ -19,14 +19,14 @@ namespace Engine
         IEventCallback& operator=(const IEventCallback&) = delete;
         IEventCallback& operator=(IEventCallback&&) noexcept = default;
         virtual ~IEventCallback() = default;
-        virtual void execute(Event& e) = 0;
+        virtual void execute(const Event& e) = 0;
 
     protected:
         IEventCallback() = default;
     };
 
     template <typename TOwner, typename TEvent>
-    using CallbackFunction = std::function<void(TOwner&, TEvent&)>;
+    using CallbackFunction = std::function<void(TOwner&, const TEvent&)>;
 
     template <typename TOwner, typename TEvent>
     class EventCallback final : public IEventCallback
@@ -41,7 +41,7 @@ namespace Engine
         EventCallback& operator=(const EventCallback&) = delete;
         EventCallback& operator=(EventCallback&&) noexcept = default;
         ~EventCallback() override = default;
-        void execute(Event& e) override;
+        void execute(const Event& e) override;
 
     private:
         CallbackFunction<TOwner, TEvent> m_callbackFunction{};
@@ -49,9 +49,9 @@ namespace Engine
     };
 
     template <typename TOwner, typename TEvent>
-    void EventCallback<TOwner, TEvent>::execute(Event& e)
+    void EventCallback<TOwner, TEvent>::execute(const Event& e)
     {
-        m_callbackFunction(*m_ownerInstance, static_cast<TEvent&>(e));
+        m_callbackFunction(*m_ownerInstance, static_cast<const TEvent&>(e));
     }
 
     class EventBus final
@@ -60,6 +60,7 @@ namespace Engine
         template <typename TEvent, typename TOwner>
         void addSubscriber(TOwner* ownerInstance, const CallbackFunction<TOwner, TEvent>& callbackFunction);
         template <typename TEvent, typename... TArgs> void dispatchEvent(TArgs&&... args);
+        template <typename TEvent> void dispatchEvent(TEvent&& event);
         void reset() { m_subscribers.clear(); }
 
     private:
@@ -81,16 +82,20 @@ namespace Engine
     template <typename TEvent, typename... TArgs>
     void EventBus::dispatchEvent(TArgs&&... args)
     {
-        const auto handlers{m_subscribers[typeid(TEvent)].get()};
         TEvent event{std::forward<TArgs>(args)...};
-        if (handlers) {
+        dispatchEvent(std::move(event));
+    }
+
+    template <typename TEvent>
+    void EventBus::dispatchEvent(TEvent&& event)
+    {
+        if (const auto handlers{m_subscribers[typeid(TEvent)].get()}) {
             for (auto it{handlers->begin()}; it != handlers->end(); ++it) {
                 const auto handler{it->get()};
-                handler->execute(event);
+                handler->execute(std::forward<TEvent>(event));
             }
         }
     }
-
 } // namespace Engine
 
 #endif

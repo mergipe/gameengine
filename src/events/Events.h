@@ -1,7 +1,9 @@
 #ifndef EVENTS_H
 #define EVENTS_H
 
-#include <SDL3/SDL.h>
+#include "core/StringId.h"
+#include "input/InputDevice.h"
+#include "input/InputValue.h"
 #include <entt/entt.hpp>
 
 namespace Engine
@@ -9,10 +11,6 @@ namespace Engine
     class Event
     {
     public:
-        Event(const Event&) = delete;
-        Event(Event&&) = delete;
-        Event& operator=(const Event&) = delete;
-        Event& operator=(Event&&) = delete;
         virtual ~Event() = default;
 
     protected:
@@ -28,12 +26,20 @@ namespace Engine
         entt::entity otherEntity;
     };
 
-    struct KeyPressedEvent final : public Event {
-        explicit KeyPressedEvent(SDL_Keycode keyCode)
-            : keyCode{keyCode}
+    struct InputEvent final : public Event {
+        InputEvent() = default;
+        InputEvent(const StringId& commandId, const InputDevice::Id& inputDeviceId,
+                   const InputValue& inputValue, bool isEngineCommand)
+            : commandId{commandId}
+            , inputDeviceId{inputDeviceId}
+            , inputValue{inputValue}
+            , isEngineCommand{isEngineCommand}
         {
         }
-        SDL_Keycode keyCode;
+        StringId commandId{};
+        InputDevice::Id inputDeviceId{};
+        InputValue inputValue{};
+        bool isEngineCommand{false};
     };
 } // namespace Engine
 

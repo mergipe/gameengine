@@ -5,6 +5,7 @@
 #include "core/StringId.h"
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <string_view>
 #include <unordered_map>
 
@@ -33,8 +34,7 @@ namespace Engine
         ~ResourceManager() = default;
         std::filesystem::path getResourcePath(const std::filesystem::path& relativePath) const;
         void clear();
-        void loadTexture(const StringId& textureId, const std::filesystem::path& relativePath,
-                         const TextureConfig& textureConfig);
+        void loadTexture(const std::filesystem::path& relativeFilepath, const TextureConfig& textureConfig);
         const Texture2D& getTexture(const StringId& textureId) const;
 
     private:

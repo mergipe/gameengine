@@ -4,8 +4,10 @@
 
 ### Input system
 
-- Support mapping and handling the same keys for different contexts (gameplay, UI etc.)
+- Implement on the fly remapping
+- Handle modifier keys
 - Handle mouse events
+- Support for gamepad
 
 ### Scripting system
 
@@ -17,19 +19,20 @@
 - Asset browser
 - Log window
 - In-game profiling
+- Input debugging/editing
 
 ### Rendering
 
+- Support for multiple resolutions
+- Fonts
+- Particles
 - UI rendering
 - Tilemaps
-- Particles
-- Fonts
-- Support for multiple resolutions
 - Custom rendering layers
 
 ### Events
 
-- Stop resetting the EventBus on every update (implement removal of subscribers)
+- Rewrite the event system
 
 ### Physics
 

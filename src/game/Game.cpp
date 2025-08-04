@@ -7,6 +7,7 @@
 #include "core/Timer.h"
 #include "renderer/Renderer2D.h"
 #include <SDL3/SDL.h>
+#include <filesystem>
 
 namespace Engine
 {
@@ -37,13 +38,15 @@ namespace Engine
         SDL_GL_SetSwapInterval(videoConfig.vsync);
         m_renderer = std::make_unique<Renderer2D>(m_window.get());
         m_renderer->init();
-        m_inputHandler = std::make_unique<InputHandler>();
         m_resourceManager = std::make_unique<ResourceManager>();
+        Locator::provide(m_resourceManager.get());
+        const std::filesystem::path inputConfigFilepath{m_resourceManager->getResourcePath("input") /
+                                                        "game_input.yaml"}; // FIXME: hardcoded input file
+        m_inputHandler = std::make_unique<InputHandler>(inputConfigFilepath);
         m_eventBus = std::make_unique<EventBus>();
         Locator::provide(m_eventBus.get());
         if (m_hasDevMode) {
             m_devGui = std::make_unique<DevGuiImpl>(*m_window);
-            m_inputHandler->bindKeyEventCommand(s_toggleDevModeKey, [this] { toggleDevMode(); }, false);
         } else {
             m_devGui = std::make_unique<NullDevGui>();
         }
@@ -54,8 +57,9 @@ namespace Engine
     {
         Locator::getLogger()->info("Game started to run");
         m_isRunning = true;
-        m_currentScene = SceneLoader::load(m_resourceManager->getResourcePath("scenes") / "scene1.yaml",
-                                           *m_renderer, *m_resourceManager);
+        m_currentScene =
+            SceneLoader::load(m_resourceManager->getResourcePath("scenes") / "scene1.yaml", *m_inputHandler,
+                              *m_renderer); // FIXME: hardcoded scene file
         Timer::Ticks previousTicks{Timer::getTicks()};
         float lag{0.0f};
         while (m_isRunning) {
@@ -88,21 +92,26 @@ namespace Engine
         SDL_Event event{};
         while (SDL_PollEvent(&event)) {
             m_devGui->processEvent(event);
+            if (m_devGui->wantCaptureKeyboard() || m_devGui->wantCaptureMouse()) {
+                m_inputHandler->switchScope(m_inputHandler->getDevGuiScopeId());
+            } else if (m_inputHandler->getCurrentScopeId() == m_inputHandler->getDevGuiScopeId()) {
+                m_inputHandler->switchScope(m_inputHandler->getPreviousScopeId());
+            }
             switch (event.type) {
             case SDL_EVENT_QUIT:
                 m_isRunning = false;
                 break;
             case SDL_EVENT_KEY_DOWN:
-                if (m_devGui->wantCaptureKeyboard())
-                    break;
-                m_inputHandler->handleKeyEvent(event.key);
+                m_inputHandler->handleKeyboardKeyDownEvent(event.key);
+                break;
+            case SDL_EVENT_KEY_UP:
+                m_inputHandler->handleKeyboardKeyUpEvent(event.key);
                 break;
             default:
                 break;
             }
         }
-        if (!m_devGui->wantCaptureKeyboard())
-            m_inputHandler->handleInputState();
+        m_inputHandler->resolveInput();
     }
 
     void Game::update() { m_currentScene->update(s_timeStepInMs); }

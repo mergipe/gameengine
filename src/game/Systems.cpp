@@ -7,7 +7,8 @@
 #include "core/Timer.h"
 #include "events/Events.h"
 #include "renderer/Renderer2D.h"
-#include "resources/ResourceManager.h"
+#include <string>
+#include <utility>
 
 namespace Engine
 {
@@ -41,8 +42,7 @@ namespace Engine
         }
     }
 
-    void RenderingSystem::update(Renderer2D& renderer, const ResourceManager& resourceManager,
-                                 float frameExtrapolationTimeStep)
+    void RenderingSystem::update(Renderer2D& renderer, float frameExtrapolationTimeStep)
     {
         const auto cameraView{getRegistry().view<const TransformComponent, const CameraComponent>()};
         Camera* cameraPtr{};
@@ -64,8 +64,7 @@ namespace Engine
         for (const auto entity : spriteView) {
             auto [transform, sprite] = spriteView.get<TransformComponent, SpriteComponent>(entity);
             glm::vec2 renderPosition{transform.position};
-            const auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)};
-            if (rigidBody) {
+            if (const auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)}) {
                 renderPosition = getExtrapolatedPosition(transform.position, rigidBody->velocity,
                                                          frameExtrapolationTimeStep);
             }
@@ -74,8 +73,8 @@ namespace Engine
             const Rect spriteGeometry{renderPosition, spriteWidth, spriteHeight};
             if (!isOutsideOrthoCameraView(*cameraPtr, spriteGeometry)) {
                 renderer.drawSprite(spriteGeometry, transform.rotation,
-                                    resourceManager.getTexture(sprite.textureId), sprite.textureArea,
-                                    sprite.color);
+                                    Locator::getResourceManager()->getTexture(sprite.textureId),
+                                    sprite.textureArea, sprite.color);
             }
         }
     }
@@ -86,8 +85,7 @@ namespace Engine
         for (const auto entity : view) {
             auto [transform, boxCollider] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
             glm::vec2 renderPosition{transform.position};
-            const auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)};
-            if (rigidBody) {
+            if (const auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)}) {
                 renderPosition = getExtrapolatedPosition(transform.position, rigidBody->velocity,
                                                          frameExtrapolationTimeStep);
             }
@@ -146,6 +144,42 @@ namespace Engine
         }
     }
 
+    void PlayerInputSystem::start(InputHandler& inputHandler)
+    {
+        const auto view{getRegistry().view<PlayerInputComponent>()};
+        StringId* defaultInputScope{};
+        for (const auto entity : view) {
+            auto& playerInput{view.get<PlayerInputComponent>(entity)};
+            playerInput.inputDeviceId = inputHandler.acquireAvailableDevice();
+            if (!defaultInputScope) {
+                defaultInputScope = &playerInput.defaultInputScope;
+            }
+        }
+        if (defaultInputScope) {
+            inputHandler.switchScope(*defaultInputScope);
+        }
+    }
+
+    void PlayerInputSystem::subscribeToEvents(EventBus& eventBus)
+    {
+        eventBus.addSubscriber<InputEvent, PlayerInputSystem>(this, &PlayerInputSystem::onInputCommand);
+    }
+
+    void PlayerInputSystem::onInputCommand(const InputEvent& event) const
+    {
+        const auto view{getRegistry().view<const PlayerInputComponent>()};
+        for (const auto entity : view) {
+            const auto& playerInput{view.get<PlayerInputComponent>(entity)};
+            if (event.inputDeviceId == playerInput.inputDeviceId) {
+                const InputCallback* callback{
+                    playerInput.callbackMapping.getCommandCallback(event.commandId)};
+                if (callback) {
+                    callback->execute(event.inputValue);
+                }
+            }
+        }
+    }
+
     ScriptingSystem::ScriptingSystem(entt::registry* registry)
         : System{registry}
     {
@@ -156,12 +190,14 @@ namespace Engine
         m_lua.require_file("utils", Filesystem::getScriptingLibraryPath() / "utils.lua");
         m_lua.script_file(Filesystem::getScriptingLibraryPath() / "entity_script.lua");
         createScriptBindings();
-        m_lua.create_named_table("scripts");
+        m_lua.create_named_table("scriptClasses");
+        m_lua.create_named_table("scriptInstances");
     }
 
-    std::optional<Script> ScriptingSystem::loadScript(entt::entity entity,
-                                                      const std::filesystem::path& filepath,
-                                                      std::string_view className)
+    ScriptingSystem::~ScriptingSystem() { m_scriptClasses.clear(); }
+
+    std::unique_ptr<ScriptClass> ScriptingSystem::loadScriptClass(const std::filesystem::path& filepath,
+                                                                  std::string_view className)
     {
         const auto absoluteFilepath{Filesystem::getResourcesPath() / filepath};
         const auto result{m_lua.script_file(absoluteFilepath, sol::script_pass_on_error)};
@@ -184,21 +220,41 @@ namespace Engine
             Locator::getLogger()->warn("Script '{}' doesn't inherit from EntityScript", className);
             return {};
         }
-        const sol::optional<sol::function> maybeScriptClassConstructor{scriptClass["new"]};
+        sol::table scriptClasses{m_lua["scriptClasses"]};
+        scriptClasses[scriptClasses.size()] = scriptClass;
+        return std::make_unique<ScriptClass>(className, scriptClass);
+    }
+
+    std::optional<ScriptInstance> ScriptingSystem::createScriptInstance(const std::filesystem::path& filepath,
+                                                                        std::string_view className,
+                                                                        entt::entity entity)
+    {
+        StringId scriptClassId{filepath.c_str()};
+        ScriptClass* scriptClass{getScriptClass(scriptClassId)};
+        if (!scriptClass) {
+            if (std::unique_ptr<ScriptClass> newScriptClass{loadScriptClass(filepath, className)}) {
+                storeScriptClass(scriptClassId, std::move(newScriptClass));
+                scriptClass = getScriptClass(scriptClassId);
+            } else {
+                return {};
+            }
+        }
+        const sol::optional<sol::function> maybeScriptClassConstructor{scriptClass->getConstructor()};
         if (!maybeScriptClassConstructor) {
-            Locator::getLogger()->warn("Script '{}' doesn't have 'new' function", className);
+            Locator::getLogger()->warn("Script '{}' doesn't have a constructor", scriptClass->getClassName());
             return {};
         }
-        const sol::optional<sol::table> maybeScriptInstance{maybeScriptClassConstructor.value()(scriptClass)};
+        const sol::optional<sol::table> maybeScriptInstance{
+            maybeScriptClassConstructor.value()(scriptClass->getLuaClass())};
         if (!maybeScriptInstance) {
-            Locator::getLogger()->warn("Failed to instantiate '{}' script", className);
+            Locator::getLogger()->warn("Failed to instantiate '{}' script", scriptClass->getClassName());
             return {};
         }
         sol::table scriptInstance{maybeScriptInstance.value()};
         scriptInstance["entity"] = Entity{entity, &getRegistry()};
-        sol::table scripts{m_lua["scripts"]};
-        scripts[scripts.size()] = scriptInstance;
-        return Script{scriptInstance};
+        sol::table scriptInstances{m_lua["scriptInstances"]};
+        scriptInstances[scriptInstances.size()] = scriptInstance;
+        return ScriptInstance{scriptClassId, scriptInstance};
     }
 
     void ScriptingSystem::start()
@@ -206,7 +262,7 @@ namespace Engine
         const auto view{getRegistry().view<ScriptComponent>()};
         for (const auto entity : view) {
             auto& scriptComponent = view.get<ScriptComponent>(entity);
-            for (auto& script : scriptComponent.scripts) {
+            for (auto& script : scriptComponent.scriptInstances) {
                 script.onStart();
             }
         }
@@ -217,7 +273,7 @@ namespace Engine
         const auto view{getRegistry().view<ScriptComponent>()};
         for (const auto entity : view) {
             auto& scriptComponent = view.get<ScriptComponent>(entity);
-            for (auto& script : scriptComponent.scripts) {
+            for (auto& script : scriptComponent.scriptInstances) {
                 script.onUpdate(timeStep);
             }
         }
@@ -255,6 +311,7 @@ namespace Engine
             &BoxCollider2DComponent::isColliding);
         m_lua.new_usertype<PlayerInputComponent>("PlayerInputComponent");
         m_lua.new_usertype<CameraComponent>("CameraComponent");
+        m_lua.new_usertype<InputValue>("InputValue", "value", &InputValue::value);
         m_lua.set_function("api_get_component_id", ScriptingApi::getComponent<IdComponent>);
         m_lua.set_function("api_get_component_tag", ScriptingApi::getComponent<TagComponent>);
         m_lua.set_function("api_get_component_transform", ScriptingApi::getComponent<TransformComponent>);
@@ -264,9 +321,22 @@ namespace Engine
                            ScriptingApi::getComponent<SpriteAnimationComponent>);
         m_lua.set_function("api_get_component_boxcollider2d",
                            ScriptingApi::getComponent<BoxCollider2DComponent>);
-        // m_lua.set_function("api_get_component_playerinput",
-        // ScriptingApi::getComponent<PlayerInputComponent>);
+        m_lua.set_function("api_get_component_playerinput", ScriptingApi::getComponent<PlayerInputComponent>);
         m_lua.set_function("api_get_component_script", ScriptingApi::getComponent<ScriptComponent>);
         m_lua.set_function("api_get_component_camera", ScriptingApi::getComponent<CameraComponent>);
+    }
+
+    void ScriptingSystem::storeScriptClass(const StringId& scriptId, std::unique_ptr<ScriptClass> scriptClass)
+    {
+        m_scriptClasses[scriptId] = std::move(scriptClass);
+    }
+
+    ScriptClass* ScriptingSystem::getScriptClass(const StringId& scriptId) const
+    {
+        const auto scriptIterator{m_scriptClasses.find(scriptId)};
+        if (scriptIterator != m_scriptClasses.end()) {
+            return scriptIterator->second.get();
+        }
+        return nullptr;
     }
 } // namespace Engine

@@ -2,14 +2,14 @@
 #include "Game.h"
 #include "Systems.h"
 #include "core/Locator.h"
+#include <utility>
 
 namespace Engine
 {
-    Scene::Scene(Renderer2D* renderer, ResourceManager* resourceManager,
-                 std::unique_ptr<entt::registry> registry, std::unique_ptr<ScriptingSystem> scriptingSystem,
-                 const SceneData& sceneData)
-        : m_renderer{renderer}
-        , m_resourceManager{resourceManager}
+    Scene::Scene(InputHandler* inputHandler, Renderer2D* renderer, std::unique_ptr<entt::registry> registry,
+                 std::unique_ptr<ScriptingSystem> scriptingSystem, const SceneData& sceneData)
+        : m_inputHandler{inputHandler}
+        , m_renderer{renderer}
         , m_registry{std::move(registry)}
         , m_scriptingSystem{std::move(scriptingSystem)}
         , m_movementSystem{std::make_unique<MovementSystem>(m_registry.get())}
@@ -23,19 +23,22 @@ namespace Engine
             m_debugRenderingSystem = std::make_unique<DebugRenderingSystem>(m_registry.get());
         }
         m_scriptingSystem->start();
+        m_playerInputSystem->start(*m_inputHandler);
     }
 
     Scene::~Scene()
     {
-        m_resourceManager->clear(); // NOTE: maybe we shouldn't do this
-        // it's important to destroy the registry before the scripting system
+        // the destruction order is important
         m_registry.reset();
         m_scriptingSystem.reset();
+        Locator::getResourceManager()->clear(); // NOTE: we shouldn't always do this
     }
 
     void Scene::update(float timeStep)
     {
-        Locator::getEventBus()->reset();
+        EventBus& eventBus{*Locator::getEventBus()};
+        eventBus.reset();
+        m_playerInputSystem->subscribeToEvents(eventBus);
         m_movementSystem->update(timeStep);
         m_collisionSystem->update();
         m_animationSystem->update();
@@ -44,7 +47,7 @@ namespace Engine
 
     void Scene::render(float frameExtrapolationTimeStep)
     {
-        m_renderingSystem->update(*m_renderer, *m_resourceManager, frameExtrapolationTimeStep);
+        m_renderingSystem->update(*m_renderer, frameExtrapolationTimeStep);
         if (Game::instance().isDevModeEnabled()) {
             m_debugRenderingSystem->update(*m_renderer, frameExtrapolationTimeStep);
         }

@@ -38,15 +38,7 @@ namespace Engine
         ImGui::DestroyContext();
     }
 
-    void DevGuiImpl::processEvent(const SDL_Event& event)
-    {
-        if (event.type == SDL_EVENT_KEY_DOWN && wantCaptureKeyboard()) {
-            if (event.key.scancode == Game::s_toggleDevModeKey && !event.key.repeat) {
-                Game::instance().toggleDevMode();
-            }
-        }
-        ImGui_ImplSDL3_ProcessEvent(&event);
-    }
+    void DevGuiImpl::processEvent(const SDL_Event& event) { ImGui_ImplSDL3_ProcessEvent(&event); }
 
     bool DevGuiImpl::wantCaptureKeyboard() { return ImGui::GetIO().WantCaptureKeyboard; }
 

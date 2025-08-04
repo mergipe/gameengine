@@ -4,12 +4,18 @@
 #include "core/Locator.h"
 #include "core/StringId.h"
 #include "game/Game.h"
+#include "input/InputCallback.h"
 #include "renderer/Camera.h"
-#include "resources/ResourceManager.h"
 #include "resources/Texture2D.h"
 #include <fstream>
+#include <functional>
 #include <glm/glm.hpp>
+#include <optional>
 #include <sol/sol.hpp>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 #include <yaml-cpp/yaml.h>
 
 namespace Engine
@@ -48,7 +54,7 @@ namespace Engine
         return config;
     }
 
-    void loadAssets(const YAML::Node& assetsNode, ResourceManager& resourceManager)
+    void loadAssets(const YAML::Node& assetsNode)
     {
         if (!assetsNode.IsDefined()) {
             return;
@@ -61,11 +67,10 @@ namespace Engine
                 Locator::getLogger()->warn("Asset type '{}' unknown", typeStr);
                 continue;
             }
-            const std::string assetId{assetNode["id"].as<std::string>(std::string{})};
-            const std::string filepath{assetNode["file"].as<std::string>(std::string{})};
+            const std::string filepath{assetNode["filepath"].as<std::string>(std::string{})};
             switch (type.value()) {
             case ResourceType::texture:
-                resourceManager.loadTexture(StringId{assetId}, filepath, getTextureConfig(assetNode));
+                Locator::getResourceManager()->loadTexture(filepath, getTextureConfig(assetNode));
                 break;
             default:
                 break;
@@ -124,8 +129,9 @@ namespace Engine
         if (!entitiesNode.IsDefined()) {
             return;
         }
-        for (YAML::const_iterator it{entitiesNode.begin()}; it != entitiesNode.end(); ++it) {
-            const YAML::Node entityNode{*it};
+        for (YAML::const_iterator entityIt{entitiesNode.begin()}; entityIt != entitiesNode.end();
+             ++entityIt) {
+            const YAML::Node entityNode{*entityIt};
             const YAML::Node componentsNode{entityNode["components"]};
             if (componentsNode.IsDefined()) {
                 auto entity{registry.create()};
@@ -190,26 +196,54 @@ namespace Engine
                         glm::vec2{boxCollider2DNode["offset"]["x"].as<float>(0.0f),
                                   boxCollider2DNode["offset"]["y"].as<float>(0.0f)});
                 }
-                const YAML::Node playerInputNode{componentsNode["player_input"]};
-                if (playerInputNode.IsDefined()) {
-                    registry.emplace<PlayerInputComponent>(entity);
-                }
                 const YAML::Node scriptsNode{componentsNode["scripts"]};
                 if (scriptsNode.IsDefined()) {
-                    std::vector<Script> scripts{};
+                    std::vector<ScriptInstance> scriptInstances{};
                     for (YAML::const_iterator it{scriptsNode.begin()}; it != scriptsNode.end(); ++it) {
                         const YAML::Node scriptNode{*it};
                         const std::string filepath{scriptNode["filepath"].as<std::string>(std::string{})};
                         const std::string className{scriptNode["class_name"].as<std::string>(std::string{})};
                         if (!filepath.empty() && !className.empty()) {
-                            std::optional maybeScript{
-                                scriptingSystem.loadScript(entity, filepath, className)};
-                            if (maybeScript) {
-                                scripts.push_back(maybeScript.value());
+                            std::optional<ScriptInstance> scriptInstance{
+                                scriptingSystem.createScriptInstance(filepath, className, entity)};
+                            if (scriptInstance) {
+                                scriptInstances.push_back(*scriptInstance);
                             }
                         }
                     }
-                    registry.emplace<ScriptComponent>(entity, scripts);
+                    registry.emplace<ScriptComponent>(entity, scriptInstances);
+                }
+                const YAML::Node playerInputNode{componentsNode["player_input"]};
+                if (playerInputNode.IsDefined()) {
+                    std::unordered_map<StringId, InputCallback> callbackMapping{};
+                    const YAML::Node commandsNode{playerInputNode["commands"]};
+                    if (commandsNode.IsDefined()) {
+                        std::unordered_map<StringId, ScriptInstance*> scriptInstancesMap{};
+                        if (auto* scriptComponent = registry.try_get<ScriptComponent>(entity)) {
+                            for (auto& scriptInstance : scriptComponent->scriptInstances) {
+                                scriptInstancesMap.insert(
+                                    std::make_pair(scriptInstance.getScriptClassId(), &scriptInstance));
+                            }
+                        }
+                        for (YAML::const_iterator it{commandsNode.begin()}; it != commandsNode.end(); ++it) {
+                            const YAML::Node commandNode{*it};
+                            const StringId commandName{commandNode["name"].as<std::string>()};
+                            const StringId scriptClassId{commandNode["script"].as<std::string>()};
+                            const std::string callbackName{commandNode["callback"].as<std::string>()};
+                            const auto scriptInstanceIt{scriptInstancesMap.find(scriptClassId)};
+                            if (scriptInstanceIt != scriptInstancesMap.end()) {
+                                ScriptInstance* scriptInstance{scriptInstanceIt->second};
+                                callbackMapping.insert(std::make_pair(
+                                    commandName, InputCallback(std::function<void(InputValue)>{
+                                                     [scriptInstance, callbackName](InputValue inputValue) {
+                                                         scriptInstance->call(callbackName, inputValue);
+                                                     }})));
+                            }
+                        }
+                    }
+                    registry.emplace<PlayerInputComponent>(
+                        entity, InputCallbackMapping{callbackMapping},
+                        StringId{playerInputNode["default_scope"].as<std::string>()});
                 }
                 const YAML::Node cameraNode{componentsNode["camera"]};
                 if (cameraNode.IsDefined()) {
@@ -238,18 +272,18 @@ namespace Engine
         }
     }
 
-    std::unique_ptr<Scene> SceneLoader::load(const std::filesystem::path& sceneFilepath, Renderer2D& renderer,
-                                             ResourceManager& resourceManager)
+    std::unique_ptr<Scene> SceneLoader::load(const std::filesystem::path& sceneFilepath,
+                                             InputHandler& inputHandler, Renderer2D& renderer)
     {
         auto registry{std::make_unique<entt::registry>()};
         auto scriptingSystem{std::make_unique<ScriptingSystem>(registry.get())};
         Locator::getLogger()->info("Loading scene from {}", sceneFilepath.c_str());
         const YAML::Node rootNode{YAML::LoadFile(sceneFilepath)};
-        loadAssets(rootNode["assets"], resourceManager);
+        loadAssets(rootNode["assets"]);
         SceneData sceneData{};
         sceneData.mapData = loadTilemap(rootNode["tilemap"], *registry);
         loadEntities(rootNode["entities"], *registry, *scriptingSystem);
-        return std::make_unique<Scene>(&renderer, &resourceManager, std::move(registry),
+        return std::make_unique<Scene>(&inputHandler, &renderer, std::move(registry),
                                        std::move(scriptingSystem), sceneData);
     }
 } // namespace Engine

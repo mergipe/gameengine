@@ -1,26 +1,51 @@
 #ifndef INPUTHANDLER_H
 #define INPUTHANDLER_H
 
-#include "Command.h"
+#include "InputCallback.h"
+#include "InputCommand.h"
+#include "InputConfig.h"
+#include "core/StringId.h"
+#include "events/Events.h"
 #include <SDL3/SDL.h>
-#include <functional>
-#include <map>
-#include <memory>
+#include <array>
+#include <filesystem>
+#include <vector>
 
 namespace Engine
 {
     class InputHandler
     {
     public:
-        void bindKeyStateCommand(SDL_Scancode key, const std::function<void()>& command);
-        void bindKeyEventCommand(SDL_Scancode key, const std::function<void()>& command, bool allowRepeat);
-        void handleInputState();
-        void handleKeyEvent(const SDL_KeyboardEvent& event) const;
+        explicit InputHandler(const std::filesystem::path& inputConfigFilepath);
+        InputHandler(const InputHandler&) = delete;
+        InputHandler(InputHandler&&) = delete;
+        InputHandler& operator=(const InputHandler&) = delete;
+        InputHandler& operator=(InputHandler&&) = delete;
+        ~InputHandler() = default;
+        const StringId& getCurrentScopeId() const;
+        const StringId& getPreviousScopeId() const;
+        const StringId& getDevGuiScopeId() const { return m_devGuiScopeId; }
+        void switchScope(const StringId& scopeId);
+        void handleKeyboardKeyDownEvent(const SDL_KeyboardEvent& event);
+        void handleKeyboardKeyUpEvent(const SDL_KeyboardEvent& event);
+        void resolveInput();
+        const InputDevice::Id& acquireAvailableDevice();
 
     private:
-        static constexpr int s_keyCount{SDL_SCANCODE_COUNT};
-        std::map<SDL_Scancode, std::unique_ptr<Command>> m_keyStateCommands{};
-        std::array<std::unique_ptr<Command>, s_keyCount> m_keyEventCommands{};
+        InputCommand* findCommand(InputDevice::Type deviceType, int controlCode);
+        void triggerCommand(const InputCommand& command, const InputDevice::Id& deviceId,
+                            const InputValue& inputValue);
+        void handleControlDown(const InputCommand& command, const InputDevice::Id& deviceId);
+        void handleControlUp(const InputCommand& command, const InputDevice::Id& deviceId);
+        static constexpr int s_maxInputEventsByFrame{16};
+        std::array<InputEvent, s_maxInputEventsByFrame> m_unhandledInputEvents{};
+        InputConfig m_inputConfig{};
+        InputCallbackMapping m_engineCallbackMapping{};
+        std::vector<InputDevice> m_inputDevices{};
+        StringId m_devGuiScopeId{"dev-gui"};
+        InputScope* m_currentScope{};
+        InputScope* m_previousScope{};
+        std::size_t m_inputEventsCount{};
     };
 } // namespace Engine
 

@@ -1,14 +1,17 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
-#include "Script.h"
+#include "ScriptInstance.h"
 #include "core/Math.h"
 #include "core/StringId.h"
 #include "core/Timer.h"
+#include "input/InputCallback.h"
+#include "input/InputDevice.h"
 #include "renderer/Camera.h"
 #include "renderer/Shapes.h"
 #include <glm/glm.hpp>
-#include <sol/sol.hpp>
+#include <memory>
+#include <vector>
 
 namespace Engine
 {
@@ -68,10 +71,13 @@ namespace Engine
     };
 
     struct PlayerInputComponent final {
+        InputCallbackMapping callbackMapping{};
+        StringId defaultInputScope{};
+        InputDevice::Id inputDeviceId{};
     };
 
     struct ScriptComponent final {
-        std::vector<Script> scripts{};
+        std::vector<ScriptInstance> scriptInstances{};
     };
 
     struct CameraComponent final {

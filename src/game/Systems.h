@@ -1,11 +1,18 @@
 #ifndef SYSTEMS_H
 #define SYSTEMS_H
 
-#include "Script.h"
+#include "ScriptClass.h"
+#include "ScriptInstance.h"
+#include "events/EventBus.h"
+#include "input/InputHandler.h"
 #include "renderer/Renderer2D.h"
-#include "resources/ResourceManager.h"
 #include <entt/entt.hpp>
+#include <filesystem>
+#include <memory>
+#include <optional>
 #include <sol/sol.hpp>
+#include <string_view>
+#include <unordered_map>
 
 namespace Engine
 {
@@ -44,8 +51,7 @@ namespace Engine
             : System{registry}
         {
         }
-        void update(Renderer2D& renderer, const ResourceManager& resourceManager,
-                    float frameExtrapolationTimeStep);
+        void update(Renderer2D& renderer, float frameExtrapolationTimeStep);
     };
 
     class DebugRenderingSystem final : public System
@@ -85,19 +91,32 @@ namespace Engine
             : System{registry}
         {
         }
+        void start(InputHandler& inputHandler);
+        void subscribeToEvents(EventBus& eventBus);
+        void onInputCommand(const InputEvent& event) const;
     };
 
     class ScriptingSystem final : public System
     {
     public:
         explicit ScriptingSystem(entt::registry* registry);
-        std::optional<Script> loadScript(entt::entity entity, const std::filesystem::path& filepath,
-                                         std::string_view className);
+        ScriptingSystem(const ScriptingSystem&) = delete;
+        ScriptingSystem(ScriptingSystem&&) = delete;
+        ScriptingSystem& operator=(const ScriptingSystem&) = delete;
+        ScriptingSystem& operator=(ScriptingSystem&&) = delete;
+        ~ScriptingSystem() override;
+        std::optional<ScriptInstance> createScriptInstance(const std::filesystem::path& filepath,
+                                                           std::string_view className, entt::entity entity);
         void start();
         void update(float timeStep);
 
     private:
+        std::unique_ptr<ScriptClass> loadScriptClass(const std::filesystem::path& filepath,
+                                                     std::string_view className);
         void createScriptBindings();
+        void storeScriptClass(const StringId& scriptId, std::unique_ptr<ScriptClass> scriptClass);
+        ScriptClass* getScriptClass(const StringId& scriptId) const;
+        std::unordered_map<StringId, std::unique_ptr<ScriptClass>> m_scriptClasses{};
         sol::state m_lua{};
     };
 } // namespace Engine

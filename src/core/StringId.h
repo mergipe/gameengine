@@ -17,9 +17,9 @@ namespace Engine
     class StringIdTable
     {
     public:
+        StringIdTable() = delete;
         static StringIdType internString(std::string_view sv);
         static std::string_view getString(StringIdType id);
-        StringIdTable() = delete;
 
     private:
         static inline std::unordered_map<StringIdType, std::string> s_table{};

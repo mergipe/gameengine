@@ -3,8 +3,8 @@
 
 #include "SceneData.h"
 #include "Systems.h"
+#include "input/InputHandler.h"
 #include "renderer/Renderer2D.h"
-#include "resources/ResourceManager.h"
 #include <entt/entt.hpp>
 #include <memory>
 
@@ -13,9 +13,8 @@ namespace Engine
     class Scene final
     {
     public:
-        Scene(Renderer2D* renderer, ResourceManager* resourceManager,
-              std::unique_ptr<entt::registry> registry, std::unique_ptr<ScriptingSystem> scriptingSystem,
-              const SceneData& sceneData);
+        Scene(InputHandler* inputHandler, Renderer2D* renderer, std::unique_ptr<entt::registry> registry,
+              std::unique_ptr<ScriptingSystem> scriptingSystem, const SceneData& sceneData);
         Scene(const Scene&) = delete;
         Scene(Scene&&) = delete;
         Scene& operator=(const Scene&) = delete;
@@ -25,8 +24,8 @@ namespace Engine
         void render(float frameExtrapolationTimeStep);
 
     private:
+        InputHandler* m_inputHandler;
         Renderer2D* m_renderer{};
-        ResourceManager* m_resourceManager{};
         std::unique_ptr<entt::registry> m_registry{};
         std::unique_ptr<ScriptingSystem> m_scriptingSystem{};
         std::unique_ptr<MovementSystem> m_movementSystem{};

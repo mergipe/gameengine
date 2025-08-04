@@ -1,6 +1,7 @@
 #include "ResourceManager.h"
 #include "core/Filesystem.h"
 #include "core/Locator.h"
+#include <array>
 #include <stb_image/stb_image.h>
 #include <utility>
 
@@ -34,16 +35,16 @@ namespace Engine
 
     void ResourceManager::clear() { m_textures.clear(); }
 
-    void ResourceManager::loadTexture(const StringId& textureId, const std::filesystem::path& relativePath,
+    void ResourceManager::loadTexture(const std::filesystem::path& relativeFilepath,
                                       const TextureConfig& textureConfig)
     {
-        const std::filesystem::path path{Filesystem::getResourcesPath() / relativePath};
+        const std::filesystem::path filepath{Filesystem::getResourcesPath() / relativeFilepath};
         int width{};
         int height{};
         int channels{};
-        bool ok{static_cast<bool>(stbi_info(path.c_str(), &width, &height, &channels))};
+        bool ok{static_cast<bool>(stbi_info(filepath.c_str(), &width, &height, &channels))};
         if (!ok) {
-            Locator::getLogger()->error("Failed to get info from texture file {}: {}", path.c_str(),
+            Locator::getLogger()->error("Failed to get info from texture file {}: {}", filepath.c_str(),
                                         stbi_failure_reason());
             return;
         }
@@ -56,17 +57,18 @@ namespace Engine
             desiredChannels = STBI_rgb_alpha;
             imageFormat = GL_RGBA;
         }
-        unsigned char* data{stbi_load(path.c_str(), &width, &height, &channels, desiredChannels)};
+        unsigned char* data{stbi_load(filepath.c_str(), &width, &height, &channels, desiredChannels)};
         if (!data) {
-            Locator::getLogger()->error("Failed to open texture file {}: {}", path.c_str(),
+            Locator::getLogger()->error("Failed to open texture file {}: {}", filepath.c_str(),
                                         stbi_failure_reason());
             return;
         }
         auto texture{std::make_unique<Texture2D>(textureConfig)};
         texture->create(data, width, height, imageFormat);
         stbi_image_free(data);
+        StringId textureId{relativeFilepath.c_str()};
         m_textures.insert(std::make_pair(textureId, std::move(texture)));
-        Locator::getLogger()->info("Texture loaded from {} as '{}'", path.c_str(), textureId.getSid());
+        Locator::getLogger()->info("Texture loaded from {} as '{}'", filepath.c_str(), textureId.getSid());
     }
 
     const Texture2D& ResourceManager::getTexture(const StringId& textureId) const

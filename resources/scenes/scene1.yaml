@@ -1,14 +1,12 @@
 assets:
   - type: texture
-    id: spritesheet-texture
-    file: textures/space-shooter-spritesheet.png
+    filepath: textures/space-shooter-spritesheet.png
     min_filter: linear
     mag_filter: linear
     wrap_x: repeat
     wrap_y: repeat
   - type: texture
-    id: planet-texture
-    file: textures/planet00.png
+    filepath: textures/planet00.png
     min_filter: linear
     mag_filter: linear
 entities:
@@ -54,7 +52,7 @@ entities:
           x: 0.0
           y: 0.0
       sprite:
-        texture_id: spritesheet-texture
+        texture_id: textures/space-shooter-spritesheet.png
         texture_x: 896
         texture_y: 305
         width: 228
@@ -71,6 +69,20 @@ entities:
           x: 0
           y: 0
       player_input:
+        default_scope: gameplay
+        commands:
+          - name: rotate_left_p1
+            script: scripts/player/player_controller.lua
+            callback: on_rotate_left
+          - name: rotate_right_p1
+            script: scripts/player/player_controller.lua
+            callback: on_rotate_right
+          - name: accelerate_p1
+            script: scripts/player/player_controller.lua
+            callback: on_accelerate
+          - name: shoot_p1
+            script: scripts/player/player_controller.lua
+            callback: on_shoot
       scripts:
         - filepath: scripts/player/player_controller.lua
           class_name: PlayerController
@@ -95,7 +107,7 @@ entities:
           x: 0.0
           y: 0.0
       sprite:
-        texture_id: spritesheet-texture
+        texture_id: textures/space-shooter-spritesheet.png
         texture_x: 896
         texture_y: 0
         width: 252
@@ -112,6 +124,20 @@ entities:
           x: 0
           y: 0
       player_input:
+        default_scope: gameplay
+        commands:
+          - name: rotate_left_p2
+            script: scripts/player/player_controller.lua
+            callback: on_rotate_left
+          - name: rotate_right_p2
+            script: scripts/player/player_controller.lua
+            callback: on_rotate_right
+          - name: accelerate_p2
+            script: scripts/player/player_controller.lua
+            callback: on_accelerate
+          - name: shoot_p2
+            script: scripts/player/player_controller.lua
+            callback: on_shoot
       scripts:
         - filepath: scripts/player/player_controller.lua
           class_name: PlayerController
@@ -132,7 +158,7 @@ entities:
           y: 0
           z: 0
       sprite:
-        texture_id: planet-texture
+        texture_id: textures/planet00.png
         texture_x: 0
         texture_y: 0
         width: 1280

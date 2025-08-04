@@ -1,0 +1,6 @@
+commands:
+  - name: toggle_dev_mode
+    type: control_down
+    bindings:
+      - device: keyboard
+        control: F12

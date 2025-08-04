@@ -8,12 +8,16 @@ add_executable(${PROJECT_NAME}
         core/Timer.cpp
         core/Window.cpp
         debug/DevGui.cpp
+        input/InputCallback.cpp
+        input/InputCommandMapping.cpp
+        input/InputConfigLoader.cpp
         input/InputHandler.cpp
+        input/InputScope.cpp
         game/Entity.cpp
         game/Game.cpp
         game/Scene.cpp
         game/SceneLoader.cpp
-        game/Script.cpp
+        game/ScriptInstance.cpp
         game/Systems.cpp
         renderer/Camera.cpp
         renderer/Renderer2D.cpp
