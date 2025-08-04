@@ -39,6 +39,10 @@ function EntityScript:get_component_boxcollider2d()
   return api_get_component_boxcollider2d(self.entity)
 end
 
+function EntityScript:get_component_playerinput()
+  return api_get_component_playerinput(self.entity)
+end
+
 function EntityScript:get_component_script()
   return api_get_component_script(self.entity)
 end
