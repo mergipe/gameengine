@@ -252,9 +252,8 @@ namespace Engine
                     const std::optional projectionType{getProjectionType(projectionTypeStr)};
                     const float zNear{cameraNode["z_near"].as<float>(-1.0f)};
                     const float zFar{cameraNode["z_far"].as<float>(100.0f)};
-                    const auto& windowConfig{Game::instance().getWindowConfig()};
-                    const float viewportWidth{static_cast<float>(windowConfig.width)};
-                    const float viewportHeight{static_cast<float>(windowConfig.height)};
+                    const float viewportWidth{cameraNode["viewport"]["width"].as<float>(0.0f)};
+                    const float viewportHeight{cameraNode["viewport"]["height"].as<float>(0.0f)};
                     std::unique_ptr<Camera> cameraPtr{};
                     if (projectionType == ProjectionType::orthographic) {
                         cameraPtr =

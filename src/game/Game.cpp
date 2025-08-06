@@ -101,6 +101,9 @@ namespace Engine
             case SDL_EVENT_QUIT:
                 m_isRunning = false;
                 break;
+            case SDL_EVENT_WINDOW_RESIZED:
+                m_renderer->setViewportSize(event.window.data1, event.window.data2);
+                break;
             case SDL_EVENT_KEY_DOWN:
                 m_inputHandler->handleKeyboardKeyDownEvent(event.key);
                 break;

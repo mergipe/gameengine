@@ -8,6 +8,7 @@
 #include "core/Window.h"
 #include "resources/Texture2D.h"
 #include <glm/glm.hpp>
+#include <memory>
 
 namespace Engine
 {
@@ -22,6 +23,7 @@ namespace Engine
         ~Renderer2D();
         void init();
         void setViewport(int x, int y, int width, int height);
+        void setViewportSize(int width, int height);
         void setClearColor(float red, float green, float blue, float alpha);
         void setupCamera(const Camera& camera);
         void drawRectangle(const Rect& rect, const glm::vec4& color, const glm::vec3& rotation);
@@ -31,14 +33,14 @@ namespace Engine
         void present();
 
     private:
-        std::unique_ptr<ShaderManager> m_shaderManager{};
         glm::mat4 m_cameraTransformation{};
         glm::mat4 m_projectionTransformation{};
+        StringId m_spriteShaderId{"sprite-shader"};
+        StringId m_primitivesShaderId{"primitives-shader"};
+        std::unique_ptr<ShaderManager> m_shaderManager{};
         Window* m_window{};
         GLuint m_spriteVao{};
         GLuint m_quadVao{};
-        StringId m_spriteShaderId{"sprite-shader"};
-        StringId m_primitivesShaderId{"primitives-shader"};
     };
 } // namespace Engine
 

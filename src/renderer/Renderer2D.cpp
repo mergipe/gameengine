@@ -4,6 +4,8 @@
 #include "core/Locator.h"
 #include "core/Math.h"
 #include <SDL3/SDL.h>
+#include <array>
+#include <cstdlib>
 #include <glad/glad.h>
 
 namespace Engine
@@ -90,6 +92,8 @@ namespace Engine
 
     void Renderer2D::setViewport(int x, int y, int width, int height) { glViewport(x, y, width, height); }
 
+    void Renderer2D::setViewportSize(int width, int height) { setViewport(0, 0, width, height); }
+
     void Renderer2D::setClearColor(float red, float green, float blue, float alpha)
     {
         glClearColor(red, green, blue, alpha);
@@ -133,5 +137,5 @@ namespace Engine
 
     void Renderer2D::clear() { glClear(GL_COLOR_BUFFER_BIT); }
 
-    void Renderer2D::present() { SDL_GL_SwapWindow(m_window->getWindowPtr()); }
+    void Renderer2D::present() { SDL_GL_SwapWindow(m_window->getWindowHandle()); }
 } // namespace Engine

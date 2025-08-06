@@ -17,17 +17,18 @@ namespace Engine
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        ImFontConfig config{};
-        config.SizePixels = 20.0f;
-        io.Fonts->AddFontDefault(&config);
+        io.ConfigDpiScaleFonts = true;
+        io.ConfigDpiScaleViewports = true;
         ImGui::StyleColorsDark();
         ImGuiStyle& style{ImGui::GetStyle()};
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
             style.WindowRounding = 0.0f;
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
-        style.ScaleAllSizes(2.0f);
-        ImGui_ImplSDL3_InitForOpenGL(window.getWindowPtr(), window.getGLContext());
+        float uiScale{window.getDisplayScale()};
+        style.FontScaleDpi = uiScale;
+        style.ScaleAllSizes(uiScale);
+        ImGui_ImplSDL3_InitForOpenGL(window.getWindowHandle(), window.getGLContext());
         ImGui_ImplOpenGL3_Init("#version 330 core");
     }
 

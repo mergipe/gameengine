@@ -1,5 +1,6 @@
 #include "Window.h"
 #include "Locator.h"
+#include <cstdlib>
 
 namespace Engine
 {
@@ -16,9 +17,25 @@ namespace Engine
     {
         SDL_GL_DestroyContext(m_glContext);
         m_glContext = nullptr;
-        SDL_DestroyWindow(m_window);
-        m_window = nullptr;
+        SDL_DestroyWindow(m_windowHandle);
+        m_windowHandle = nullptr;
         Locator::getLogger()->info("Window destroyed");
+    }
+
+    const SDL_DisplayMode* getLargerDisplayMode()
+    {
+        int displayCount{};
+        const SDL_DisplayID* displays{SDL_GetDisplays(&displayCount)};
+        int maxHeight{};
+        const SDL_DisplayMode* largerDisplayMode{};
+        for (int i{0}; i < displayCount; ++i) {
+            const SDL_DisplayMode* displayMode{SDL_GetDesktopDisplayMode(displays[i])};
+            if (displayMode->h > maxHeight) {
+                maxHeight = displayMode->h;
+                largerDisplayMode = displayMode;
+            }
+        }
+        return largerDisplayMode;
     }
 
     void Window::init()
@@ -32,17 +49,23 @@ namespace Engine
             flags |= SDL_WINDOW_BORDERLESS;
         if (m_config.isMaximized)
             flags |= SDL_WINDOW_MAXIMIZED;
-        m_window = SDL_CreateWindow(m_config.title.c_str(), m_config.width, m_config.height, flags);
-        if (!m_window) {
+        const SDL_DisplayMode* displayMode{getLargerDisplayMode()};
+        if (m_config.width > displayMode->w || m_config.height > displayMode->h) {
+            m_config.width = displayMode->w;
+            m_config.height = displayMode->h;
+        }
+        m_windowHandle = SDL_CreateWindow(m_config.title.c_str(), m_config.width, m_config.height, flags);
+        if (!m_windowHandle) {
             Locator::getLogger()->critical("Failed to create a window: {}", SDL_GetError());
             std::abort();
         }
-        m_glContext = SDL_GL_CreateContext(m_window);
+        m_glContext = SDL_GL_CreateContext(m_windowHandle);
         if (!m_glContext) {
             Locator::getLogger()->critical("Failed to create OpenGL context: {}", SDL_GetError());
             std::abort();
         }
-        SDL_GL_MakeCurrent(m_window, m_glContext);
+        SDL_GL_MakeCurrent(m_windowHandle, m_glContext);
+        m_displayScale = SDL_GetWindowDisplayScale(m_windowHandle);
         Locator::getLogger()->info("Window initialized");
     }
 } // namespace Engine

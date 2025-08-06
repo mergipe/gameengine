@@ -28,6 +28,9 @@ entities:
           z: 0
       camera:
         projection: orthographic
+        viewport:
+          width: 3840
+          height: 2160
         z_near: 0.1
         z_far: 100
         #fov_y: 45
