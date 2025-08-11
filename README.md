@@ -23,7 +23,6 @@
 
 ### Rendering
 
-- Support for multiple resolutions
 - Fonts
 - Particles
 - UI rendering
@@ -33,11 +32,6 @@
 ### Events
 
 - Rewrite the event system
-
-### Physics
-
-- Add Box2D physics library
-- Add colliders with other shapes
 
 ### Audio
 
