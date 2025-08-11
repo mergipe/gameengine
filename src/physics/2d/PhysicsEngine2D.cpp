@@ -8,7 +8,7 @@ namespace Engine
     PhysicsEngine2D::PhysicsEngine2D()
     {
         b2WorldDef worldDef{b2DefaultWorldDef()};
-        Config::Physics2DConfig config{Config::loadPhysics2DConfig()};
+        Config::Physics2DConfig config{Config::parsePhysics2DConfig()};
         worldDef.gravity = b2Vec2{config.gravity.x, config.gravity.y};
         worldDef.maximumLinearSpeed = config.maxLinearSpeed;
         m_worldId = b2CreateWorld(&worldDef);

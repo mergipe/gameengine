@@ -5,10 +5,14 @@ assets:
     mag_filter: linear
     wrap_x: repeat
     wrap_y: repeat
+    generate_mipmap: true
+    mipmap_filter: linear
   - type: texture
     filepath: textures/planet00.png
     min_filter: linear
     mag_filter: linear
+    generate_mipmap: true
+    mipmap_filter: linear
 entities:
   - components:
       id: Camera

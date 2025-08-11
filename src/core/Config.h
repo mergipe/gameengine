@@ -26,8 +26,8 @@ namespace Engine::Config
         float maxLinearSpeed{400.0f};
     };
 
-    VideoConfig loadVideoConfig();
-    Physics2DConfig loadPhysics2DConfig();
+    VideoConfig parseVideoConfig();
+    Physics2DConfig parsePhysics2DConfig();
 } // namespace Engine::Config
 
 #endif

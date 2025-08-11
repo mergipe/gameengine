@@ -41,6 +41,8 @@ namespace Engine
         TextureFiltering magFilter{TextureFiltering::linear};
         TextureWrapping wrapX{TextureWrapping::repeat};
         TextureWrapping wrapY{TextureWrapping::repeat};
+        TextureFiltering mipmapFilter{TextureFiltering::linear};
+        bool generateMipmap{false};
     };
 
     class Texture2D
@@ -67,6 +69,7 @@ namespace Engine
         GLint m_magFilter{};
         GLint m_wrapS{};
         GLint m_wrapT{};
+        bool m_generateMipmap{};
     };
 } // namespace Engine
 

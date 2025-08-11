@@ -5,7 +5,7 @@
 
 namespace Engine::Config
 {
-    VideoConfig loadVideoConfig()
+    VideoConfig parseVideoConfig()
     {
         const auto filepath{Filesystem::getConfigPath() / "video.yaml"};
         const YAML::Node rootNode{YAML::LoadFile(filepath)};
@@ -39,7 +39,7 @@ namespace Engine::Config
         return config;
     }
 
-    Physics2DConfig loadPhysics2DConfig()
+    Physics2DConfig parsePhysics2DConfig()
     {
         const auto filepath{Filesystem::getConfigPath() / "physics2d.yaml"};
         const YAML::Node rootNode{YAML::LoadFile(filepath)};

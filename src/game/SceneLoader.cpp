@@ -21,7 +21,7 @@
 
 namespace Engine
 {
-    TextureConfig getTextureConfig(const YAML::Node& textureNode)
+    TextureConfig parseTextureConfig(const YAML::Node& textureNode)
     {
         TextureConfig config{};
         if (textureNode["min_filter"]) {
@@ -52,6 +52,16 @@ namespace Engine
                 config.wrapY = *wrapY;
             }
         }
+        if (textureNode["generate_mipmap"]) {
+            config.generateMipmap = textureNode["generate_mipmap"].as<bool>();
+        }
+        if (textureNode["mipmap_filter"]) {
+            const std::optional mipmapFilter{
+                parseTextureFiltering(textureNode["mipmap_filter"].as<std::string>())};
+            if (mipmapFilter) {
+                config.mipmapFilter = *mipmapFilter;
+            }
+        }
         return config;
     }
 
@@ -71,7 +81,7 @@ namespace Engine
             const std::string filepath{assetNode["filepath"].as<std::string>(std::string{})};
             switch (type.value()) {
             case ResourceType::texture:
-                Locator::getResourceManager()->loadTexture(filepath, getTextureConfig(assetNode));
+                Locator::getResourceManager()->loadTexture(filepath, parseTextureConfig(assetNode));
                 break;
             default:
                 break;

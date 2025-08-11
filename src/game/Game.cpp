@@ -32,7 +32,7 @@ namespace Engine
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-        Config::VideoConfig videoConfig{Config::loadVideoConfig()};
+        Config::VideoConfig videoConfig{Config::parseVideoConfig()};
         m_window = std::make_unique<Window>(videoConfig.windowConfig);
         m_window->init();
         SDL_GL_SetSwapInterval(videoConfig.vsync);
