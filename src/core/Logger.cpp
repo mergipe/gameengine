@@ -3,7 +3,7 @@
 
 namespace Engine
 {
-    constexpr std::optional<Logger::Level> getLevel(std::string_view levelStr)
+    constexpr std::optional<Logger::Level> parseLevel(std::string_view levelStr)
     {
         using enum Logger::Level;
         if (levelStr == "trace")
@@ -45,7 +45,7 @@ namespace Engine
     Logger::Logger(Level level)
     {
         if (const char* loggerLevelEnvValue{std::getenv(s_loggerLevelEnvVariableName.c_str())}) {
-            const std::optional<Level> loggerLevelFromEnv{getLevel(loggerLevelEnvValue)};
+            const std::optional<Level> loggerLevelFromEnv{parseLevel(loggerLevelEnvValue)};
             if (loggerLevelFromEnv && loggerLevelFromEnv.value() > level) {
                 level = loggerLevelFromEnv.value();
             }

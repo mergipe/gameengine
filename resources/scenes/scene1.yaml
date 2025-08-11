@@ -40,7 +40,7 @@ entities:
       transform:
         position:
           x: -1500
-          y: 800
+          y: 0
           z: 0
         scale:
           x: 0.4
@@ -50,10 +50,21 @@ entities:
           x: 0
           y: 0
           z: 0
-      rigid_body:
-        velocity:
-          x: 0.0
-          y: 0.0
+      rigid_body_2d:
+        type: dynamic
+        gravity_scale: 0
+        angular_damping: 10
+        linear_damping: 0
+      box_collider_2d:
+        width: 228
+        height: 163
+        density: 1
+        is_trigger: false
+        material:
+          friction: 0
+          restitution: 0
+          rolling_resistance: 0
+          tangent_speed: 0
       sprite:
         texture_id: textures/space-shooter-spritesheet.png
         texture_x: 896
@@ -65,12 +76,6 @@ entities:
           g: 1.0
           b: 1.0
         z_index: 4
-      box_collider:
-        width: 228
-        height: 163
-        offset:
-          x: 0
-          y: 0
       player_input:
         default_scope: gameplay
         commands:
@@ -95,7 +100,7 @@ entities:
       transform:
         position:
           x: 1500
-          y: 800
+          y: 0
           z: 0
         scale:
           x: 0.4
@@ -105,10 +110,21 @@ entities:
           x: 0
           y: 0
           z: 0
-      rigid_body:
-        velocity:
-          x: 0.0
-          y: 0.0
+      rigid_body_2d:
+        type: dynamic
+        gravity_scale: 0
+        angular_damping: 10
+        linear_damping: 0
+      box_collider_2d:
+        width: 252
+        height: 216
+        density: 1
+        is_trigger: false
+        material:
+          friction: 0
+          restitution: 0
+          rolling_resistance: 0
+          tangent_speed: 0
       sprite:
         texture_id: textures/space-shooter-spritesheet.png
         texture_x: 896
@@ -120,12 +136,6 @@ entities:
           g: 1.0
           b: 1.0
         z_index: 4
-      box_collider:
-        width: 252
-        height: 216
-        offset:
-          x: 0
-          y: 0
       player_input:
         default_scope: gameplay
         commands:
@@ -171,9 +181,17 @@ entities:
           r: 1
           g: 1
           b: 1
-      box_collider:
-        width: 1030
-        height: 1030
-        offset:
-          x: 0
-          y: 0
+      rigid_body_2d:
+        type: static
+        gravity_scale: 0
+        angular_damping: 0
+        linear_damping: 0
+      circle_collider_2d:
+        radius: 515
+        density: 1
+        is_trigger: false
+        material:
+          friction: 0
+          restitution: 0
+          rolling_resistance: 0
+          tangent_speed: 0

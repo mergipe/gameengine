@@ -12,10 +12,9 @@ namespace Engine
         , m_renderer{renderer}
         , m_registry{std::move(registry)}
         , m_scriptingSystem{std::move(scriptingSystem)}
-        , m_movementSystem{std::make_unique<MovementSystem>(m_registry.get())}
+        , m_physicsSystem{std::make_unique<PhysicsSystem>(m_registry.get())}
         , m_renderingSystem{std::make_unique<RenderingSystem>(m_registry.get())}
         , m_animationSystem{std::make_unique<SpriteAnimationSystem>(m_registry.get())}
-        , m_collisionSystem{std::make_unique<CollisionSystem>(m_registry.get())}
         , m_playerInputSystem{std::make_unique<PlayerInputSystem>(m_registry.get())}
         , m_sceneData{sceneData}
     {
@@ -24,6 +23,7 @@ namespace Engine
         }
         m_scriptingSystem->start();
         m_playerInputSystem->start(*m_inputHandler);
+        m_physicsSystem->start();
     }
 
     Scene::~Scene()
@@ -39,8 +39,7 @@ namespace Engine
         EventBus& eventBus{*Locator::getEventBus()};
         eventBus.reset();
         m_playerInputSystem->subscribeToEvents(eventBus);
-        m_movementSystem->update(timeStep);
-        m_collisionSystem->update();
+        m_physicsSystem->update(timeStep);
         m_animationSystem->update();
         m_scriptingSystem->update(timeStep);
     }

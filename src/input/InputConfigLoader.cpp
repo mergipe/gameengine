@@ -18,7 +18,7 @@ namespace Engine
             for (YAML::const_iterator it{bindingsNode.begin()}; it != bindingsNode.end(); ++it) {
                 const YAML::Node& bindingNode{*it};
                 const std::string deviceTypeString{bindingNode["device"].as<std::string>()};
-                const InputDevice::Type deviceType{getInputDeviceType(deviceTypeString).value()};
+                const InputDevice::Type deviceType{parseInputDeviceType(deviceTypeString).value()};
                 const std::string controlName{bindingNode["control"].as<std::string>()};
                 int controlCode{};
                 switch (deviceType) {
@@ -40,7 +40,7 @@ namespace Engine
                 const YAML::Node commandNode{*it};
                 const std::string name{commandNode["name"].as<std::string>()};
                 const std::string typeString{commandNode["type"].as<std::string>()};
-                const InputCommand::Type type{getInputCommandType(typeString).value()};
+                const InputCommand::Type type{parseInputCommandType(typeString).value()};
                 const std::vector<InputBinding> bindings{parseInputBindings(commandNode["bindings"])};
                 inputCommands.emplace_back(StringId{name}, type, bindings, areEngineCommands);
             }

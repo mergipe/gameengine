@@ -5,6 +5,7 @@
 #include "core/StringId.h"
 #include "game/Game.h"
 #include "input/InputCallback.h"
+#include "physics/2d/Body2D.h"
 #include "renderer/Camera.h"
 #include "resources/Texture2D.h"
 #include <fstream>
@@ -25,28 +26,28 @@ namespace Engine
         TextureConfig config{};
         if (textureNode["min_filter"]) {
             const std::optional minFilter{
-                getTextureFiltering(textureNode["min_filter"].as<std::string>(std::string{}))};
+                parseTextureFiltering(textureNode["min_filter"].as<std::string>(std::string{}))};
             if (minFilter) {
                 config.minFilter = *minFilter;
             }
         }
         if (textureNode["mag_filter"]) {
             const std::optional magFilter{
-                getTextureFiltering(textureNode["mag_filter"].as<std::string>(std::string{}))};
+                parseTextureFiltering(textureNode["mag_filter"].as<std::string>(std::string{}))};
             if (magFilter) {
                 config.magFilter = *magFilter;
             }
         }
         if (textureNode["wrap_x"]) {
             const std::optional wrapX{
-                getTextureWrapping(textureNode["wrap_x"].as<std::string>(std::string{}))};
+                parseTextureWrapping(textureNode["wrap_x"].as<std::string>(std::string{}))};
             if (wrapX) {
                 config.wrapX = *wrapX;
             }
         }
         if (textureNode["wrap_y"]) {
             const std::optional wrapY{
-                getTextureWrapping(textureNode["wrap_y"].as<std::string>(std::string{}))};
+                parseTextureWrapping(textureNode["wrap_y"].as<std::string>(std::string{}))};
             if (wrapY) {
                 config.wrapY = *wrapY;
             }
@@ -62,7 +63,7 @@ namespace Engine
         for (YAML::const_iterator it{assetsNode.begin()}; it != assetsNode.end(); ++it) {
             const YAML::Node assetNode{*it};
             const std::string typeStr{assetNode["type"].as<std::string>(std::string{})};
-            const auto type{getResourceType(typeStr)};
+            const auto type{parseResourceType(typeStr)};
             if (!type) {
                 Locator::getLogger()->warn("Asset type '{}' unknown", typeStr);
                 continue;
@@ -109,7 +110,7 @@ namespace Engine
                     tile,
                     glm::vec3{leftX + static_cast<float>(j) * tileSize * scale,
                               topY - static_cast<float>(i) * tileSize * scale, 0.0f},
-                    glm::vec3{scale, scale, 0.0f});
+                    glm::vec3{scale, scale, 0.0f}, glm::vec3{});
                 const int tileId{values[j]};
                 registry.emplace<SpriteComponent>(
                     tile, StringId{textureId},
@@ -121,6 +122,19 @@ namespace Engine
         }
         return MapData{static_cast<float>(mapCols) * tileSize * scale,
                        static_cast<float>(mapRows) * tileSize * scale};
+    }
+
+    ShapeData2D parseShapeData2D(const YAML::Node& collider2DNode)
+    {
+        ShapeData2D shapeData{};
+        shapeData.density = collider2DNode["density"].as<float>(1.0f);
+        shapeData.isTrigger = collider2DNode["is_trigger"].as<bool>(false);
+        shapeData.materialData.friction = collider2DNode["material"]["friction"].as<float>(0.6f);
+        shapeData.materialData.restitution = collider2DNode["material"]["restitution"].as<float>(0.0f);
+        shapeData.materialData.rollingResistance =
+            collider2DNode["material"]["rolling_resistance"].as<float>(0.0f);
+        shapeData.materialData.tangentSpeed = collider2DNode["material"]["tangent_speed"].as<float>(0.0f);
+        return shapeData;
     }
 
     void loadEntities(const YAML::Node& entitiesNode, entt::registry& registry,
@@ -160,12 +174,30 @@ namespace Engine
                                   glm::radians(transformNode["rotation"]["y"].as<float>(0.0f)),
                                   glm::radians(transformNode["rotation"]["z"].as<float>(0.0f))});
                 }
-                const YAML::Node rigidBody2DNode{componentsNode["rigid_body"]};
+                const YAML::Node rigidBody2DNode{componentsNode["rigid_body_2d"]};
                 if (rigidBody2DNode.IsDefined()) {
-                    registry.emplace<RigidBody2DComponent>(
-                        entity, glm::vec3{rigidBody2DNode["velocity"]["x"].as<float>(0.0f),
-                                          rigidBody2DNode["velocity"]["y"].as<float>(0.0f),
-                                          rigidBody2DNode["velocity"]["z"].as<float>(0.0f)});
+                    BodyData2D bodyData{};
+                    const std::string typeStr{rigidBody2DNode["type"].as<std::string>(std::string{})};
+                    if (auto bodyType{parseBodyType2D(typeStr)}) {
+                        bodyData.type = *bodyType;
+                    }
+                    bodyData.gravityScale = rigidBody2DNode["gravity_scale"].as<float>(0.0f);
+                    bodyData.angularDamping = rigidBody2DNode["angular_damping"].as<float>(0.0f);
+                    bodyData.linearDamping = rigidBody2DNode["linear_damping"].as<float>(0.0f);
+                    registry.emplace<RigidBody2DComponent>(entity, bodyData);
+                }
+                const YAML::Node boxCollider2DNode{componentsNode["box_collider_2d"]};
+                if (boxCollider2DNode.IsDefined()) {
+                    ShapeData2D shapeData{parseShapeData2D(boxCollider2DNode)};
+                    registry.emplace<BoxCollider2DComponent>(entity, shapeData,
+                                                             boxCollider2DNode["width"].as<float>(0.0f),
+                                                             boxCollider2DNode["height"].as<float>(0.0f));
+                }
+                const YAML::Node circleCollider2DNode{componentsNode["circle_collider_2d"]};
+                if (circleCollider2DNode.IsDefined()) {
+                    ShapeData2D shapeData{parseShapeData2D(circleCollider2DNode)};
+                    registry.emplace<CircleCollider2DComponent>(
+                        entity, shapeData, circleCollider2DNode["radius"].as<float>(0.0f));
                 }
                 const YAML::Node spriteNode{componentsNode["sprite"]};
                 if (spriteNode.IsDefined()) {
@@ -187,14 +219,6 @@ namespace Engine
                         entity, spriteAnimationNode["frames_count"].as<int>(1),
                         spriteAnimationNode["frames_per_second"].as<int>(1),
                         spriteAnimationNode["should_loop"].as<bool>(true));
-                }
-                const YAML::Node boxCollider2DNode{componentsNode["box_collider"]};
-                if (boxCollider2DNode.IsDefined()) {
-                    registry.emplace<BoxCollider2DComponent>(
-                        entity, boxCollider2DNode["width"].as<float>(0.0f),
-                        boxCollider2DNode["height"].as<float>(0.0f),
-                        glm::vec2{boxCollider2DNode["offset"]["x"].as<float>(0.0f),
-                                  boxCollider2DNode["offset"]["y"].as<float>(0.0f)});
                 }
                 const YAML::Node scriptsNode{componentsNode["scripts"]};
                 if (scriptsNode.IsDefined()) {
@@ -249,7 +273,7 @@ namespace Engine
                 if (cameraNode.IsDefined()) {
                     const std::string projectionTypeStr{
                         cameraNode["projection"].as<std::string>(std::string{"orthographic"})};
-                    const std::optional projectionType{getProjectionType(projectionTypeStr)};
+                    const std::optional projectionType{parseProjectionType(projectionTypeStr)};
                     const float zNear{cameraNode["z_near"].as<float>(-1.0f)};
                     const float zFar{cameraNode["z_far"].as<float>(100.0f)};
                     const float viewportWidth{cameraNode["viewport"]["width"].as<float>(0.0f)};

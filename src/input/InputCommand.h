@@ -31,7 +31,7 @@ namespace Engine
         bool m_isEngineCommand{false};
     };
 
-    constexpr std::optional<InputCommand::Type> getInputCommandType(std::string_view inputCommandTypeStr)
+    constexpr std::optional<InputCommand::Type> parseInputCommandType(std::string_view inputCommandTypeStr)
     {
         using enum InputCommand::Type;
         if (inputCommandTypeStr == "control_down")

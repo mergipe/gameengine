@@ -13,7 +13,7 @@ namespace Engine
 {
     enum class ResourceType { texture, font };
 
-    constexpr std::optional<ResourceType> getResourceType(std::string_view resourceTypeStr)
+    constexpr std::optional<ResourceType> parseResourceType(std::string_view resourceTypeStr)
     {
         using enum ResourceType;
         if (resourceTypeStr == "texture")

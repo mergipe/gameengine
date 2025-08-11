@@ -14,7 +14,7 @@ namespace Engine
         clampToEdge = GL_CLAMP_TO_EDGE
     };
 
-    constexpr std::optional<TextureFiltering> getTextureFiltering(std::string_view filteringStr)
+    constexpr std::optional<TextureFiltering> parseTextureFiltering(std::string_view filteringStr)
     {
         using enum TextureFiltering;
         if (filteringStr == "nearest")
@@ -24,7 +24,7 @@ namespace Engine
         return {};
     }
 
-    constexpr std::optional<TextureWrapping> getTextureWrapping(std::string_view wrappingStr)
+    constexpr std::optional<TextureWrapping> parseTextureWrapping(std::string_view wrappingStr)
     {
         using enum TextureWrapping;
         if (wrappingStr == "repeat")

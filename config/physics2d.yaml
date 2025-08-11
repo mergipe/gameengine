@@ -1,0 +1,4 @@
+gravity:
+  x: 0
+  y: -9.81
+max_linear_speed: 500

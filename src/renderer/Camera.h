@@ -10,7 +10,7 @@ namespace Engine
 {
     enum class ProjectionType { orthographic, perspective };
 
-    constexpr std::optional<ProjectionType> getProjectionType(std::string_view projectionTypeStr)
+    constexpr std::optional<ProjectionType> parseProjectionType(std::string_view projectionTypeStr)
     {
         using enum ProjectionType;
         if (projectionTypeStr == "orthographic")

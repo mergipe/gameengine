@@ -33,12 +33,43 @@ namespace Engine
                rect.getBottomY() > cameraPlaneGeometry.getTopY();
     }
 
-    void MovementSystem::update(float timeStep)
+    void PhysicsSystem::start()
     {
-        const auto view{getRegistry().view<TransformComponent, const RigidBody2DComponent>()};
+        entt::registry& registry{getRegistry()};
+        const auto view{registry.view<const TransformComponent, RigidBody2DComponent>()};
         for (const auto entity : view) {
             auto [transform, rigidBody] = view.get<TransformComponent, RigidBody2DComponent>(entity);
-            transform.position += rigidBody.velocity * timeStep;
+            rigidBody.bodyData.position = transform.position;
+            rigidBody.bodyData.rotation = transform.rotation.z;
+            rigidBody.body = m_physicsEngine2D.createBody(rigidBody.bodyData, entity);
+            bool hasCollider{false};
+            if (const auto* boxCollider{registry.try_get<BoxCollider2DComponent>(entity)}) {
+                m_physicsEngine2D.createBoxShape(rigidBody.body.getId(), boxCollider->shapeData,
+                                                 boxCollider->width, boxCollider->height);
+                hasCollider = true;
+            }
+            if (const auto* circleCollider{registry.try_get<CircleCollider2DComponent>(entity)}) {
+                m_physicsEngine2D.createCircleShape(rigidBody.body.getId(), circleCollider->shapeData,
+                                                    circleCollider->radius);
+                hasCollider = true;
+            }
+            if (!hasCollider) {
+                m_physicsEngine2D.createDefaultShape(rigidBody.body.getId());
+            }
+        }
+    }
+
+    void PhysicsSystem::update(float timeStep)
+    {
+        m_physicsEngine2D.update(timeStep);
+        b2BodyEvents events{m_physicsEngine2D.getBodyEvents()};
+        for (int i{0}; i < events.moveCount; ++i) {
+            const b2BodyMoveEvent* event{events.moveEvents + i};
+            entt::entity entity{static_cast<entt::entity>(reinterpret_cast<std::uintptr_t>(event->userData))};
+            TransformComponent& transform{getRegistry().get<TransformComponent>(entity)};
+            transform.position.x = event->transform.p.x;
+            transform.position.y = event->transform.p.y;
+            transform.rotation.z = b2Rot_GetAngle(event->transform.q);
         }
     }
 
@@ -51,7 +82,7 @@ namespace Engine
             cameraPtr = camera.camera.get();
             if (!cameraPtr)
                 continue;
-            cameraPtr->setModelTransformation(transform.getTransformation());
+            cameraPtr->setModelTransformation(transform.getTransformationMatrix());
             break;
         }
         if (!cameraPtr)
@@ -65,8 +96,8 @@ namespace Engine
             auto [transform, sprite] = spriteView.get<TransformComponent, SpriteComponent>(entity);
             glm::vec2 renderPosition{transform.position};
             if (const auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)}) {
-                renderPosition = getExtrapolatedPosition(transform.position, rigidBody->velocity,
-                                                         frameExtrapolationTimeStep);
+                renderPosition = getExtrapolatedPosition(
+                    transform.position, rigidBody->body.getLinearVelocity(), frameExtrapolationTimeStep);
             }
             const float spriteWidth{sprite.textureArea.width * transform.scale.x};
             const float spriteHeight{sprite.textureArea.height * transform.scale.y};
@@ -79,26 +110,16 @@ namespace Engine
         }
     }
 
-    void DebugRenderingSystem::update(Renderer2D& renderer, float frameExtrapolationTimeStep)
+    void DebugRenderingSystem::registerRenderFunction(const std::function<void()>& function)
     {
-        const auto view{getRegistry().view<const TransformComponent, const BoxCollider2DComponent>()};
-        for (const auto entity : view) {
-            auto [transform, boxCollider] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
-            glm::vec2 renderPosition{transform.position};
-            if (const auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)}) {
-                renderPosition = getExtrapolatedPosition(transform.position, rigidBody->velocity,
-                                                         frameExtrapolationTimeStep);
-            }
-            glm::vec4 color;
-            if (boxCollider.isColliding) {
-                color = {1.0f, 0.0f, 0.0f, 1.0f};
-            } else {
-                color = {1.0f, 1.0f, 0.0f, 1.0f};
-            }
-            Rect rect{renderPosition + boxCollider.offset,
-                      static_cast<float>(boxCollider.width) * transform.scale.x,
-                      static_cast<float>(boxCollider.height) * transform.scale.y};
-            renderer.drawRectangle(rect, color, glm::vec3{0.0f});
+        m_renderFunctions.push_back(function);
+    }
+
+    void DebugRenderingSystem::update([[maybe_unused]] Renderer2D& renderer,
+                                      [[maybe_unused]] float frameExtrapolationTimeStep)
+    {
+        for (auto& function : m_renderFunctions) {
+            function();
         }
     }
 
@@ -112,35 +133,6 @@ namespace Engine
                                            spriteAnimation.framesCount;
             sprite.textureArea.position.x =
                 static_cast<float>(spriteAnimation.currentFrame) * sprite.textureArea.width;
-        }
-    }
-
-    void CollisionSystem::update()
-    {
-        const auto view{getRegistry().view<const TransformComponent, BoxCollider2DComponent>()};
-        for (const auto entity : view) {
-            view.get<BoxCollider2DComponent>(entity).isColliding = false;
-        }
-        for (auto i{view.begin()}; i != view.end(); ++i) {
-            const auto entity{*i};
-            auto [transform, boxCollider] = view.get<TransformComponent, BoxCollider2DComponent>(entity);
-            for (auto j{i}; j != view.end(); ++j) {
-                if (i == j)
-                    continue;
-                const auto otherEntity{*j};
-                auto [otherTransform, otherBoxCollider] =
-                    view.get<TransformComponent, BoxCollider2DComponent>(otherEntity);
-                const bool collisionHappened{aabbHasCollided(
-                    Rect{glm::vec2{transform.position} + boxCollider.offset,
-                         boxCollider.width * transform.scale.x, boxCollider.height * transform.scale.y},
-                    Rect{glm::vec2{otherTransform.position} + otherBoxCollider.offset,
-                         otherBoxCollider.width * otherTransform.scale.x,
-                         otherBoxCollider.height * otherTransform.scale.y})};
-                if (collisionHappened) {
-                    boxCollider.isColliding = otherBoxCollider.isColliding = true;
-                    Locator::getEventBus()->dispatchEvent<CollisionEvent>(entity, otherEntity);
-                }
-            }
         }
     }
 
@@ -283,20 +275,28 @@ namespace Engine
     {
         m_lua.new_usertype<StringId>("StringId", "id", &StringId::getSid, "str", &StringId::getString);
         m_lua.new_usertype<Entity>("Entity", "id", sol::property(&Entity::getId));
-        m_lua.new_usertype<glm::vec2>("Vec2", sol::constructors<glm::vec2(float), glm::vec2(float, float)>(),
-                                      "x", &glm::vec2::x, "y", &glm::vec2::y);
-        m_lua.new_usertype<glm::vec3>("Vec3",
-                                      sol::constructors<glm::vec3(float), glm::vec3(float, float, float)>(),
-                                      "x", &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
+        m_lua.new_usertype<glm::vec2>(
+            "Vec2", sol::constructors<glm::vec2(), glm::vec2(float), glm::vec2(float, float)>(), "x",
+            &glm::vec2::x, "y", &glm::vec2::y);
+        m_lua.new_usertype<glm::vec3>(
+            "Vec3", sol::constructors<glm::vec3(), glm::vec3(float), glm::vec3(float, float, float)>(), "x",
+            &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
         m_lua.new_usertype<Rect>("Rect", "position", &Rect::position, "width", &Rect::width, "height",
                                  &Rect::height, "pivot_point", &Rect::pivotPoint);
+        sol::usertype<Body2D> body2dType{m_lua.new_usertype<Body2D>("Body2D")};
+        body2dType["apply_force_to_center"] = &Body2D::applyForceToCenter;
+        body2dType["apply_torque"] = &Body2D::applyTorque;
+        body2dType["linear_velocity"] = sol::property(&Body2D::getLinearVelocity, &Body2D::setLinearVelocity);
+        body2dType["position"] = sol::property(&Body2D::getPosition);
+        body2dType["rotation_angle"] = sol::property(&Body2D::getRotationAngle);
         m_lua.new_usertype<IdComponent>("IdComponent", "sid", &IdComponent::sid);
         m_lua.new_usertype<TagComponent>("TagComponent", "name", &TagComponent::name);
         m_lua.new_usertype<TransformComponent>(
             "TransformComponent", "position", &TransformComponent::position, "scale",
-            &TransformComponent::scale, "rotation", &TransformComponent::rotation);
-        m_lua.new_usertype<RigidBody2DComponent>("RigidBody2DComponent", "velocity",
-                                                 &RigidBody2DComponent::velocity);
+            &TransformComponent::scale, "rotation", &TransformComponent::rotation, "right",
+            sol::property(&TransformComponent::getRight), "up", sol::property(&TransformComponent::getUp),
+            "forward", sol::property(&TransformComponent::getForward));
+        m_lua.new_usertype<RigidBody2DComponent>("RigidBody2DComponent", "body", &RigidBody2DComponent::body);
         m_lua.new_usertype<SpriteComponent>("SpriteComponent", "texture_id", &SpriteComponent::textureId,
                                             "texture_area", &SpriteComponent::textureArea, "color",
                                             &SpriteComponent::color, "z_index", &SpriteComponent::zIndex);
@@ -305,10 +305,9 @@ namespace Engine
             &SpriteAnimationComponent::currentFrame, "frames_count", &SpriteAnimationComponent::framesCount,
             "frames_per_second", &SpriteAnimationComponent::framesPerSecond, "should_loop",
             &SpriteAnimationComponent::shouldLoop);
-        m_lua.new_usertype<BoxCollider2DComponent>(
-            "BoxCollider2DComponent", "offset", &BoxCollider2DComponent::offset, "width",
-            &BoxCollider2DComponent::width, "height", &BoxCollider2DComponent::height, "is_colliding",
-            &BoxCollider2DComponent::isColliding);
+        m_lua.new_usertype<BoxCollider2DComponent>("BoxCollider2DComponent", "width",
+                                                   &BoxCollider2DComponent::width, "height",
+                                                   &BoxCollider2DComponent::height);
         m_lua.new_usertype<PlayerInputComponent>("PlayerInputComponent");
         m_lua.new_usertype<CameraComponent>("CameraComponent");
         m_lua.new_usertype<InputValue>("InputValue", "value", &InputValue::value);

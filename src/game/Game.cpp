@@ -71,7 +71,7 @@ namespace Engine
                 update();
                 lag -= s_timeStepInMs;
             }
-            render(lag);
+            render(lag / 1000.0f);
         }
         m_currentScene.reset();
     }
@@ -117,7 +117,7 @@ namespace Engine
         m_inputHandler->resolveInput();
     }
 
-    void Game::update() { m_currentScene->update(s_timeStepInMs); }
+    void Game::update() { m_currentScene->update(s_timeStep); }
 
     void Game::render(float frameExtrapolationTimeStep)
     {

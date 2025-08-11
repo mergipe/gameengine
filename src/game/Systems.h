@@ -5,14 +5,17 @@
 #include "ScriptInstance.h"
 #include "events/EventBus.h"
 #include "input/InputHandler.h"
+#include "physics/2d/PhysicsEngine2D.h"
 #include "renderer/Renderer2D.h"
 #include <entt/entt.hpp>
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <sol/sol.hpp>
 #include <string_view>
 #include <unordered_map>
+#include <vector>
 
 namespace Engine
 {
@@ -34,14 +37,18 @@ namespace Engine
         entt::registry* m_registry{};
     };
 
-    class MovementSystem final : public System
+    class PhysicsSystem final : public System
     {
     public:
-        explicit MovementSystem(entt::registry* registry)
+        explicit PhysicsSystem(entt::registry* registry)
             : System{registry}
         {
         }
+        void start();
         void update(float timeStep);
+
+    private:
+        PhysicsEngine2D m_physicsEngine2D{}; // NOTE: maybe put this in another place
     };
 
     class RenderingSystem final : public System
@@ -54,30 +61,24 @@ namespace Engine
         void update(Renderer2D& renderer, float frameExtrapolationTimeStep);
     };
 
-    class DebugRenderingSystem final : public System
+    class DebugRenderingSystem final : public System // TODO: implement this
     {
     public:
         explicit DebugRenderingSystem(entt::registry* registry)
             : System{registry}
         {
         }
+        void registerRenderFunction(const std::function<void()>& function);
         void update(Renderer2D& renderer, float frameExtrapolationTimeStep);
+
+    private:
+        std::vector<std::function<void()>> m_renderFunctions{};
     };
 
     class SpriteAnimationSystem final : public System
     {
     public:
         explicit SpriteAnimationSystem(entt::registry* registry)
-            : System{registry}
-        {
-        }
-        void update();
-    };
-
-    class CollisionSystem final : public System
-    {
-    public:
-        explicit CollisionSystem(entt::registry* registry)
             : System{registry}
         {
         }

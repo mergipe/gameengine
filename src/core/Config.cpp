@@ -38,4 +38,24 @@ namespace Engine::Config
         }
         return config;
     }
+
+    Physics2DConfig loadPhysics2DConfig()
+    {
+        const auto filepath{Filesystem::getConfigPath() / "physics2d.yaml"};
+        const YAML::Node rootNode{YAML::LoadFile(filepath)};
+        Physics2DConfig config{};
+        if (rootNode["gravity"]) {
+            const YAML::Node gravityNode{rootNode["gravity"]};
+            if (gravityNode["x"]) {
+                config.gravity.x = gravityNode["x"].as<float>();
+            }
+            if (gravityNode["y"]) {
+                config.gravity.y = gravityNode["y"].as<float>();
+            }
+        }
+        if (rootNode["max_linear_speed"]) {
+            config.maxLinearSpeed = rootNode["max_linear_speed"].as<float>();
+        }
+        return config;
+    }
 } // namespace Engine::Config

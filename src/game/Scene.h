@@ -28,11 +28,10 @@ namespace Engine
         Renderer2D* m_renderer{};
         std::unique_ptr<entt::registry> m_registry{};
         std::unique_ptr<ScriptingSystem> m_scriptingSystem{};
-        std::unique_ptr<MovementSystem> m_movementSystem{};
+        std::unique_ptr<PhysicsSystem> m_physicsSystem{};
         std::unique_ptr<RenderingSystem> m_renderingSystem{};
         std::unique_ptr<DebugRenderingSystem> m_debugRenderingSystem{};
         std::unique_ptr<SpriteAnimationSystem> m_animationSystem{};
-        std::unique_ptr<CollisionSystem> m_collisionSystem{};
         std::unique_ptr<PlayerInputSystem> m_playerInputSystem{};
         SceneData m_sceneData{};
     };

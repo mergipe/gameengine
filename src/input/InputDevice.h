@@ -20,7 +20,7 @@ namespace Engine
         bool inUse{false};
     };
 
-    constexpr std::optional<InputDevice::Type> getInputDeviceType(std::string_view inputDeviceTypeStr)
+    constexpr std::optional<InputDevice::Type> parseInputDeviceType(std::string_view inputDeviceTypeStr)
     {
         using enum InputDevice::Type;
         if (inputDeviceTypeStr == "keyboard")

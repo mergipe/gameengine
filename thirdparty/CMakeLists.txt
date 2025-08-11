@@ -48,3 +48,10 @@ FetchContent_Declare(
         SYSTEM
 )
 FetchContent_MakeAvailable(yaml-cpp)
+
+FetchContent_Declare(
+        box2d
+        SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/box2d
+        SYSTEM
+)
+FetchContent_MakeAvailable(box2d)

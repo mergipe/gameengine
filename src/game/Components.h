@@ -7,6 +7,7 @@
 #include "core/Timer.h"
 #include "input/InputCallback.h"
 #include "input/InputDevice.h"
+#include "physics/2d/Body2D.h"
 #include "renderer/Camera.h"
 #include "renderer/Shapes.h"
 #include <glm/glm.hpp>
@@ -24,9 +25,21 @@ namespace Engine
     };
 
     struct TransformComponent final {
-        glm::mat4 getTransformation() const
+        glm::mat4 getTransformationMatrix() const
         {
             return Math::getTransformationMatrix(position, rotation, scale);
+        }
+        glm::vec3 getRight() const
+        {
+            return Math::getRotationMatrix(rotation) * glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
+        }
+        glm::vec3 getUp() const
+        {
+            return Math::getRotationMatrix(rotation) * glm::vec4{0.0f, 1.0f, 0.0f, 1.0f};
+        }
+        glm::vec3 getForward() const
+        {
+            return Math::getRotationMatrix(rotation) * glm::vec4{0.0f, 0.0f, 1.0f, 1.0f};
         }
 
         glm::vec3 position{0.0f};
@@ -35,7 +48,8 @@ namespace Engine
     };
 
     struct RigidBody2DComponent final {
-        glm::vec3 velocity{0.0f};
+        BodyData2D bodyData{};
+        Body2D body{};
     };
 
     struct SpriteComponent final {
@@ -59,15 +73,14 @@ namespace Engine
     };
 
     struct BoxCollider2DComponent final {
-        explicit BoxCollider2DComponent(float width = 0, float height = 0,
-                                        const glm::vec2& offset = glm::vec2{0.0f})
-            : offset{offset}, width{width}, height{height}
-        {
-        }
-        glm::vec2 offset{};
+        ShapeData2D shapeData{};
         float width{};
         float height{};
-        bool isColliding{};
+    };
+
+    struct CircleCollider2DComponent final {
+        ShapeData2D shapeData{};
+        float radius{};
     };
 
     struct PlayerInputComponent final {
