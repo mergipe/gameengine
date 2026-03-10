@@ -34,14 +34,10 @@ namespace Engine
         if (m_config.isMaximized)
             flags |= SDL_WINDOW_MAXIMIZED;
         const SDL_DisplayMode* currentDisplayMode{SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay())};
-        Locator::getLogger()->info("width x height: {}x{}", m_config.width, m_config.height);
         if (m_config.width > currentDisplayMode->w || m_config.height > currentDisplayMode->h) {
             m_config.width = currentDisplayMode->w;
             m_config.height = currentDisplayMode->h;
         }
-        float scale{SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay())};
-        Locator::getLogger()->info("SDL_GetDisplayContentScale: {}", scale);
-        Locator::getLogger()->info("Display Mode: {}x{}", currentDisplayMode->w, currentDisplayMode->h);
         m_windowHandle = SDL_CreateWindow(m_config.title.c_str(), m_config.width, m_config.height, flags);
         if (!m_windowHandle) {
             Locator::getLogger()->critical("Failed to create a window: {}", SDL_GetError());
@@ -54,7 +50,6 @@ namespace Engine
         }
         SDL_GL_MakeCurrent(m_windowHandle, m_glContext);
         m_displayScale = SDL_GetWindowDisplayScale(m_windowHandle);
-        Locator::getLogger()->info("SDL_GetWindowDisplayScale: {}", m_displayScale);
         Locator::getLogger()->info("Window initialized");
     }
 } // namespace Engine
