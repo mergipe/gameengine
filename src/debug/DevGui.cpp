@@ -25,9 +25,9 @@ namespace Engine
             style.WindowRounding = 0.0f;
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
-        /*float uiScale{window.getDisplayScale()};
+        float uiScale{window.getDisplayScale()};
         style.FontScaleDpi = uiScale;
-        style.ScaleAllSizes(uiScale);*/
+        style.ScaleAllSizes(SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay()));
         ImGui_ImplSDL3_InitForOpenGL(window.getWindowHandle(), window.getGLContext());
         ImGui_ImplOpenGL3_Init("#version 330 core");
     }
