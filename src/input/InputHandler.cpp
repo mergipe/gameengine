@@ -26,8 +26,11 @@ namespace Engine
             InputCallback{[](const InputValue&) { Game::instance().toggleDevMode(); }});
         // for now only keyboard support
         if (SDL_HasKeyboard()) {
-            // from what I know, SDL_KeyboardEvent.which is always 0 (unknown/virtual keyboard)
-            m_inputDevices.emplace_back(InputDevice{InputDevice::Type::keyboard, 0});
+            int keyboardCount{};
+            SDL_KeyboardID* keyboards{SDL_GetKeyboards(&keyboardCount)};
+            for (int i{0}; i < keyboardCount; ++i) {
+                m_inputDevices.emplace_back(InputDevice{InputDevice::Type::keyboard, keyboards[i]});
+            }
         }
     }
 
