@@ -26,11 +26,8 @@ namespace Engine
             InputCallback{[](const InputValue&) { Game::instance().toggleDevMode(); }});
         // for now only keyboard support
         if (SDL_HasKeyboard()) {
-            int keyboardCount{};
-            SDL_KeyboardID* keyboards{SDL_GetKeyboards(&keyboardCount)};
-            for (int i{0}; i < keyboardCount; ++i) {
-                m_inputDevices.emplace_back(InputDevice{InputDevice::Type::keyboard, keyboards[i]});
-            }
+            // the keyboard id will always be 0 because of x11 and wayland differences
+            m_inputDevices.emplace_back(InputDevice{InputDevice::Type::keyboard, 0});
         }
     }
 
@@ -63,14 +60,14 @@ namespace Engine
             return;
         }
         if (auto* command{findCommand(InputDevice::Type::keyboard, event.scancode)}) {
-            handleControlDown(*command, InputDevice::Id{InputDevice::Type::keyboard, event.which});
+            handleControlDown(*command, InputDevice::Id{InputDevice::Type::keyboard, 0});
         }
     }
 
     void InputHandler::handleKeyboardKeyUpEvent(const SDL_KeyboardEvent& event)
     {
         if (auto* command{findCommand(InputDevice::Type::keyboard, event.scancode)}) {
-            handleControlUp(*command, InputDevice::Id{InputDevice::Type::keyboard, event.which});
+            handleControlUp(*command, InputDevice::Id{InputDevice::Type::keyboard, 0});
         }
     }
 
