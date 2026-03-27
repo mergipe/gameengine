@@ -42,9 +42,15 @@ if (CCACHE_PROGRAM)
     set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
 endif ()
 
-option(SDL_VENDORED "Use vendored SDL" OFF)
+include(FetchContent)
+option(SDL_VENDORED "Use vendored SDL" ON)
 if (SDL_VENDORED)
-    add_subdirectory(thirdparty/SDL)
+    FetchContent_Declare(
+            SDL
+            SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/SDL
+            SYSTEM
+    )
+    FetchContent_MakeAvailable(SDL)
 else ()
     find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
 endif ()
