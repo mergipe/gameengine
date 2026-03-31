@@ -11,7 +11,7 @@
 -I./thirdparty/entt/include
 -I./thirdparty/glad/include
 -I./thirdparty/glm/include
--I./thirdparty/imgui/include
+-I./thirdparty/imgui
 -I./thirdparty/sol/include
 -I./thirdparty/spdlog/include
 -I./thirdparty/stb_image/include

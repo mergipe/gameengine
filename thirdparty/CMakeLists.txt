@@ -20,38 +20,37 @@ add_library(stb_image
         stb_image/src/stb_image.cpp)
 target_include_directories(stb_image SYSTEM PUBLIC stb_image/include)
 
-set(IMGUI_SRC_DIR imgui/include/imgui)
 add_library(
         imgui
-        ${IMGUI_SRC_DIR}/imgui.cpp
-        ${IMGUI_SRC_DIR}/imgui_draw.cpp
-        ${IMGUI_SRC_DIR}/imgui_impl_opengl3.cpp
-        ${IMGUI_SRC_DIR}/imgui_impl_sdl3.cpp
-        ${IMGUI_SRC_DIR}/imgui_stdlib.cpp
-        ${IMGUI_SRC_DIR}/imgui_tables.cpp
-        ${IMGUI_SRC_DIR}/imgui_widgets.cpp
-        ${IMGUI_SRC_DIR}/imgui_demo.cpp
+        imgui/imgui.cpp
+        imgui/imgui_draw.cpp
+        imgui/imgui_impl_opengl3.cpp
+        imgui/imgui_impl_sdl3.cpp
+        imgui/imgui_stdlib.cpp
+        imgui/imgui_tables.cpp
+        imgui/imgui_widgets.cpp
+        imgui/imgui_demo.cpp
 )
-target_include_directories(imgui SYSTEM PUBLIC imgui/include)
+target_include_directories(imgui SYSTEM PUBLIC imgui)
 target_link_sdl(imgui)
 
 FetchContent_Declare(
         spdlog
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/spdlog
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/spdlog
         SYSTEM
 )
 FetchContent_MakeAvailable(spdlog)
 
 FetchContent_Declare(
         yaml-cpp
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/yaml-cpp
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp
         SYSTEM
 )
 FetchContent_MakeAvailable(yaml-cpp)
 
 FetchContent_Declare(
         box2d
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/box2d
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/box2d
         SYSTEM
 )
 FetchContent_MakeAvailable(box2d)
