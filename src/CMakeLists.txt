@@ -40,5 +40,20 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC SOL_ALL_SAFETIES_ON=1)
 
 if (ENABLE_DEVELOPER_MODE)
     message("Setting developer mode compiler flags")
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Werror -Wconversion -Wsign-conversion -Weffc++)
+    target_compile_options(${PROJECT_NAME} PRIVATE
+            $<$<CXX_COMPILER_ID:GNU,Clang>:
+            -Wall
+            -Wextra
+            -Werror
+            -Wpedantic
+            -Wconversion
+            -Wsign-conversion
+            >
+            $<$<CXX_COMPILER_ID:MSVC>:
+            /W4
+            /WX
+            /w44365
+            /external:W3
+            >
+    )
 endif ()
