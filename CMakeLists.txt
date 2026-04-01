@@ -42,21 +42,7 @@ if (CCACHE_PROGRAM)
     set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
 endif ()
 
-include(FetchContent)
-option(SDL_VENDORED "Use vendored SDL" ON)
-if (SDL_VENDORED)
-    FetchContent_Declare(
-            SDL
-            SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/SDL
-            SYSTEM
-    )
-    FetchContent_MakeAvailable(SDL)
-else ()
-    find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
-endif ()
-
 find_package(OpenGL REQUIRED)
-find_package(Lua REQUIRED)
 
 include(cmake/LinkSDL.cmake)
 add_subdirectory(thirdparty)

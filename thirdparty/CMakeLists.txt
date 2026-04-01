@@ -1,16 +1,69 @@
 include(FetchContent)
 
-add_library(glm INTERFACE)
-target_include_directories(glm SYSTEM INTERFACE glm/include)
+FetchContent_Declare(
+        SDL
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/SDL
+        SYSTEM
+)
+FetchContent_MakeAvailable(SDL)
 
-add_library(sol INTERFACE)
-target_include_directories(sol SYSTEM INTERFACE sol/include)
+FetchContent_Declare(
+        spdlog
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/spdlog
+        SYSTEM
+)
+FetchContent_MakeAvailable(spdlog)
 
-add_library(entt INTERFACE)
-target_include_directories(entt SYSTEM INTERFACE entt/include)
+FetchContent_Declare(
+        yaml-cpp
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp
+        SYSTEM
+)
+FetchContent_MakeAvailable(yaml-cpp)
 
-add_library(wyhash INTERFACE)
-target_include_directories(wyhash SYSTEM INTERFACE wyhash/include)
+FetchContent_Declare(
+        box2d
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/box2d
+        SYSTEM
+)
+FetchContent_MakeAvailable(box2d)
+
+add_library(
+        lua
+        lua/lapi.c
+        lua/lauxlib.c
+        lua/lbaselib.c
+        lua/lcode.c
+        lua/lcorolib.c
+        lua/lctype.c
+        lua/ldblib.c
+        lua/ldebug.c
+        lua/ldo.c
+        lua/ldump.c
+        lua/lfunc.c
+        lua/lgc.c
+        lua/linit.c
+        lua/liolib.c
+        lua/llex.c
+        lua/lmathlib.c
+        lua/lmem.c
+        lua/loadlib.c
+        lua/lobject.c
+        lua/lopcodes.c
+        lua/loslib.c
+        lua/lparser.c
+        lua/lstate.c
+        lua/lstring.c
+        lua/lstrlib.c
+        lua/ltable.c
+        lua/ltablib.c
+        lua/ltm.c
+        lua/lundump.c
+        lua/lutf8lib.c
+        lua/lvm.c
+        lua/lzio.c
+)
+target_include_directories(lua SYSTEM PUBLIC lua)
 
 add_library(glad
         glad/src/glad.c)
@@ -34,23 +87,14 @@ add_library(
 target_include_directories(imgui SYSTEM PUBLIC imgui)
 target_link_sdl(imgui)
 
-FetchContent_Declare(
-        spdlog
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/spdlog
-        SYSTEM
-)
-FetchContent_MakeAvailable(spdlog)
+add_library(glm INTERFACE)
+target_include_directories(glm SYSTEM INTERFACE glm/include)
 
-FetchContent_Declare(
-        yaml-cpp
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp
-        SYSTEM
-)
-FetchContent_MakeAvailable(yaml-cpp)
+add_library(sol INTERFACE)
+target_include_directories(sol SYSTEM INTERFACE sol/include)
 
-FetchContent_Declare(
-        box2d
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/box2d
-        SYSTEM
-)
-FetchContent_MakeAvailable(box2d)
+add_library(entt INTERFACE)
+target_include_directories(entt SYSTEM INTERFACE entt/include)
+
+add_library(wyhash INTERFACE)
+target_include_directories(wyhash SYSTEM INTERFACE wyhash/include)

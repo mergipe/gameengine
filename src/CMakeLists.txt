@@ -34,8 +34,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 target_link_sdl(${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME} PRIVATE box2d entt glad glm imgui sol spdlog stb_image wyhash yaml-cpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE ${LUA_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PRIVATE box2d entt glad glm imgui lua sol spdlog stb_image wyhash yaml-cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${OPENGL_LIBRARIES})
 target_compile_definitions(${PROJECT_NAME} PUBLIC SOL_ALL_SAFETIES_ON=1)
 

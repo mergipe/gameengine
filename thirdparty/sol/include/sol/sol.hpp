@@ -20,8 +20,8 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // This file was generated with a script.
-// Generated 2025-05-14 16:28:56.777770 UTC
-// This header was generated with sol v3.5.0 (revision 9190880)
+// Generated 2026-03-31 23:56:58.002621 UTC
+// This header was generated with sol v3.5.0 (revision c1f95a77)
 // https://github.com/ThePhD/sol2
 
 #ifndef SOL_SINGLE_INCLUDE_SOL_HPP
@@ -6863,12 +6863,9 @@ namespace sol {
 		/// one.
 		///
 		/// \group emplace
-		template <class... Args>
-		T& emplace(Args&&... args) noexcept {
-			static_assert(std::is_constructible<T, Args&&...>::value, "T must be constructible with Args");
-
+		T& emplace(T& arg) noexcept {
 			*this = nullopt;
-			new (static_cast<void*>(this)) optional(std::in_place, std::forward<Args>(args)...);
+			m_value = &arg;
 			return **this;
 		}
 
@@ -17556,7 +17553,7 @@ namespace sol {
 
 		protected_function_result() noexcept : protected_function_result(nullptr) {}
 		protected_function_result(lua_State* Ls, int idx = -1, int retnum = 0, int popped = 0, call_status pferr = call_status::ok) noexcept
-		: L(Ls), index(idx), returncount(retnum), popcount(popped), err(pferr) {
+		: L( Ls), index(idx), returncount(retnum), popcount(popped), err(pferr) {
 		}
 
 		// We do not want anyone to copy these around willy-nilly
@@ -29202,6 +29199,8 @@ namespace sol {
 
 		basic_variadic_results(const basic_variadic_results&) = default;
 		basic_variadic_results(basic_variadic_results&&) = default;
+		basic_variadic_results& operator=(const basic_variadic_results&) = default;
+		basic_variadic_results& operator=(basic_variadic_results&&) = default;
 	};
 
 	struct variadic_results : public basic_variadic_results<> {
