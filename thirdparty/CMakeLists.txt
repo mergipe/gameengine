@@ -1,4 +1,22 @@
 include(FetchContent)
+include(ExternalProject)
+
+set(LUAJIT_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/luajit_install)
+ExternalProject_Add(luajit_build
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/luajit
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND make
+        INSTALL_COMMAND make install PREFIX=${LUAJIT_INSTALL_DIR}
+        BUILD_IN_SOURCE 1
+)
+add_library(luajit STATIC IMPORTED GLOBAL)
+set(LUAJIT_LIB_PATH "${LUAJIT_INSTALL_DIR}/lib/libluajit-5.1.a")
+set(LUAJIT_INC_DIR "${LUAJIT_INSTALL_DIR}/include/luajit-2.1")
+set_target_properties(luajit PROPERTIES
+        IMPORTED_LOCATION ${LUAJIT_LIB_PATH}
+        INTERFACE_INCLUDE_DIRECTORIES ${LUAJIT_INC_DIR}
+)
+add_dependencies(luajit luajit_build)
 
 FetchContent_Declare(
         SDL
@@ -27,43 +45,6 @@ FetchContent_Declare(
         SYSTEM
 )
 FetchContent_MakeAvailable(box2d)
-
-add_library(
-        lua
-        lua/lapi.c
-        lua/lauxlib.c
-        lua/lbaselib.c
-        lua/lcode.c
-        lua/lcorolib.c
-        lua/lctype.c
-        lua/ldblib.c
-        lua/ldebug.c
-        lua/ldo.c
-        lua/ldump.c
-        lua/lfunc.c
-        lua/lgc.c
-        lua/linit.c
-        lua/liolib.c
-        lua/llex.c
-        lua/lmathlib.c
-        lua/lmem.c
-        lua/loadlib.c
-        lua/lobject.c
-        lua/lopcodes.c
-        lua/loslib.c
-        lua/lparser.c
-        lua/lstate.c
-        lua/lstring.c
-        lua/lstrlib.c
-        lua/ltable.c
-        lua/ltablib.c
-        lua/ltm.c
-        lua/lundump.c
-        lua/lutf8lib.c
-        lua/lvm.c
-        lua/lzio.c
-)
-target_include_directories(lua SYSTEM PUBLIC lua)
 
 add_library(glad
         glad/src/glad.c)

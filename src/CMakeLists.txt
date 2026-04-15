@@ -33,10 +33,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         CXX_EXTENSIONS OFF
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC .)
+add_dependencies(${PROJECT_NAME} luajit_build)
 target_link_sdl(${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME} PRIVATE box2d entt glad glm imgui lua sol spdlog stb_image wyhash yaml-cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE box2d entt glad glm imgui luajit sol spdlog stb_image wyhash yaml-cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${OPENGL_LIBRARIES})
-target_compile_definitions(${PROJECT_NAME} PUBLIC SOL_ALL_SAFETIES_ON=1)
+target_compile_definitions(${PROJECT_NAME} PRIVATE SOL_ALL_SAFETIES_ON=1 SOL_LUAJIT=1)
 
 if (ENABLE_DEVELOPER_MODE)
     message("Setting developer mode compiler flags")
@@ -48,6 +49,7 @@ if (ENABLE_DEVELOPER_MODE)
             -Wpedantic
             -Wconversion
             -Wsign-conversion
+            -Wno-error=array-bounds
             >
             $<$<CXX_COMPILER_ID:MSVC>:
             /W4
