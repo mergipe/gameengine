@@ -1,8 +1,9 @@
-#ifndef RESOURCEMANAGER_H
-#define RESOURCEMANAGER_H
+#ifndef RESOURCE_MANAGER_H
+#define RESOURCE_MANAGER_H
 
 #include "Texture2D.h"
 #include "core/StringId.h"
+
 #include <filesystem>
 #include <memory>
 #include <optional>
@@ -13,7 +14,7 @@ namespace Engine
 {
     enum class ResourceType { texture, font };
 
-    constexpr std::optional<ResourceType> parseResourceType(std::string_view resourceTypeStr)
+    constexpr std::optional<ResourceType> ParseResourceType(std::string_view resourceTypeStr)
     {
         using enum ResourceType;
         if (resourceTypeStr == "texture")
@@ -32,10 +33,10 @@ namespace Engine
         ResourceManager& operator=(const ResourceManager&) = delete;
         ResourceManager& operator=(ResourceManager&&) = delete;
         ~ResourceManager() = default;
-        std::filesystem::path getResourcePath(const std::filesystem::path& relativePath) const;
-        void clear();
-        void loadTexture(const std::filesystem::path& relativeFilepath, const TextureConfig& textureConfig);
-        const Texture2D& getTexture(const StringId& textureId) const;
+        std::filesystem::path GetResourcePath(const std::filesystem::path& relativePath) const;
+        void Clear();
+        void LoadTexture(const std::filesystem::path& relativeFilepath, const TextureConfig& textureConfig);
+        const Texture2D& GetTexture(const StringId& textureId) const;
 
     private:
         std::unordered_map<StringId, std::unique_ptr<Texture2D>> m_textures{};

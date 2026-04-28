@@ -1,11 +1,12 @@
-#ifndef INPUTHANDLER_H
-#define INPUTHANDLER_H
+#ifndef INPUT_HANDLER_H
+#define INPUT_HANDLER_H
 
 #include "InputCallback.h"
 #include "InputCommand.h"
 #include "InputConfig.h"
 #include "core/StringId.h"
 #include "events/Events.h"
+
 #include <SDL3/SDL.h>
 #include <array>
 #include <filesystem>
@@ -22,21 +23,21 @@ namespace Engine
         InputHandler& operator=(const InputHandler&) = delete;
         InputHandler& operator=(InputHandler&&) = delete;
         ~InputHandler() = default;
-        const StringId& getCurrentScopeId() const;
-        const StringId& getPreviousScopeId() const;
-        const StringId& getDevGuiScopeId() const { return m_devGuiScopeId; }
-        void switchScope(const StringId& scopeId);
-        void handleKeyboardKeyDownEvent(const SDL_KeyboardEvent& event);
-        void handleKeyboardKeyUpEvent(const SDL_KeyboardEvent& event);
-        void resolveInput();
-        const InputDevice::Id& acquireAvailableDevice();
+        const StringId& GetCurrentScopeId() const;
+        const StringId& GetPreviousScopeId() const;
+        const StringId& GetDevGuiScopeId() const { return m_devGuiScopeId; }
+        void SwitchScope(const StringId& scopeId);
+        void HandleKeyboardKeyDownEvent(const SDL_KeyboardEvent& event);
+        void HandleKeyboardKeyUpEvent(const SDL_KeyboardEvent& event);
+        void ResolveInput();
+        const InputDevice::Id& AcquireAvailableDevice();
 
     private:
-        InputCommand* findCommand(InputDevice::Type deviceType, int controlCode);
-        void triggerCommand(const InputCommand& command, const InputDevice::Id& deviceId,
+        InputCommand* FindCommand(InputDevice::Type deviceType, int controlCode);
+        void TriggerCommand(const InputCommand& command, const InputDevice::Id& deviceId,
                             const InputValue& inputValue);
-        void handleControlDown(const InputCommand& command, const InputDevice::Id& deviceId);
-        void handleControlUp(const InputCommand& command, const InputDevice::Id& deviceId);
+        void HandleControlDown(const InputCommand& command, const InputDevice::Id& deviceId);
+        void HandleControlUp(const InputCommand& command, const InputDevice::Id& deviceId);
         static constexpr int s_maxInputEventsByFrame{16};
         std::array<InputEvent, s_maxInputEventsByFrame> m_unhandledInputEvents{};
         InputConfig m_inputConfig{};

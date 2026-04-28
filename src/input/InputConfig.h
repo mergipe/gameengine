@@ -1,7 +1,8 @@
-#ifndef INPUTCONFIG_H
-#define INPUTCONFIG_H
+#ifndef INPUT_CONFIG_H
+#define INPUT_CONFIG_H
 
 #include "InputScope.h"
+
 #include <unordered_map>
 
 namespace Engine

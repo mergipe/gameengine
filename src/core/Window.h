@@ -2,6 +2,7 @@
 #define WINDOW_H
 
 #include "Config.h"
+
 #include <SDL3/SDL.h>
 
 namespace Engine
@@ -15,13 +16,13 @@ namespace Engine
         Window& operator=(const Window&) = delete;
         Window& operator=(Window&&) = delete;
         ~Window();
-        void init();
-        SDL_Window* getWindowHandle() const { return m_windowHandle; }
-        SDL_GLContext getGLContext() const { return m_glContext; }
-        const Config::WindowConfig& getConfig() const { return m_config; }
-        int getWidth() const { return m_config.width; }
-        int getHeight() const { return m_config.height; }
-        float getDisplayScale() const { return m_displayScale; }
+        void Init();
+        SDL_Window* GetWindowHandle() const { return m_windowHandle; }
+        SDL_GLContext GetGLContext() const { return m_glContext; }
+        const Config::WindowConfig& GetConfig() const { return m_config; }
+        int GetWidth() const { return m_config.width; }
+        int GetHeight() const { return m_config.height; }
+        float GetDisplayScale() const { return m_displayScale; }
 
     private:
         Config::WindowConfig m_config{};

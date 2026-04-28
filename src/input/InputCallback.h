@@ -1,8 +1,9 @@
-#ifndef INPUTCALLBACK_H
-#define INPUTCALLBACK_H
+#ifndef INPUT_CALLBACK_H
+#define INPUT_CALLBACK_H
 
 #include "InputValue.h"
 #include "core/StringId.h"
+
 #include <functional>
 #include <unordered_map>
 
@@ -16,7 +17,7 @@ namespace Engine
             : m_function{function}
         {
         }
-        void execute(const InputValue& value) const { m_function(value); }
+        void Execute(const InputValue& value) const { m_function(value); }
 
     private:
         std::function<void(const InputValue&)> m_function{[](const InputValue&) {}};
@@ -30,8 +31,8 @@ namespace Engine
             : m_mapping{mapping}
         {
         }
-        const InputCallback* getCommandCallback(const StringId& commandId) const;
-        void setCommandCallback(const StringId& commandId, const InputCallback& callback);
+        const InputCallback* GetCommandCallback(const StringId& commandId) const;
+        void SetCommandCallback(const StringId& commandId, const InputCallback& callback);
 
     private:
         std::unordered_map<StringId, InputCallback> m_mapping{};

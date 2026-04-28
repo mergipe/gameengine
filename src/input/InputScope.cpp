@@ -1,10 +1,11 @@
 #include "InputScope.h"
+
 #include "InputCommand.h"
 
 namespace Engine
 {
-    InputCommand* InputScope::findCommand(InputDevice::Type deviceType, int controlCode)
+    InputCommand* InputScope::FindCommand(InputDevice::Type deviceType, int controlCode)
     {
-        return m_inputMapping.findCommand(deviceType, controlCode);
+        return m_inputMapping.FindCommand(deviceType, controlCode);
     }
 } // namespace Engine

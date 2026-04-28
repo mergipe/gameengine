@@ -1,4 +1,5 @@
 #include "SceneLoader.h"
+
 #include "Components.h"
 #include "core/IO.h"
 #include "core/Locator.h"
@@ -8,6 +9,7 @@
 #include "physics/2d/Body2D.h"
 #include "renderer/Camera.h"
 #include "resources/Texture2D.h"
+
 #include <fstream>
 #include <functional>
 #include <glm/glm.hpp>
@@ -21,33 +23,33 @@
 
 namespace Engine
 {
-    TextureConfig parseTextureConfig(const YAML::Node& textureNode)
+    TextureConfig ParseTextureConfig(const YAML::Node& textureNode)
     {
         TextureConfig config{};
         if (textureNode["min_filter"]) {
             const std::optional minFilter{
-                parseTextureFiltering(textureNode["min_filter"].as<std::string>(std::string{}))};
+                ParseTextureFiltering(textureNode["min_filter"].as<std::string>(std::string{}))};
             if (minFilter) {
                 config.minFilter = *minFilter;
             }
         }
         if (textureNode["mag_filter"]) {
             const std::optional magFilter{
-                parseTextureFiltering(textureNode["mag_filter"].as<std::string>(std::string{}))};
+                ParseTextureFiltering(textureNode["mag_filter"].as<std::string>(std::string{}))};
             if (magFilter) {
                 config.magFilter = *magFilter;
             }
         }
         if (textureNode["wrap_x"]) {
             const std::optional wrapX{
-                parseTextureWrapping(textureNode["wrap_x"].as<std::string>(std::string{}))};
+                ParseTextureWrapping(textureNode["wrap_x"].as<std::string>(std::string{}))};
             if (wrapX) {
                 config.wrapX = *wrapX;
             }
         }
         if (textureNode["wrap_y"]) {
             const std::optional wrapY{
-                parseTextureWrapping(textureNode["wrap_y"].as<std::string>(std::string{}))};
+                ParseTextureWrapping(textureNode["wrap_y"].as<std::string>(std::string{}))};
             if (wrapY) {
                 config.wrapY = *wrapY;
             }
@@ -57,7 +59,7 @@ namespace Engine
         }
         if (textureNode["mipmap_filter"]) {
             const std::optional mipmapFilter{
-                parseTextureFiltering(textureNode["mipmap_filter"].as<std::string>())};
+                ParseTextureFiltering(textureNode["mipmap_filter"].as<std::string>())};
             if (mipmapFilter) {
                 config.mipmapFilter = *mipmapFilter;
             }
@@ -65,7 +67,7 @@ namespace Engine
         return config;
     }
 
-    void loadAssets(const YAML::Node& assetsNode)
+    void LoadAssets(const YAML::Node& assetsNode)
     {
         if (!assetsNode.IsDefined()) {
             return;
@@ -73,15 +75,15 @@ namespace Engine
         for (YAML::const_iterator it{assetsNode.begin()}; it != assetsNode.end(); ++it) {
             const YAML::Node assetNode{*it};
             const std::string typeStr{assetNode["type"].as<std::string>(std::string{})};
-            const auto type{parseResourceType(typeStr)};
+            const auto type{ParseResourceType(typeStr)};
             if (!type) {
-                Locator::getLogger()->warn("Asset type '{}' unknown", typeStr);
+                Locator::GetLogger()->Warn("Asset type '{}' unknown", typeStr);
                 continue;
             }
             const std::string filepath{assetNode["filepath"].as<std::string>(std::string{})};
             switch (type.value()) {
             case ResourceType::texture:
-                Locator::getResourceManager()->loadTexture(filepath, parseTextureConfig(assetNode));
+                Locator::GetResourceManager()->LoadTexture(filepath, ParseTextureConfig(assetNode));
                 break;
             default:
                 break;
@@ -89,14 +91,14 @@ namespace Engine
         }
     }
 
-    MapData loadTilemap(const YAML::Node& tilemapNode, entt::registry& registry)
+    MapData LoadTilemap(const YAML::Node& tilemapNode, entt::registry& registry)
     {
-        const auto& windowConfig{Game::instance().getWindowConfig()};
+        const auto& windowConfig{Game::Instance().GetWindowConfig()};
         if (!tilemapNode.IsDefined()) {
             return {static_cast<float>(windowConfig.width), static_cast<float>(windowConfig.height)};
         }
         const std::string mapFilepath{tilemapNode["map_file"].as<std::string>(std::string{})};
-        Locator::getLogger()->info("Loading map from {}", mapFilepath);
+        Locator::GetLogger()->Info("Loading map from {}", mapFilepath);
         const std::string textureId{tilemapNode["texture_id"].as<std::string>(std::string{})};
         const int mapRows{tilemapNode["map_rows"].as<int>(0)};
         const int mapCols{tilemapNode["map_cols"].as<int>(0)};
@@ -105,9 +107,9 @@ namespace Engine
         const float scale{tilemapNode["scale"].as<float>(0.0f)};
         std::ifstream tilemapFile{mapFilepath};
         if (!tilemapFile) {
-            Locator::getLogger()->error("Error opening {} map file", mapFilepath);
+            Locator::GetLogger()->Error("Error opening {} map file", mapFilepath);
         }
-        const std::vector<std::vector<int>> tilemapCsv{IO::parseIntCsvFile(tilemapFile)};
+        const std::vector<std::vector<int>> tilemapCsv{IO::ParseIntCsvFile(tilemapFile)};
         tilemapFile.close();
         const float leftX{-static_cast<float>(windowConfig.width) / 2};
         const float topY{static_cast<float>(windowConfig.height) / 2};
@@ -134,7 +136,7 @@ namespace Engine
                        static_cast<float>(mapRows) * tileSize * scale};
     }
 
-    ShapeData2D parseShapeData2D(const YAML::Node& collider2DNode)
+    ShapeData2D ParseShapeData2D(const YAML::Node& collider2DNode)
     {
         ShapeData2D shapeData{};
         shapeData.density = collider2DNode["density"].as<float>(1.0f);
@@ -147,7 +149,7 @@ namespace Engine
         return shapeData;
     }
 
-    void loadEntities(const YAML::Node& entitiesNode, entt::registry& registry,
+    void LoadEntities(const YAML::Node& entitiesNode, entt::registry& registry,
                       ScriptingSystem& scriptingSystem)
     {
         if (!entitiesNode.IsDefined()) {
@@ -163,7 +165,7 @@ namespace Engine
                 if (!idStr.empty()) {
                     registry.emplace<IdComponent>(entity, StringId{idStr});
                 } else {
-                    Locator::getLogger()->warn("Ignoring entity without id");
+                    Locator::GetLogger()->Warn("Ignoring entity without id");
                     continue;
                 }
                 const std::string tag{componentsNode["tag"].as<std::string>(std::string{})};
@@ -188,7 +190,7 @@ namespace Engine
                 if (rigidBody2DNode.IsDefined()) {
                     BodyData2D bodyData{};
                     const std::string typeStr{rigidBody2DNode["type"].as<std::string>(std::string{})};
-                    if (auto bodyType{parseBodyType2D(typeStr)}) {
+                    if (auto bodyType{ParseBodyType2D(typeStr)}) {
                         bodyData.type = *bodyType;
                     }
                     bodyData.gravityScale = rigidBody2DNode["gravity_scale"].as<float>(0.0f);
@@ -198,14 +200,14 @@ namespace Engine
                 }
                 const YAML::Node boxCollider2DNode{componentsNode["box_collider_2d"]};
                 if (boxCollider2DNode.IsDefined()) {
-                    ShapeData2D shapeData{parseShapeData2D(boxCollider2DNode)};
+                    ShapeData2D shapeData{ParseShapeData2D(boxCollider2DNode)};
                     registry.emplace<BoxCollider2DComponent>(entity, shapeData,
                                                              boxCollider2DNode["width"].as<float>(0.0f),
                                                              boxCollider2DNode["height"].as<float>(0.0f));
                 }
                 const YAML::Node circleCollider2DNode{componentsNode["circle_collider_2d"]};
                 if (circleCollider2DNode.IsDefined()) {
-                    ShapeData2D shapeData{parseShapeData2D(circleCollider2DNode)};
+                    ShapeData2D shapeData{ParseShapeData2D(circleCollider2DNode)};
                     registry.emplace<CircleCollider2DComponent>(
                         entity, shapeData, circleCollider2DNode["radius"].as<float>(0.0f));
                 }
@@ -239,7 +241,7 @@ namespace Engine
                         const std::string className{scriptNode["class_name"].as<std::string>(std::string{})};
                         if (!filepath.empty() && !className.empty()) {
                             std::optional<ScriptInstance> scriptInstance{
-                                scriptingSystem.createScriptInstance(filepath, className, entity)};
+                                scriptingSystem.CreateScriptInstance(filepath, className, entity)};
                             if (scriptInstance) {
                                 scriptInstances.push_back(*scriptInstance);
                             }
@@ -256,7 +258,7 @@ namespace Engine
                         if (auto* scriptComponent = registry.try_get<ScriptComponent>(entity)) {
                             for (auto& scriptInstance : scriptComponent->scriptInstances) {
                                 scriptInstancesMap.insert(
-                                    std::make_pair(scriptInstance.getScriptClassId(), &scriptInstance));
+                                    std::make_pair(scriptInstance.GetScriptClassId(), &scriptInstance));
                             }
                         }
                         for (YAML::const_iterator it{commandsNode.begin()}; it != commandsNode.end(); ++it) {
@@ -270,7 +272,7 @@ namespace Engine
                                 callbackMapping.insert(std::make_pair(
                                     commandName, InputCallback(std::function<void(InputValue)>{
                                                      [scriptInstance, callbackName](InputValue inputValue) {
-                                                         scriptInstance->call(callbackName, inputValue);
+                                                         scriptInstance->Call(callbackName, inputValue);
                                                      }})));
                             }
                         }
@@ -283,7 +285,7 @@ namespace Engine
                 if (cameraNode.IsDefined()) {
                     const std::string projectionTypeStr{
                         cameraNode["projection"].as<std::string>(std::string{"orthographic"})};
-                    const std::optional projectionType{parseProjectionType(projectionTypeStr)};
+                    const std::optional projectionType{ParseProjectionType(projectionTypeStr)};
                     const float zNear{cameraNode["z_near"].as<float>(-1.0f)};
                     const float zFar{cameraNode["z_far"].as<float>(100.0f)};
                     const float viewportWidth{cameraNode["viewport"]["width"].as<float>(0.0f)};
@@ -305,17 +307,17 @@ namespace Engine
         }
     }
 
-    std::unique_ptr<Scene> SceneLoader::load(const std::filesystem::path& sceneFilepath,
+    std::unique_ptr<Scene> SceneLoader::Load(const std::filesystem::path& sceneFilepath,
                                              InputHandler& inputHandler, Renderer2D& renderer)
     {
         auto registry{std::make_unique<entt::registry>()};
         auto scriptingSystem{std::make_unique<ScriptingSystem>(registry.get())};
-        Locator::getLogger()->info("Loading scene from {}", sceneFilepath.c_str());
+        Locator::GetLogger()->Info("Loading scene from {}", sceneFilepath.c_str());
         const YAML::Node rootNode{YAML::LoadFile(sceneFilepath)};
-        loadAssets(rootNode["assets"]);
+        LoadAssets(rootNode["assets"]);
         SceneData sceneData{};
-        sceneData.mapData = loadTilemap(rootNode["tilemap"], *registry);
-        loadEntities(rootNode["entities"], *registry, *scriptingSystem);
+        sceneData.mapData = LoadTilemap(rootNode["tilemap"], *registry);
+        LoadEntities(rootNode["entities"], *registry, *scriptingSystem);
         return std::make_unique<Scene>(&inputHandler, &renderer, std::move(registry),
                                        std::move(scriptingSystem), sceneData);
     }

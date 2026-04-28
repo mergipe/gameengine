@@ -1,13 +1,15 @@
 #include "Config.h"
+
 #include "Filesystem.h"
 #include "Logger.h"
+
 #include <yaml-cpp/yaml.h>
 
 namespace Engine::Config
 {
-    VideoConfig parseVideoConfig()
+    VideoConfig ParseVideoConfig()
     {
-        const auto filepath{Filesystem::getConfigPath() / "video.yaml"};
+        const auto filepath{Filesystem::GetConfigPath() / "video.yaml"};
         const YAML::Node rootNode{YAML::LoadFile(filepath)};
         VideoConfig config{};
         if (rootNode["vsync"]) {
@@ -39,9 +41,9 @@ namespace Engine::Config
         return config;
     }
 
-    Physics2DConfig parsePhysics2DConfig()
+    Physics2DConfig ParsePhysics2DConfig()
     {
-        const auto filepath{Filesystem::getConfigPath() / "physics2d.yaml"};
+        const auto filepath{Filesystem::GetConfigPath() / "physics2d.yaml"};
         const YAML::Node rootNode{YAML::LoadFile(filepath)};
         Physics2DConfig config{};
         if (rootNode["gravity"]) {

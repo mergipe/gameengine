@@ -1,5 +1,5 @@
-#ifndef SCENEDATA_H
-#define SCENEDATA_H
+#ifndef SCENE_DATA_H
+#define SCENE_DATA_H
 
 namespace Engine
 {

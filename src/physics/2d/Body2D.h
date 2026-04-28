@@ -1,5 +1,5 @@
-#ifndef BODY2D_H
-#define BODY2D_H
+#ifndef BODY_2D_H
+#define BODY_2D_H
 
 #include <box2d/box2d.h>
 #include <glm/glm.hpp>
@@ -8,7 +8,7 @@
 
 namespace Engine
 {
-    constexpr std::optional<b2BodyType> parseBodyType2D(std::string_view bodyTypeStr)
+    constexpr std::optional<b2BodyType> ParseBodyType2D(std::string_view bodyTypeStr)
     {
         if (bodyTypeStr == "static") {
             return b2_staticBody;
@@ -52,13 +52,13 @@ namespace Engine
             : m_id{id}
         {
         }
-        b2BodyId getId() const { return m_id; }
-        void applyForceToCenter(const glm::vec2& force);
-        void applyTorque(float torque);
-        glm::vec2 getLinearVelocity() const;
-        glm::vec2 getPosition() const;
-        float getRotationAngle() const;
-        void setLinearVelocity(const glm::vec2& velocity);
+        b2BodyId GetId() const { return m_id; }
+        void ApplyForceToCenter(const glm::vec2& force);
+        void ApplyTorque(float torque);
+        glm::vec2 GetLinearVelocity() const;
+        glm::vec2 GetPosition() const;
+        float GetRotationAngle() const;
+        void SetLinearVelocity(const glm::vec2& velocity);
 
     private:
         b2BodyId m_id{};

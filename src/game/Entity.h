@@ -2,6 +2,7 @@
 #define ENTITY_H
 
 #include "core/StringId.h"
+
 #include <entt/entt.hpp>
 
 namespace Engine
@@ -10,8 +11,8 @@ namespace Engine
     {
     public:
         Entity(entt::entity id, entt::registry* registry);
-        const StringId& getId() const;
-        template <typename T> T& getComponent();
+        const StringId& GetId() const;
+        template <typename T> T& GetComponent();
 
     private:
         entt::entity m_id{};
@@ -19,7 +20,7 @@ namespace Engine
     };
 
     template <typename T>
-    T& Entity::getComponent()
+    T& Entity::GetComponent()
     {
         return m_registry->get<T>(m_id);
     }

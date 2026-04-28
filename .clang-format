@@ -8,7 +8,7 @@ BreakConstructorInitializers: BeforeComma
 BreakBeforeBraces: Linux
 BreakStringLiterals: true
 ColumnLimit: 110
-IncludeBlocks: Merge
+IncludeBlocks: Regroup
 IndentWidth: 4
 InsertNewlineAtEOF: true
 KeepEmptyLinesAtEOF: true

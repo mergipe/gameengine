@@ -9,6 +9,7 @@
 #include "input/InputHandler.h"
 #include "renderer/Renderer2D.h"
 #include "resources/ResourceManager.h"
+
 #include <memory>
 
 namespace Engine
@@ -16,26 +17,26 @@ namespace Engine
     class Game final
     {
     public:
-        static Game& instance();
+        static Game& Instance();
         Game() = default;
         Game(const Game&) = delete;
         Game(Game&&) = delete;
         Game& operator=(const Game&) = delete;
         Game& operator=(Game&&) = delete;
         ~Game() = default;
-        void init();
-        void run();
-        void shutDown();
-        const Config::WindowConfig& getWindowConfig() const { return m_window->getConfig(); }
-        bool hasDevMode() const { return m_hasDevMode; }
-        bool isDevModeEnabled() const { return m_isDevModeEnabled; }
-        void toggleDevMode() { m_isDevModeEnabled = !m_isDevModeEnabled; }
+        void Init();
+        void Run();
+        void ShutDown();
+        const Config::WindowConfig& GetWindowConfig() const { return m_window->GetConfig(); }
+        bool HasDevMode() const { return m_hasDevMode; }
+        bool IsDevModeEnabled() const { return m_isDevModeEnabled; }
+        void ToggleDevMode() { m_isDevModeEnabled = !m_isDevModeEnabled; }
         static constexpr SDL_Scancode s_toggleDevModeKey{SDL_SCANCODE_F12};
 
     private:
-        void processEvents();
-        void update();
-        void render(float frameExtrapolationTimeStep);
+        void ProcessEvents();
+        void Update();
+        void Render(float frameExtrapolationTimeStep);
         static constexpr float s_updateRate{60.0f};
         static constexpr float s_timeStepInMs{1000.0f / s_updateRate};
         static constexpr float s_timeStep{1.0f / s_updateRate};

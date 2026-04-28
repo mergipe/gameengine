@@ -1,8 +1,9 @@
-#ifndef INPUTCOMMAND_H
-#define INPUTCOMMAND_H
+#ifndef INPUT_COMMAND_H
+#define INPUT_COMMAND_H
 
 #include "InputBinding.h"
 #include "core/StringId.h"
+
 #include <optional>
 #include <string_view>
 #include <vector>
@@ -19,10 +20,10 @@ namespace Engine
             : m_name{name}, m_bindings{bindings}, m_type{type}, m_isEngineCommand{isEngineCommand}
         {
         }
-        const StringId& getName() const { return m_name; }
-        std::vector<InputBinding> getBindings() const { return m_bindings; }
-        Type getType() const { return m_type; }
-        bool isEngineCommand() const { return m_isEngineCommand; }
+        const StringId& GetName() const { return m_name; }
+        std::vector<InputBinding> GetBindings() const { return m_bindings; }
+        Type GetType() const { return m_type; }
+        bool IsEngineCommand() const { return m_isEngineCommand; }
 
     private:
         StringId m_name{};
@@ -31,7 +32,7 @@ namespace Engine
         bool m_isEngineCommand{false};
     };
 
-    constexpr std::optional<InputCommand::Type> parseInputCommandType(std::string_view inputCommandTypeStr)
+    constexpr std::optional<InputCommand::Type> ParseInputCommandType(std::string_view inputCommandTypeStr)
     {
         using enum InputCommand::Type;
         if (inputCommandTypeStr == "control_down")

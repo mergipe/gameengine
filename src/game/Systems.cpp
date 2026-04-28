@@ -1,4 +1,5 @@
 #include "Systems.h"
+
 #include "Components.h"
 #include "Entity.h"
 #include "Game.h"
@@ -7,115 +8,110 @@
 #include "core/Timer.h"
 #include "events/Events.h"
 #include "renderer/Renderer2D.h"
+
 #include <string>
 #include <utility>
 
 namespace Engine
 {
-    constexpr bool aabbHasCollided(const Rect& lhs, const Rect& rhs)
-    {
-        return lhs.getLeftX() < rhs.getRightX() && lhs.getRightX() > rhs.getLeftX() &&
-               lhs.getTopY() > rhs.getBottomY() && lhs.getBottomY() < rhs.getTopY();
-    }
-
-    constexpr glm::vec2 getExtrapolatedPosition(const glm::vec2& position, const glm::vec2& velocity,
+    constexpr glm::vec2 GetExtrapolatedPosition(const glm::vec2& position, const glm::vec2& velocity,
                                                 float extrapolationTimeStep)
     {
         return glm::vec2{position + velocity * extrapolationTimeStep};
     }
 
-    constexpr bool isOutsideOrthoCameraView(const Camera& camera, const Rect& rect)
+    constexpr bool IsOutsideOrthoCameraView(const Camera& camera, const Rect& rect)
     {
-        const Rect cameraPlaneGeometry{camera.getNearPlaneGeometry()};
-        return rect.getRightX() < cameraPlaneGeometry.getLeftX() ||
-               rect.getLeftX() > cameraPlaneGeometry.getRightX() ||
-               rect.getTopY() < cameraPlaneGeometry.getBottomY() ||
-               rect.getBottomY() > cameraPlaneGeometry.getTopY();
+        const Rect cameraPlaneGeometry{camera.GetNearPlaneGeometry()};
+        return rect.GetRightX() < cameraPlaneGeometry.GetLeftX() ||
+               rect.GetLeftX() > cameraPlaneGeometry.GetRightX() ||
+               rect.GetTopY() < cameraPlaneGeometry.GetBottomY() ||
+               rect.GetBottomY() > cameraPlaneGeometry.GetTopY();
     }
 
-    void PhysicsSystem::start()
+    void PhysicsSystem::Start()
     {
-        entt::registry& registry{getRegistry()};
+        entt::registry& registry{GetRegistry()};
         const auto view{registry.view<const TransformComponent, RigidBody2DComponent>()};
         for (const auto entity : view) {
             auto [transform, rigidBody] = view.get<TransformComponent, RigidBody2DComponent>(entity);
             rigidBody.bodyData.position = transform.position;
             rigidBody.bodyData.rotation = transform.rotation.z;
-            rigidBody.body = m_physicsEngine2D.createBody(rigidBody.bodyData, entity);
+            rigidBody.body = m_physicsEngine2D.CreateBody(rigidBody.bodyData, entity);
             bool hasCollider{false};
             if (const auto* boxCollider{registry.try_get<BoxCollider2DComponent>(entity)}) {
-                m_physicsEngine2D.createBoxShape(rigidBody.body.getId(), boxCollider->shapeData,
+                m_physicsEngine2D.CreateBoxShape(rigidBody.body.GetId(), boxCollider->shapeData,
                                                  boxCollider->width, boxCollider->height);
                 hasCollider = true;
             }
             if (const auto* circleCollider{registry.try_get<CircleCollider2DComponent>(entity)}) {
-                m_physicsEngine2D.createCircleShape(rigidBody.body.getId(), circleCollider->shapeData,
+                m_physicsEngine2D.CreateCircleShape(rigidBody.body.GetId(), circleCollider->shapeData,
                                                     circleCollider->radius);
                 hasCollider = true;
             }
             if (!hasCollider) {
-                m_physicsEngine2D.createDefaultShape(rigidBody.body.getId());
+                m_physicsEngine2D.CreateDefaultShape(rigidBody.body.GetId());
             }
         }
     }
 
-    void PhysicsSystem::update(float timeStep)
+    void PhysicsSystem::Update(float timeStep)
     {
-        m_physicsEngine2D.update(timeStep);
-        b2BodyEvents events{m_physicsEngine2D.getBodyEvents()};
+        m_physicsEngine2D.Update(timeStep);
+        b2BodyEvents events{m_physicsEngine2D.GetBodyEvents()};
         for (int i{0}; i < events.moveCount; ++i) {
             const b2BodyMoveEvent* event{events.moveEvents + i};
             entt::entity entity{static_cast<entt::entity>(reinterpret_cast<std::uintptr_t>(event->userData))};
-            TransformComponent& transform{getRegistry().get<TransformComponent>(entity)};
+            TransformComponent& transform{GetRegistry().get<TransformComponent>(entity)};
             transform.position.x = event->transform.p.x;
             transform.position.y = event->transform.p.y;
             transform.rotation.z = b2Rot_GetAngle(event->transform.q);
         }
     }
 
-    void RenderingSystem::update(Renderer2D& renderer, float frameExtrapolationTimeStep)
+    void RenderingSystem::Update(Renderer2D& renderer, float frameExtrapolationTimeStep)
     {
-        const auto cameraView{getRegistry().view<const TransformComponent, const CameraComponent>()};
+        const auto cameraView{GetRegistry().view<const TransformComponent, const CameraComponent>()};
         Camera* cameraPtr{};
         for (const auto entity : cameraView) {
             auto [transform, camera] = cameraView.get<TransformComponent, CameraComponent>(entity);
             cameraPtr = camera.camera.get();
             if (!cameraPtr)
                 continue;
-            cameraPtr->setModelTransformation(transform.getTransformationMatrix());
+            cameraPtr->SetModelTransformation(transform.GetTransformationMatrix());
             break;
         }
         if (!cameraPtr)
             return;
-        renderer.setupCamera(*cameraPtr);
-        getRegistry().sort<SpriteComponent>(
+        renderer.SetupCamera(*cameraPtr);
+        GetRegistry().sort<SpriteComponent>(
             [](const SpriteComponent& lhs, const SpriteComponent& rhs) { return lhs.zIndex < rhs.zIndex; });
-        auto spriteView{getRegistry().view<const TransformComponent, const SpriteComponent>()};
+        auto spriteView{GetRegistry().view<const TransformComponent, const SpriteComponent>()};
         spriteView.use<SpriteComponent>();
         for (const auto entity : spriteView) {
             auto [transform, sprite] = spriteView.get<TransformComponent, SpriteComponent>(entity);
             glm::vec2 renderPosition{transform.position};
-            if (const auto* rigidBody{getRegistry().try_get<RigidBody2DComponent>(entity)}) {
-                renderPosition = getExtrapolatedPosition(
-                    transform.position, rigidBody->body.getLinearVelocity(), frameExtrapolationTimeStep);
+            if (const auto* rigidBody{GetRegistry().try_get<RigidBody2DComponent>(entity)}) {
+                renderPosition = GetExtrapolatedPosition(
+                    transform.position, rigidBody->body.GetLinearVelocity(), frameExtrapolationTimeStep);
             }
             const float spriteWidth{sprite.textureArea.width * transform.scale.x};
             const float spriteHeight{sprite.textureArea.height * transform.scale.y};
             const Rect spriteGeometry{renderPosition, spriteWidth, spriteHeight};
-            if (!isOutsideOrthoCameraView(*cameraPtr, spriteGeometry)) {
-                renderer.drawSprite(spriteGeometry, transform.rotation,
-                                    Locator::getResourceManager()->getTexture(sprite.textureId),
+            if (!IsOutsideOrthoCameraView(*cameraPtr, spriteGeometry)) {
+                renderer.DrawSprite(spriteGeometry, transform.rotation,
+                                    Locator::GetResourceManager()->GetTexture(sprite.textureId),
                                     sprite.textureArea, sprite.color);
             }
         }
     }
 
-    void DebugRenderingSystem::registerRenderFunction(const std::function<void()>& function)
+    void DebugRenderingSystem::RegisterRenderFunction(const std::function<void()>& function)
     {
         m_renderFunctions.push_back(function);
     }
 
-    void DebugRenderingSystem::update([[maybe_unused]] Renderer2D& renderer,
+    void DebugRenderingSystem::Update([[maybe_unused]] Renderer2D& renderer,
                                       [[maybe_unused]] float frameExtrapolationTimeStep)
     {
         for (auto& function : m_renderFunctions) {
@@ -123,12 +119,12 @@ namespace Engine
         }
     }
 
-    void SpriteAnimationSystem::update()
+    void SpriteAnimationSystem::Update()
     {
-        const auto view{getRegistry().view<SpriteComponent, SpriteAnimationComponent>()};
+        const auto view{GetRegistry().view<SpriteComponent, SpriteAnimationComponent>()};
         for (const auto entity : view) {
             auto [sprite, spriteAnimation] = view.get<SpriteComponent, SpriteAnimationComponent>(entity);
-            spriteAnimation.currentFrame = (static_cast<int>(Timer::getTicks() - spriteAnimation.startTime) *
+            spriteAnimation.currentFrame = (static_cast<int>(Timer::GetTicks() - spriteAnimation.startTime) *
                                             spriteAnimation.framesPerSecond / 1000) %
                                            spriteAnimation.framesCount;
             sprite.textureArea.position.x =
@@ -136,37 +132,37 @@ namespace Engine
         }
     }
 
-    void PlayerInputSystem::start(InputHandler& inputHandler)
+    void PlayerInputSystem::Start(InputHandler& inputHandler)
     {
-        const auto view{getRegistry().view<PlayerInputComponent>()};
+        const auto view{GetRegistry().view<PlayerInputComponent>()};
         StringId* defaultInputScope{};
         for (const auto entity : view) {
             auto& playerInput{view.get<PlayerInputComponent>(entity)};
-            playerInput.inputDeviceId = inputHandler.acquireAvailableDevice();
+            playerInput.inputDeviceId = inputHandler.AcquireAvailableDevice();
             if (!defaultInputScope) {
                 defaultInputScope = &playerInput.defaultInputScope;
             }
         }
         if (defaultInputScope) {
-            inputHandler.switchScope(*defaultInputScope);
+            inputHandler.SwitchScope(*defaultInputScope);
         }
     }
 
-    void PlayerInputSystem::subscribeToEvents(EventBus& eventBus)
+    void PlayerInputSystem::SubscribeToEvents(EventBus& eventBus)
     {
-        eventBus.addSubscriber<InputEvent, PlayerInputSystem>(this, &PlayerInputSystem::onInputCommand);
+        eventBus.AddSubscriber<InputEvent, PlayerInputSystem>(this, &PlayerInputSystem::OnInputCommand);
     }
 
-    void PlayerInputSystem::onInputCommand(const InputEvent& event) const
+    void PlayerInputSystem::OnInputCommand(const InputEvent& event) const
     {
-        const auto view{getRegistry().view<const PlayerInputComponent>()};
+        const auto view{GetRegistry().view<const PlayerInputComponent>()};
         for (const auto entity : view) {
             const auto& playerInput{view.get<PlayerInputComponent>(entity)};
             if (event.inputDeviceId == playerInput.inputDeviceId) {
                 const InputCallback* callback{
-                    playerInput.callbackMapping.getCommandCallback(event.commandId)};
+                    playerInput.callbackMapping.GetCommandCallback(event.commandId)};
                 if (callback) {
-                    callback->execute(event.inputValue);
+                    callback->Execute(event.inputValue);
                 }
             }
         }
@@ -178,38 +174,38 @@ namespace Engine
         m_lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
         const std::string packagePath{m_lua["package"]["path"]};
         m_lua["package"]["path"] = packagePath + (packagePath.empty() ? "" : ";") +
-                                   (Filesystem::getScriptingLibraryPath() / "?.lua").string();
-        m_lua.require_file("utils", Filesystem::getScriptingLibraryPath() / "utils.lua");
-        m_lua.script_file(Filesystem::getScriptingLibraryPath() / "entity_script.lua");
-        createScriptBindings();
+                                   (Filesystem::GetScriptingLibraryPath() / "?.lua").string();
+        m_lua.require_file("utils", Filesystem::GetScriptingLibraryPath() / "utils.lua");
+        m_lua.script_file(Filesystem::GetScriptingLibraryPath() / "entity_script.lua");
+        CreateScriptBindings();
         m_lua.create_named_table("scriptClasses");
         m_lua.create_named_table("scriptInstances");
     }
 
     ScriptingSystem::~ScriptingSystem() { m_scriptClasses.clear(); }
 
-    std::unique_ptr<ScriptClass> ScriptingSystem::loadScriptClass(const std::filesystem::path& filepath,
+    std::unique_ptr<ScriptClass> ScriptingSystem::LoadScriptClass(const std::filesystem::path& filepath,
                                                                   std::string_view className)
     {
-        const auto absoluteFilepath{Filesystem::getResourcesPath() / filepath};
+        const auto absoluteFilepath{Filesystem::GetResourcesPath() / filepath};
         const auto result{m_lua.script_file(absoluteFilepath, sol::script_pass_on_error)};
         if (!result.valid()) {
             const sol::error error{result};
             const sol::call_status status{result.status()};
-            Locator::getLogger()->error("Error loading script {}: {} error\n\t{}", absoluteFilepath.c_str(),
+            Locator::GetLogger()->Error("Error loading script {}: {} error\n\t{}", absoluteFilepath.c_str(),
                                         sol::to_string(status), error.what());
             return {};
         }
         const sol::optional<sol::table> maybeScriptClass{m_lua[className]};
         if (!maybeScriptClass) {
-            Locator::getLogger()->warn("Script '{}' doesn't have '{}' class", filepath.c_str(), className);
+            Locator::GetLogger()->Warn("Script '{}' doesn't have '{}' class", filepath.c_str(), className);
             return {};
         }
         sol::table scriptClass{maybeScriptClass.value()};
         const sol::table entityScriptClass{m_lua["EntityScript"]};
         const auto isEntityScript{m_lua["utils"]["instance_of"](scriptClass, entityScriptClass)};
         if (!isEntityScript.get<bool>()) {
-            Locator::getLogger()->warn("Script '{}' doesn't inherit from EntityScript", className);
+            Locator::GetLogger()->Warn("Script '{}' doesn't inherit from EntityScript", className);
             return {};
         }
         sol::table scriptClasses{m_lua["scriptClasses"]};
@@ -217,64 +213,64 @@ namespace Engine
         return std::make_unique<ScriptClass>(className, scriptClass);
     }
 
-    std::optional<ScriptInstance> ScriptingSystem::createScriptInstance(const std::filesystem::path& filepath,
+    std::optional<ScriptInstance> ScriptingSystem::CreateScriptInstance(const std::filesystem::path& filepath,
                                                                         std::string_view className,
                                                                         entt::entity entity)
     {
         StringId scriptClassId{filepath.c_str()};
-        ScriptClass* scriptClass{getScriptClass(scriptClassId)};
+        ScriptClass* scriptClass{GetScriptClass(scriptClassId)};
         if (!scriptClass) {
-            if (std::unique_ptr<ScriptClass> newScriptClass{loadScriptClass(filepath, className)}) {
-                storeScriptClass(scriptClassId, std::move(newScriptClass));
-                scriptClass = getScriptClass(scriptClassId);
+            if (std::unique_ptr<ScriptClass> newScriptClass{LoadScriptClass(filepath, className)}) {
+                StoreScriptClass(scriptClassId, std::move(newScriptClass));
+                scriptClass = GetScriptClass(scriptClassId);
             } else {
                 return {};
             }
         }
-        const sol::optional<sol::function> maybeScriptClassConstructor{scriptClass->getConstructor()};
+        const sol::optional<sol::function> maybeScriptClassConstructor{scriptClass->GetConstructor()};
         if (!maybeScriptClassConstructor) {
-            Locator::getLogger()->warn("Script '{}' doesn't have a constructor", scriptClass->getClassName());
+            Locator::GetLogger()->Warn("Script '{}' doesn't have a constructor", scriptClass->GetClassName());
             return {};
         }
         const sol::optional<sol::table> maybeScriptInstance{
-            maybeScriptClassConstructor.value()(scriptClass->getLuaClass())};
+            maybeScriptClassConstructor.value()(scriptClass->GetLuaClass())};
         if (!maybeScriptInstance) {
-            Locator::getLogger()->warn("Failed to instantiate '{}' script", scriptClass->getClassName());
+            Locator::GetLogger()->Warn("Failed to instantiate '{}' script", scriptClass->GetClassName());
             return {};
         }
         sol::table scriptInstance{maybeScriptInstance.value()};
-        scriptInstance["entity"] = Entity{entity, &getRegistry()};
+        scriptInstance["entity"] = Entity{entity, &GetRegistry()};
         sol::table scriptInstances{m_lua["scriptInstances"]};
         scriptInstances[scriptInstances.size()] = scriptInstance;
         return ScriptInstance{scriptClassId, scriptInstance};
     }
 
-    void ScriptingSystem::start()
+    void ScriptingSystem::Start()
     {
-        const auto view{getRegistry().view<ScriptComponent>()};
+        const auto view{GetRegistry().view<ScriptComponent>()};
         for (const auto entity : view) {
             auto& scriptComponent = view.get<ScriptComponent>(entity);
             for (auto& script : scriptComponent.scriptInstances) {
-                script.onStart();
+                script.OnStart();
             }
         }
     }
 
-    void ScriptingSystem::update(float timeStep)
+    void ScriptingSystem::Update(float timeStep)
     {
-        const auto view{getRegistry().view<ScriptComponent>()};
+        const auto view{GetRegistry().view<ScriptComponent>()};
         for (const auto entity : view) {
             auto& scriptComponent = view.get<ScriptComponent>(entity);
             for (auto& script : scriptComponent.scriptInstances) {
-                script.onUpdate(timeStep);
+                script.OnUpdate(timeStep);
             }
         }
     }
 
-    void ScriptingSystem::createScriptBindings()
+    void ScriptingSystem::CreateScriptBindings()
     {
-        m_lua.new_usertype<StringId>("StringId", "id", &StringId::getSid, "str", &StringId::getString);
-        m_lua.new_usertype<Entity>("Entity", "id", sol::property(&Entity::getId));
+        m_lua.new_usertype<StringId>("StringId", "id", &StringId::GetSid, "str", &StringId::GetString);
+        m_lua.new_usertype<Entity>("Entity", "id", sol::property(&Entity::GetId));
         m_lua.new_usertype<glm::vec2>(
             "Vec2", sol::constructors<glm::vec2(), glm::vec2(float), glm::vec2(float, float)>(), "x",
             &glm::vec2::x, "y", &glm::vec2::y);
@@ -284,18 +280,18 @@ namespace Engine
         m_lua.new_usertype<Rect>("Rect", "position", &Rect::position, "width", &Rect::width, "height",
                                  &Rect::height, "pivot_point", &Rect::pivotPoint);
         sol::usertype<Body2D> body2dType{m_lua.new_usertype<Body2D>("Body2D")};
-        body2dType["apply_force_to_center"] = &Body2D::applyForceToCenter;
-        body2dType["apply_torque"] = &Body2D::applyTorque;
-        body2dType["linear_velocity"] = sol::property(&Body2D::getLinearVelocity, &Body2D::setLinearVelocity);
-        body2dType["position"] = sol::property(&Body2D::getPosition);
-        body2dType["rotation_angle"] = sol::property(&Body2D::getRotationAngle);
+        body2dType["apply_force_to_center"] = &Body2D::ApplyForceToCenter;
+        body2dType["apply_torque"] = &Body2D::ApplyTorque;
+        body2dType["linear_velocity"] = sol::property(&Body2D::GetLinearVelocity, &Body2D::SetLinearVelocity);
+        body2dType["position"] = sol::property(&Body2D::GetPosition);
+        body2dType["rotation_angle"] = sol::property(&Body2D::GetRotationAngle);
         m_lua.new_usertype<IdComponent>("IdComponent", "sid", &IdComponent::sid);
         m_lua.new_usertype<TagComponent>("TagComponent", "name", &TagComponent::name);
         m_lua.new_usertype<TransformComponent>(
             "TransformComponent", "position", &TransformComponent::position, "scale",
             &TransformComponent::scale, "rotation", &TransformComponent::rotation, "right",
-            sol::property(&TransformComponent::getRight), "up", sol::property(&TransformComponent::getUp),
-            "forward", sol::property(&TransformComponent::getForward));
+            sol::property(&TransformComponent::GetRight), "up", sol::property(&TransformComponent::GetUp),
+            "forward", sol::property(&TransformComponent::GetForward));
         m_lua.new_usertype<RigidBody2DComponent>("RigidBody2DComponent", "body", &RigidBody2DComponent::body);
         m_lua.new_usertype<SpriteComponent>("SpriteComponent", "texture_id", &SpriteComponent::textureId,
                                             "texture_area", &SpriteComponent::textureArea, "color",
@@ -311,26 +307,26 @@ namespace Engine
         m_lua.new_usertype<PlayerInputComponent>("PlayerInputComponent");
         m_lua.new_usertype<CameraComponent>("CameraComponent");
         m_lua.new_usertype<InputValue>("InputValue", "value", &InputValue::value);
-        m_lua.set_function("api_get_component_id", ScriptingApi::getComponent<IdComponent>);
-        m_lua.set_function("api_get_component_tag", ScriptingApi::getComponent<TagComponent>);
-        m_lua.set_function("api_get_component_transform", ScriptingApi::getComponent<TransformComponent>);
-        m_lua.set_function("api_get_component_rigidbody2d", ScriptingApi::getComponent<RigidBody2DComponent>);
-        m_lua.set_function("api_get_component_sprite", ScriptingApi::getComponent<SpriteComponent>);
+        m_lua.set_function("api_get_component_id", ScriptingApi::GetComponent<IdComponent>);
+        m_lua.set_function("api_get_component_tag", ScriptingApi::GetComponent<TagComponent>);
+        m_lua.set_function("api_get_component_transform", ScriptingApi::GetComponent<TransformComponent>);
+        m_lua.set_function("api_get_component_rigidbody2d", ScriptingApi::GetComponent<RigidBody2DComponent>);
+        m_lua.set_function("api_get_component_sprite", ScriptingApi::GetComponent<SpriteComponent>);
         m_lua.set_function("api_get_component_spriteanimation",
-                           ScriptingApi::getComponent<SpriteAnimationComponent>);
+                           ScriptingApi::GetComponent<SpriteAnimationComponent>);
         m_lua.set_function("api_get_component_boxcollider2d",
-                           ScriptingApi::getComponent<BoxCollider2DComponent>);
-        m_lua.set_function("api_get_component_playerinput", ScriptingApi::getComponent<PlayerInputComponent>);
-        m_lua.set_function("api_get_component_script", ScriptingApi::getComponent<ScriptComponent>);
-        m_lua.set_function("api_get_component_camera", ScriptingApi::getComponent<CameraComponent>);
+                           ScriptingApi::GetComponent<BoxCollider2DComponent>);
+        m_lua.set_function("api_get_component_playerinput", ScriptingApi::GetComponent<PlayerInputComponent>);
+        m_lua.set_function("api_get_component_script", ScriptingApi::GetComponent<ScriptComponent>);
+        m_lua.set_function("api_get_component_camera", ScriptingApi::GetComponent<CameraComponent>);
     }
 
-    void ScriptingSystem::storeScriptClass(const StringId& scriptId, std::unique_ptr<ScriptClass> scriptClass)
+    void ScriptingSystem::StoreScriptClass(const StringId& scriptId, std::unique_ptr<ScriptClass> scriptClass)
     {
         m_scriptClasses[scriptId] = std::move(scriptClass);
     }
 
-    ScriptClass* ScriptingSystem::getScriptClass(const StringId& scriptId) const
+    ScriptClass* ScriptingSystem::GetScriptClass(const StringId& scriptId) const
     {
         const auto scriptIterator{m_scriptClasses.find(scriptId)};
         if (scriptIterator != m_scriptClasses.end()) {

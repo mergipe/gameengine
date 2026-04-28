@@ -7,6 +7,7 @@
 #include "input/InputHandler.h"
 #include "physics/2d/PhysicsEngine2D.h"
 #include "renderer/Renderer2D.h"
+
 #include <entt/entt.hpp>
 #include <filesystem>
 #include <functional>
@@ -31,7 +32,7 @@ namespace Engine
         System& operator=(const System&) = delete;
         System& operator=(System&&) = delete;
         virtual ~System() = default;
-        entt::registry& getRegistry() const { return *m_registry; }
+        entt::registry& GetRegistry() const { return *m_registry; }
 
     private:
         entt::registry* m_registry{};
@@ -44,8 +45,8 @@ namespace Engine
             : System{registry}
         {
         }
-        void start();
-        void update(float timeStep);
+        void Start();
+        void Update(float timeStep);
 
     private:
         PhysicsEngine2D m_physicsEngine2D{}; // NOTE: maybe put this in another place
@@ -58,7 +59,7 @@ namespace Engine
             : System{registry}
         {
         }
-        void update(Renderer2D& renderer, float frameExtrapolationTimeStep);
+        void Update(Renderer2D& renderer, float frameExtrapolationTimeStep);
     };
 
     class DebugRenderingSystem final : public System // TODO: implement this
@@ -68,8 +69,8 @@ namespace Engine
             : System{registry}
         {
         }
-        void registerRenderFunction(const std::function<void()>& function);
-        void update(Renderer2D& renderer, float frameExtrapolationTimeStep);
+        void RegisterRenderFunction(const std::function<void()>& function);
+        void Update(Renderer2D& renderer, float frameExtrapolationTimeStep);
 
     private:
         std::vector<std::function<void()>> m_renderFunctions{};
@@ -82,7 +83,7 @@ namespace Engine
             : System{registry}
         {
         }
-        void update();
+        void Update();
     };
 
     class PlayerInputSystem final : public System
@@ -92,9 +93,9 @@ namespace Engine
             : System{registry}
         {
         }
-        void start(InputHandler& inputHandler);
-        void subscribeToEvents(EventBus& eventBus);
-        void onInputCommand(const InputEvent& event) const;
+        void Start(InputHandler& inputHandler);
+        void SubscribeToEvents(EventBus& eventBus);
+        void OnInputCommand(const InputEvent& event) const;
     };
 
     class ScriptingSystem final : public System
@@ -106,17 +107,17 @@ namespace Engine
         ScriptingSystem& operator=(const ScriptingSystem&) = delete;
         ScriptingSystem& operator=(ScriptingSystem&&) = delete;
         ~ScriptingSystem() override;
-        std::optional<ScriptInstance> createScriptInstance(const std::filesystem::path& filepath,
+        std::optional<ScriptInstance> CreateScriptInstance(const std::filesystem::path& filepath,
                                                            std::string_view className, entt::entity entity);
-        void start();
-        void update(float timeStep);
+        void Start();
+        void Update(float timeStep);
 
     private:
-        std::unique_ptr<ScriptClass> loadScriptClass(const std::filesystem::path& filepath,
+        std::unique_ptr<ScriptClass> LoadScriptClass(const std::filesystem::path& filepath,
                                                      std::string_view className);
-        void createScriptBindings();
-        void storeScriptClass(const StringId& scriptId, std::unique_ptr<ScriptClass> scriptClass);
-        ScriptClass* getScriptClass(const StringId& scriptId) const;
+        void CreateScriptBindings();
+        void StoreScriptClass(const StringId& scriptId, std::unique_ptr<ScriptClass> scriptClass);
+        ScriptClass* GetScriptClass(const StringId& scriptId) const;
         std::unordered_map<StringId, std::unique_ptr<ScriptClass>> m_scriptClasses{};
         sol::state m_lua{};
     };

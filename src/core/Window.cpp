@@ -1,5 +1,7 @@
 #include "Window.h"
+
 #include "Locator.h"
+
 #include <cstdlib>
 
 namespace Engine
@@ -19,10 +21,10 @@ namespace Engine
         m_glContext = nullptr;
         SDL_DestroyWindow(m_windowHandle);
         m_windowHandle = nullptr;
-        Locator::getLogger()->info("Window destroyed");
+        Locator::GetLogger()->Info("Window destroyed");
     }
 
-    void Window::init()
+    void Window::Init()
     {
         SDL_WindowFlags flags{SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY};
         if (m_config.isFullscreen)
@@ -40,16 +42,16 @@ namespace Engine
         }
         m_windowHandle = SDL_CreateWindow(m_config.title.c_str(), m_config.width, m_config.height, flags);
         if (!m_windowHandle) {
-            Locator::getLogger()->critical("Failed to create a window: {}", SDL_GetError());
+            Locator::GetLogger()->Critical("Failed to create a window: {}", SDL_GetError());
             std::abort();
         }
         m_glContext = SDL_GL_CreateContext(m_windowHandle);
         if (!m_glContext) {
-            Locator::getLogger()->critical("Failed to create OpenGL context: {}", SDL_GetError());
+            Locator::GetLogger()->Critical("Failed to create OpenGL context: {}", SDL_GetError());
             std::abort();
         }
         SDL_GL_MakeCurrent(m_windowHandle, m_glContext);
         m_displayScale = SDL_GetWindowDisplayScale(m_windowHandle);
-        Locator::getLogger()->info("Window initialized");
+        Locator::GetLogger()->Info("Window initialized");
     }
 } // namespace Engine

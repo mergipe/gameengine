@@ -6,11 +6,11 @@
 namespace Engine
 {
     struct Rect {
-        float getLeftX() const { return position.x - width * pivotPoint.x; }
-        float getRightX() const { return position.x + width * (1 - pivotPoint.x); }
-        float getBottomY() const { return position.y - height * pivotPoint.y; }
-        float getTopY() const { return position.y + height * (1 - pivotPoint.y); }
-        glm::vec2 getCenter() const
+        float GetLeftX() const { return position.x - width * pivotPoint.x; }
+        float GetRightX() const { return position.x + width * (1 - pivotPoint.x); }
+        float GetBottomY() const { return position.y - height * pivotPoint.y; }
+        float GetTopY() const { return position.y + height * (1 - pivotPoint.y); }
+        glm::vec2 GetCenter() const
         {
             return glm::vec2{position.x + width * (0.5 - pivotPoint.x),
                              position.y + height * (0.5 - pivotPoint.y)};

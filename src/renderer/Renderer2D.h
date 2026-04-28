@@ -1,5 +1,5 @@
-#ifndef RENDERER2D_H
-#define RENDERER2D_H
+#ifndef RENDERER_2D_H
+#define RENDERER_2D_H
 
 #include "Camera.h"
 #include "ShaderManager.h"
@@ -7,6 +7,7 @@
 #include "core/StringId.h"
 #include "core/Window.h"
 #include "resources/Texture2D.h"
+
 #include <glm/glm.hpp>
 #include <memory>
 
@@ -21,16 +22,16 @@ namespace Engine
         Renderer2D& operator=(const Renderer2D&) = delete;
         Renderer2D& operator=(Renderer2D&&) = delete;
         ~Renderer2D();
-        void init();
-        void setViewport(int x, int y, int width, int height);
-        void setViewportSize(int width, int height);
-        void setClearColor(float red, float green, float blue, float alpha);
-        void setupCamera(const Camera& camera);
-        void drawRectangle(const Rect& rect, const glm::vec4& color, const glm::vec3& rotation);
-        void drawSprite(const Rect& spriteGeometry, const glm::vec3& rotation, const Texture2D& texture,
+        void Init();
+        void SetViewport(int x, int y, int width, int height);
+        void SetViewportSize(int width, int height);
+        void SetClearColor(float red, float green, float blue, float alpha);
+        void SetupCamera(const Camera& camera);
+        void DrawRectangle(const Rect& rect, const glm::vec4& color, const glm::vec3& rotation);
+        void DrawSprite(const Rect& spriteGeometry, const glm::vec3& rotation, const Texture2D& texture,
                         const Rect& textureArea, const glm::vec3& color = glm::vec3{1.0f});
-        void clear();
-        void present();
+        void Clear();
+        void Present();
 
     private:
         glm::mat4 m_cameraTransformation{};

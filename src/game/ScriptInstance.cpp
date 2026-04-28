@@ -7,7 +7,7 @@ namespace Engine
     {
     }
 
-    void ScriptInstance::onStart() { m_luaInstance["on_start"](m_luaInstance); }
+    void ScriptInstance::OnStart() { m_luaInstance["on_start"](m_luaInstance); }
 
-    void ScriptInstance::onUpdate(float timeStep) { m_luaInstance["on_update"](m_luaInstance, timeStep); }
+    void ScriptInstance::OnUpdate(float timeStep) { m_luaInstance["on_update"](m_luaInstance, timeStep); }
 } // namespace Engine

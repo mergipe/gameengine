@@ -1,7 +1,9 @@
 #include "Scene.h"
+
 #include "Game.h"
 #include "Systems.h"
 #include "core/Locator.h"
+
 #include <utility>
 
 namespace Engine
@@ -18,12 +20,12 @@ namespace Engine
         , m_playerInputSystem{std::make_unique<PlayerInputSystem>(m_registry.get())}
         , m_sceneData{sceneData}
     {
-        if (Game::instance().hasDevMode()) {
+        if (Game::Instance().HasDevMode()) {
             m_debugRenderingSystem = std::make_unique<DebugRenderingSystem>(m_registry.get());
         }
-        m_scriptingSystem->start();
-        m_playerInputSystem->start(*m_inputHandler);
-        m_physicsSystem->start();
+        m_scriptingSystem->Start();
+        m_playerInputSystem->Start(*m_inputHandler);
+        m_physicsSystem->Start();
     }
 
     Scene::~Scene()
@@ -31,24 +33,24 @@ namespace Engine
         // the destruction order is important
         m_registry.reset();
         m_scriptingSystem.reset();
-        Locator::getResourceManager()->clear(); // NOTE: we shouldn't always do this
+        Locator::GetResourceManager()->Clear(); // NOTE: we shouldn't always do this
     }
 
-    void Scene::update(float timeStep)
+    void Scene::Update(float timeStep)
     {
-        EventBus& eventBus{*Locator::getEventBus()};
-        eventBus.reset();
-        m_playerInputSystem->subscribeToEvents(eventBus);
-        m_physicsSystem->update(timeStep);
-        m_animationSystem->update();
-        m_scriptingSystem->update(timeStep);
+        EventBus& eventBus{*Locator::GetEventBus()};
+        eventBus.Reset();
+        m_playerInputSystem->SubscribeToEvents(eventBus);
+        m_physicsSystem->Update(timeStep);
+        m_animationSystem->Update();
+        m_scriptingSystem->Update(timeStep);
     }
 
-    void Scene::render(float frameExtrapolationTimeStep)
+    void Scene::Render(float frameExtrapolationTimeStep)
     {
-        m_renderingSystem->update(*m_renderer, frameExtrapolationTimeStep);
-        if (Game::instance().isDevModeEnabled()) {
-            m_debugRenderingSystem->update(*m_renderer, frameExtrapolationTimeStep);
+        m_renderingSystem->Update(*m_renderer, frameExtrapolationTimeStep);
+        if (Game::Instance().IsDevModeEnabled()) {
+            m_debugRenderingSystem->Update(*m_renderer, frameExtrapolationTimeStep);
         }
     }
 } // namespace Engine

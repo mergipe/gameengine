@@ -1,6 +1,8 @@
 #include "ResourceManager.h"
+
 #include "core/Filesystem.h"
 #include "core/Locator.h"
+
 #include <array>
 #include <stb_image/stb_image.h>
 #include <utility>
@@ -25,26 +27,26 @@ namespace Engine
             }
         }
         m_fallbackTexture = std::make_unique<Texture2D>(TextureConfig{});
-        m_fallbackTexture->create(fallbackTextureData.data(), width, height, GL_RGB);
+        m_fallbackTexture->Create(fallbackTextureData.data(), width, height, GL_RGB);
     }
 
-    std::filesystem::path ResourceManager::getResourcePath(const std::filesystem::path& relativePath) const
+    std::filesystem::path ResourceManager::GetResourcePath(const std::filesystem::path& relativePath) const
     {
-        return Filesystem::getResourcesPath() / relativePath;
+        return Filesystem::GetResourcesPath() / relativePath;
     }
 
-    void ResourceManager::clear() { m_textures.clear(); }
+    void ResourceManager::Clear() { m_textures.clear(); }
 
-    void ResourceManager::loadTexture(const std::filesystem::path& relativeFilepath,
+    void ResourceManager::LoadTexture(const std::filesystem::path& relativeFilepath,
                                       const TextureConfig& textureConfig)
     {
-        const std::filesystem::path filepath{Filesystem::getResourcesPath() / relativeFilepath};
+        const std::filesystem::path filepath{Filesystem::GetResourcesPath() / relativeFilepath};
         int width{};
         int height{};
         int channels{};
         bool ok{static_cast<bool>(stbi_info(filepath.c_str(), &width, &height, &channels))};
         if (!ok) {
-            Locator::getLogger()->error("Failed to get info from texture file {}: {}", filepath.c_str(),
+            Locator::GetLogger()->Error("Failed to get info from texture file {}: {}", filepath.c_str(),
                                         stbi_failure_reason());
             return;
         }
@@ -59,19 +61,19 @@ namespace Engine
         }
         unsigned char* data{stbi_load(filepath.c_str(), &width, &height, &channels, desiredChannels)};
         if (!data) {
-            Locator::getLogger()->error("Failed to open texture file {}: {}", filepath.c_str(),
+            Locator::GetLogger()->Error("Failed to open texture file {}: {}", filepath.c_str(),
                                         stbi_failure_reason());
             return;
         }
         auto texture{std::make_unique<Texture2D>(textureConfig)};
-        texture->create(data, width, height, imageFormat);
+        texture->Create(data, width, height, imageFormat);
         stbi_image_free(data);
         StringId textureId{relativeFilepath.c_str()};
         m_textures.insert(std::make_pair(textureId, std::move(texture)));
-        Locator::getLogger()->info("Texture loaded from {} as '{}'", filepath.c_str(), textureId.getSid());
+        Locator::GetLogger()->Info("Texture loaded from {} as '{}'", filepath.c_str(), textureId.GetSid());
     }
 
-    const Texture2D& ResourceManager::getTexture(const StringId& textureId) const
+    const Texture2D& ResourceManager::GetTexture(const StringId& textureId) const
     {
         const auto textureIterator{m_textures.find(textureId)};
         if (textureIterator != m_textures.end()) {

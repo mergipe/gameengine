@@ -1,10 +1,12 @@
 #include "IO.h"
+
 #include "Locator.h"
+
 #include <sstream>
 
 namespace Engine::IO
 {
-    std::vector<std::vector<int>> parseIntCsvFile(std::ifstream& file)
+    std::vector<std::vector<int>> ParseIntCsvFile(std::ifstream& file)
     {
         std::vector<std::vector<int>> rows{};
         std::string fileLine{};
@@ -20,7 +22,7 @@ namespace Engine::IO
         return rows;
     }
 
-    std::string readStringFromFile(const std::filesystem::path& filepath)
+    std::string ReadStringFromFile(const std::filesystem::path& filepath)
     {
         try {
             std::ifstream fileStream{filepath};
@@ -29,7 +31,7 @@ namespace Engine::IO
             fileStream.close();
             return stringStream.str();
         } catch (const std::exception& _) {
-            Locator::getLogger()->error("Error reading string from file {}", filepath.c_str());
+            Locator::GetLogger()->Error("Error reading string from file {}", filepath.c_str());
             return {};
         }
     }

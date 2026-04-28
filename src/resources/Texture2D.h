@@ -1,5 +1,5 @@
-#ifndef TEXTURE2D_H
-#define TEXTURE2D_H
+#ifndef TEXTURE_2D_H
+#define TEXTURE_2D_H
 
 #include <glad/glad.h>
 #include <optional>
@@ -14,7 +14,7 @@ namespace Engine
         clampToEdge = GL_CLAMP_TO_EDGE
     };
 
-    constexpr std::optional<TextureFiltering> parseTextureFiltering(std::string_view filteringStr)
+    constexpr std::optional<TextureFiltering> ParseTextureFiltering(std::string_view filteringStr)
     {
         using enum TextureFiltering;
         if (filteringStr == "nearest")
@@ -24,7 +24,7 @@ namespace Engine
         return {};
     }
 
-    constexpr std::optional<TextureWrapping> parseTextureWrapping(std::string_view wrappingStr)
+    constexpr std::optional<TextureWrapping> ParseTextureWrapping(std::string_view wrappingStr)
     {
         using enum TextureWrapping;
         if (wrappingStr == "repeat")
@@ -54,10 +54,10 @@ namespace Engine
         Texture2D& operator=(const Texture2D&) = delete;
         Texture2D& operator=(Texture2D&&) = delete;
         ~Texture2D();
-        GLsizei getWidth() const { return m_width; }
-        GLsizei getHeight() const { return m_height; }
-        void create(const unsigned char* data, GLsizei width, GLsizei height, GLint imageFormat);
-        void bind() const;
+        GLsizei GetWidth() const { return m_width; }
+        GLsizei GetHeight() const { return m_height; }
+        void Create(const unsigned char* data, GLsizei width, GLsizei height, GLint imageFormat);
+        void Bind() const;
 
     private:
         GLuint m_id{};

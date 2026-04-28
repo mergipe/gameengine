@@ -10,6 +10,7 @@
 #include "physics/2d/Body2D.h"
 #include "renderer/Camera.h"
 #include "renderer/Shapes.h"
+
 #include <glm/glm.hpp>
 #include <memory>
 #include <vector>
@@ -25,21 +26,21 @@ namespace Engine
     };
 
     struct TransformComponent final {
-        glm::mat4 getTransformationMatrix() const
+        glm::mat4 GetTransformationMatrix() const
         {
-            return Math::getTransformationMatrix(position, rotation, scale);
+            return Math::GetTransformationMatrix(position, rotation, scale);
         }
-        glm::vec3 getRight() const
+        glm::vec3 GetRight() const
         {
-            return Math::getRotationMatrix(rotation) * glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
+            return Math::GetRotationMatrix(rotation) * glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
         }
-        glm::vec3 getUp() const
+        glm::vec3 GetUp() const
         {
-            return Math::getRotationMatrix(rotation) * glm::vec4{0.0f, 1.0f, 0.0f, 1.0f};
+            return Math::GetRotationMatrix(rotation) * glm::vec4{0.0f, 1.0f, 0.0f, 1.0f};
         }
-        glm::vec3 getForward() const
+        glm::vec3 GetForward() const
         {
-            return Math::getRotationMatrix(rotation) * glm::vec4{0.0f, 0.0f, 1.0f, 1.0f};
+            return Math::GetRotationMatrix(rotation) * glm::vec4{0.0f, 0.0f, 1.0f, 1.0f};
         }
 
         glm::vec3 position{0.0f};
@@ -65,7 +66,7 @@ namespace Engine
             : framesCount{framesCount}, framesPerSecond{framesPerSecond}, shouldLoop{shouldLoop}
         {
         }
-        Timer::Ticks startTime{Timer::getTicks()};
+        Timer::Ticks startTime{Timer::GetTicks()};
         int currentFrame{0};
         int framesCount{};
         int framesPerSecond{};

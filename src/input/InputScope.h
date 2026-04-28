@@ -1,10 +1,11 @@
-#ifndef INPUTSCOPE_H
-#define INPUTSCOPE_H
+#ifndef INPUT_SCOPE_H
+#define INPUT_SCOPE_H
 
 #include "InputCommand.h"
 #include "InputCommandMapping.h"
 #include "InputDevice.h"
 #include "core/StringId.h"
+
 #include <vector>
 
 namespace Engine
@@ -20,8 +21,8 @@ namespace Engine
             : m_inputMapping{commands}, m_id{id}
         {
         }
-        const StringId& getId() const { return m_id; }
-        InputCommand* findCommand(InputDevice::Type deviceType, int controlCode);
+        const StringId& GetId() const { return m_id; }
+        InputCommand* FindCommand(InputDevice::Type deviceType, int controlCode);
 
     private:
         InputCommandMapping m_inputMapping{};

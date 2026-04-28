@@ -1,4 +1,5 @@
 #include "Logger.h"
+
 #include <spdlog/sinks/basic_file_sink.h>
 
 namespace Engine
@@ -21,7 +22,7 @@ namespace Engine
         return {};
     }
 
-    constexpr std::string_view getLevelName(Logger::Level level)
+    constexpr std::string_view GetLevelName(Logger::Level level)
     {
         using enum Logger::Level;
         switch (level) {
@@ -50,22 +51,22 @@ namespace Engine
                 level = loggerLevelFromEnv.value();
             }
         }
-        setLevel(level);
-        info("Logger initialized with console sink ({} level)", getLevelName(level));
+        SetLevel(level);
+        Info("Logger initialized with console sink ({} level)", GetLevelName(level));
     }
 
     Logger::Logger(const std::filesystem::path& logFilepath, Level level)
         : Logger{level}
     {
-        addFileSink(logFilepath);
+        AddFileSink(logFilepath);
     }
 
-    void Logger::addFileSink(const std::filesystem::path& logFilepath)
+    void Logger::AddFileSink(const std::filesystem::path& logFilepath)
     {
         const auto file_sink{std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFilepath.c_str(), true)};
         m_logger->sinks().push_back(file_sink);
-        info("Added file sink to logger ({})", logFilepath.c_str());
+        Info("Added file sink to logger ({})", logFilepath.c_str());
     }
 
-    void Logger::setLevel(Level level) { m_logger->set_level(static_cast<spdlog::level::level_enum>(level)); }
+    void Logger::SetLevel(Level level) { m_logger->set_level(static_cast<spdlog::level::level_enum>(level)); }
 } // namespace Engine

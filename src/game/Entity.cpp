@@ -1,4 +1,5 @@
 #include "Entity.h"
+
 #include "Components.h"
 
 namespace Engine
@@ -8,5 +9,5 @@ namespace Engine
     {
     }
 
-    const StringId& Entity::getId() const { return m_registry->get<IdComponent>(m_id).sid; }
+    const StringId& Entity::GetId() const { return m_registry->get<IdComponent>(m_id).sid; }
 } // namespace Engine

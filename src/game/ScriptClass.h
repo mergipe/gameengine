@@ -1,5 +1,5 @@
-#ifndef SCRIPTCLASS_H
-#define SCRIPTCLASS_H
+#ifndef SCRIPT_CLASS_H
+#define SCRIPT_CLASS_H
 
 #include <sol/sol.hpp>
 #include <string>
@@ -14,9 +14,9 @@ namespace Engine
             : m_className{className}, m_luaClass{luaClass}
         {
         }
-        std::string_view getClassName() const { return m_className; }
-        sol::optional<sol::function> getConstructor() const { return m_luaClass["new"]; }
-        const sol::table& getLuaClass() { return m_luaClass; }
+        std::string_view GetClassName() const { return m_className; }
+        sol::optional<sol::function> GetConstructor() const { return m_luaClass["new"]; }
+        const sol::table& GetLuaClass() { return m_luaClass; }
 
     private:
         std::string m_className{};

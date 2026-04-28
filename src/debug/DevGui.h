@@ -1,5 +1,5 @@
-#ifndef DEVGUI_H
-#define DEVGUI_H
+#ifndef DEV_GUI_H
+#define DEV_GUI_H
 
 #include "core/Window.h"
 
@@ -9,23 +9,23 @@ namespace Engine
     {
     public:
         virtual ~DevGui() = default;
-        virtual void processEvent(const SDL_Event& event) = 0;
-        virtual bool wantCaptureKeyboard() = 0;
-        virtual bool wantCaptureMouse() = 0;
-        virtual void newFrame() = 0;
-        virtual void render() = 0;
-        virtual void show() = 0;
+        virtual void ProcessEvent(const SDL_Event& event) = 0;
+        virtual bool WantCaptureKeyboard() = 0;
+        virtual bool WantCaptureMouse() = 0;
+        virtual void NewFrame() = 0;
+        virtual void Render() = 0;
+        virtual void Show() = 0;
     };
 
     class NullDevGui final : public DevGui
     {
     public:
-        void processEvent([[maybe_unused]] const SDL_Event& event) override {}
-        bool wantCaptureKeyboard() override { return false; }
-        bool wantCaptureMouse() override { return false; }
-        void newFrame() override {}
-        void render() override {}
-        void show() override {}
+        void ProcessEvent([[maybe_unused]] const SDL_Event& event) override {}
+        bool WantCaptureKeyboard() override { return false; }
+        bool WantCaptureMouse() override { return false; }
+        void NewFrame() override {}
+        void Render() override {}
+        void Show() override {}
     };
 
     struct DevGuiData {
@@ -43,12 +43,12 @@ namespace Engine
         DevGuiImpl& operator=(const DevGuiImpl&) = delete;
         DevGuiImpl& operator=(DevGuiImpl&&) = delete;
         ~DevGuiImpl() override;
-        void processEvent(const SDL_Event& event) override;
-        bool wantCaptureKeyboard() override;
-        bool wantCaptureMouse() override;
-        void newFrame() override;
-        void render() override;
-        void show() override;
+        void ProcessEvent(const SDL_Event& event) override;
+        bool WantCaptureKeyboard() override;
+        bool WantCaptureMouse() override;
+        void NewFrame() override;
+        void Render() override;
+        void Show() override;
 
     private:
         DevGuiData m_data{};

@@ -1,7 +1,8 @@
-#ifndef INPUTBINDING_H
-#define INPUTBINDING_H
+#ifndef INPUT_BINDING_H
+#define INPUT_BINDING_H
 
 #include "InputDevice.h"
+
 #include <string>
 
 namespace Engine

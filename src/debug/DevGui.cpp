@@ -1,12 +1,14 @@
 #include "DevGui.h"
+
 #include "game/Game.h"
+
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl3.h>
 
 namespace Engine
 {
-    void showMetricsOverlay(bool* show);
+    void ShowMetricsOverlay(bool* show);
 
     DevGuiImpl::DevGuiImpl(const Window& window)
         : DevGui{}
@@ -25,10 +27,10 @@ namespace Engine
             style.WindowRounding = 0.0f;
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
-        float uiScale{window.getDisplayScale()};
+        float uiScale{window.GetDisplayScale()};
         style.FontScaleDpi = uiScale;
         style.ScaleAllSizes(SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay()));
-        ImGui_ImplSDL3_InitForOpenGL(window.getWindowHandle(), window.getGLContext());
+        ImGui_ImplSDL3_InitForOpenGL(window.GetWindowHandle(), window.GetGLContext());
         ImGui_ImplOpenGL3_Init("#version 330 core");
     }
 
@@ -39,20 +41,20 @@ namespace Engine
         ImGui::DestroyContext();
     }
 
-    void DevGuiImpl::processEvent(const SDL_Event& event) { ImGui_ImplSDL3_ProcessEvent(&event); }
+    void DevGuiImpl::ProcessEvent(const SDL_Event& event) { ImGui_ImplSDL3_ProcessEvent(&event); }
 
-    bool DevGuiImpl::wantCaptureKeyboard() { return ImGui::GetIO().WantCaptureKeyboard; }
+    bool DevGuiImpl::WantCaptureKeyboard() { return ImGui::GetIO().WantCaptureKeyboard; }
 
-    bool DevGuiImpl::wantCaptureMouse() { return ImGui::GetIO().WantCaptureMouse; }
+    bool DevGuiImpl::WantCaptureMouse() { return ImGui::GetIO().WantCaptureMouse; }
 
-    void DevGuiImpl::newFrame()
+    void DevGuiImpl::NewFrame()
     {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
     }
 
-    void DevGuiImpl::render()
+    void DevGuiImpl::Render()
     {
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -65,7 +67,7 @@ namespace Engine
         }
     }
 
-    void DevGuiImpl::show()
+    void DevGuiImpl::Show()
     {
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("Profile/Debug")) {
@@ -77,7 +79,7 @@ namespace Engine
             ImGui::EndMainMenuBar();
         }
         if (m_data.showMetricsOverlay) {
-            showMetricsOverlay(&m_data.showMetricsOverlay);
+            ShowMetricsOverlay(&m_data.showMetricsOverlay);
         }
         if (m_data.showMetricsWindow) {
             ImGui::ShowMetricsWindow(&m_data.showMetricsWindow);
@@ -87,7 +89,7 @@ namespace Engine
         }
     }
 
-    void showMetricsOverlay(bool* show)
+    void ShowMetricsOverlay(bool* show)
     {
         constexpr ImGuiWindowFlags windowFlags{
             ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_AlwaysAutoResize |

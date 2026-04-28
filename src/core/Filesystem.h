@@ -9,13 +9,13 @@ namespace Engine
     {
     public:
         Filesystem() = delete;
-        static std::filesystem::path getBasePath();
-        static std::filesystem::path getRelativePath(std::string_view relativePath);
-        static std::filesystem::path getLogsPath();
-        static std::filesystem::path getConfigPath();
-        static std::filesystem::path getResourcesPath();
-        static std::filesystem::path getModulesPath();
-        static std::filesystem::path getScriptingLibraryPath();
+        static std::filesystem::path GetBasePath();
+        static std::filesystem::path GetRelativePath(std::string_view relativePath);
+        static std::filesystem::path GetLogsPath();
+        static std::filesystem::path GetConfigPath();
+        static std::filesystem::path GetResourcesPath();
+        static std::filesystem::path GetModulesPath();
+        static std::filesystem::path GetScriptingLibraryPath();
     };
 } // namespace Engine
 

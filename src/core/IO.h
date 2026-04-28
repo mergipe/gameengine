@@ -7,8 +7,8 @@
 
 namespace Engine::IO
 {
-    std::vector<std::vector<int>> parseIntCsvFile(std::ifstream& file);
-    std::string readStringFromFile(const std::filesystem::path& filepath);
+    std::vector<std::vector<int>> ParseIntCsvFile(std::ifstream& file);
+    std::string ReadStringFromFile(const std::filesystem::path& filepath);
 } // namespace Engine::IO
 
 #endif

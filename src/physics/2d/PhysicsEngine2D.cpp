@@ -1,5 +1,7 @@
 #include "PhysicsEngine2D.h"
+
 #include "core/Config.h"
+
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
 
@@ -8,7 +10,7 @@ namespace Engine
     PhysicsEngine2D::PhysicsEngine2D()
     {
         b2WorldDef worldDef{b2DefaultWorldDef()};
-        Config::Physics2DConfig config{Config::parsePhysics2DConfig()};
+        Config::Physics2DConfig config{Config::ParsePhysics2DConfig()};
         worldDef.gravity = b2Vec2{config.gravity.x, config.gravity.y};
         worldDef.maximumLinearSpeed = config.maxLinearSpeed;
         m_worldId = b2CreateWorld(&worldDef);
@@ -16,11 +18,11 @@ namespace Engine
 
     PhysicsEngine2D::~PhysicsEngine2D() { b2DestroyWorld(m_worldId); }
 
-    void PhysicsEngine2D::update(float timeStep) { b2World_Step(m_worldId, timeStep, s_subStepCount); }
+    void PhysicsEngine2D::Update(float timeStep) { b2World_Step(m_worldId, timeStep, s_subStepCount); }
 
-    b2BodyEvents PhysicsEngine2D::getBodyEvents() { return b2World_GetBodyEvents(m_worldId); }
+    b2BodyEvents PhysicsEngine2D::GetBodyEvents() { return b2World_GetBodyEvents(m_worldId); }
 
-    Body2D PhysicsEngine2D::createBody(const BodyData2D& bodyData, entt::entity entity)
+    Body2D PhysicsEngine2D::CreateBody(const BodyData2D& bodyData, entt::entity entity)
     {
         b2BodyDef bodyDef{b2DefaultBodyDef()};
         bodyDef.position = b2Vec2{bodyData.position.x, bodyData.position.y};
@@ -34,7 +36,7 @@ namespace Engine
         return Body2D{bodyId};
     }
 
-    void PhysicsEngine2D::createDefaultShape(b2BodyId bodyId)
+    void PhysicsEngine2D::CreateDefaultShape(b2BodyId bodyId)
     {
         b2ShapeDef shapeDef{b2DefaultShapeDef()};
         shapeDef.filter.maskBits = 0; // no collision
@@ -42,7 +44,7 @@ namespace Engine
         b2CreateCircleShape(bodyId, &shapeDef, &circle);
     }
 
-    b2ShapeDef createShapeDef(const ShapeData2D& shapeData)
+    b2ShapeDef CreateShapeDef(const ShapeData2D& shapeData)
     {
         b2ShapeDef shapeDef{b2DefaultShapeDef()};
         shapeDef.density = shapeData.density;
@@ -54,17 +56,17 @@ namespace Engine
         return shapeDef;
     }
 
-    void PhysicsEngine2D::createBoxShape(b2BodyId bodyId, const ShapeData2D& shapeData, float width,
+    void PhysicsEngine2D::CreateBoxShape(b2BodyId bodyId, const ShapeData2D& shapeData, float width,
                                          float height)
     {
-        b2ShapeDef shapeDef{createShapeDef(shapeData)};
+        b2ShapeDef shapeDef{CreateShapeDef(shapeData)};
         b2Polygon box{b2MakeBox(width / 2.0f, height / 2.0f)};
         b2CreatePolygonShape(bodyId, &shapeDef, &box);
     }
 
-    void PhysicsEngine2D::createCircleShape(b2BodyId bodyId, const ShapeData2D& shapeData, float radius)
+    void PhysicsEngine2D::CreateCircleShape(b2BodyId bodyId, const ShapeData2D& shapeData, float radius)
     {
-        b2ShapeDef shapeDef{createShapeDef(shapeData)};
+        b2ShapeDef shapeDef{CreateShapeDef(shapeData)};
         b2Circle circle{b2Vec2_zero, radius};
         b2CreateCircleShape(bodyId, &shapeDef, &circle);
     }

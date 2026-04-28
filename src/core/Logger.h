@@ -1,11 +1,11 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include "spdlog/sinks/stdout_color_sinks.h"
 #include <filesystem>
 #include <memory>
 #include <spdlog/common.h>
 #include <spdlog/logger.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace Engine
 {
@@ -22,20 +22,20 @@ namespace Engine
         };
         explicit Logger(Level level = Level::trace);
         explicit Logger(const std::filesystem::path& logFilepath, Level level = Level::trace);
-        void addFileSink(const std::filesystem::path& logFilepath);
-        void setLevel(Level level);
-        template <typename T> void trace(const T& msg);
-        template <typename... TArgs> void trace(fmt::format_string<TArgs...> fmt, TArgs&&... args);
-        template <typename T> void debug(const T& msg);
-        template <typename... TArgs> void debug(fmt::format_string<TArgs...> fmt, TArgs&&... args);
-        template <typename T> void info(const T& msg);
-        template <typename... TArgs> void info(fmt::format_string<TArgs...> fmt, TArgs&&... args);
-        template <typename T> void warn(const T& msg);
-        template <typename... TArgs> void warn(fmt::format_string<TArgs...> fmt, TArgs&&... args);
-        template <typename T> void error(const T& msg);
-        template <typename... TArgs> void error(fmt::format_string<TArgs...> fmt, TArgs&&... args);
-        template <typename T> void critical(const T& msg);
-        template <typename... TArgs> void critical(fmt::format_string<TArgs...> fmt, TArgs&&... args);
+        void AddFileSink(const std::filesystem::path& logFilepath);
+        void SetLevel(Level level);
+        template <typename T> void Trace(const T& msg);
+        template <typename... TArgs> void Trace(fmt::format_string<TArgs...> fmt, TArgs&&... args);
+        template <typename T> void Debug(const T& msg);
+        template <typename... TArgs> void Debug(fmt::format_string<TArgs...> fmt, TArgs&&... args);
+        template <typename T> void Info(const T& msg);
+        template <typename... TArgs> void Info(fmt::format_string<TArgs...> fmt, TArgs&&... args);
+        template <typename T> void Warn(const T& msg);
+        template <typename... TArgs> void Warn(fmt::format_string<TArgs...> fmt, TArgs&&... args);
+        template <typename T> void Error(const T& msg);
+        template <typename... TArgs> void Error(fmt::format_string<TArgs...> fmt, TArgs&&... args);
+        template <typename T> void Critical(const T& msg);
+        template <typename... TArgs> void Critical(fmt::format_string<TArgs...> fmt, TArgs&&... args);
 
     private:
         static constexpr std::string s_loggerLevelEnvVariableName{"LOGGER_LEVEL"};
@@ -44,73 +44,73 @@ namespace Engine
     };
 
     template <typename T>
-    void Logger::trace(const T& msg)
+    void Logger::Trace(const T& msg)
     {
         m_logger->trace(msg);
     }
 
     template <typename... TArgs>
-    void Logger::trace(fmt::format_string<TArgs...> fmt, TArgs&&... args)
+    void Logger::Trace(fmt::format_string<TArgs...> fmt, TArgs&&... args)
     {
         m_logger->trace(fmt, std::forward<TArgs>(args)...);
     }
 
     template <typename T>
-    void Logger::debug(const T& msg)
+    void Logger::Debug(const T& msg)
     {
         m_logger->debug(msg);
     }
 
     template <typename... TArgs>
-    void Logger::debug(fmt::format_string<TArgs...> fmt, TArgs&&... args)
+    void Logger::Debug(fmt::format_string<TArgs...> fmt, TArgs&&... args)
     {
         m_logger->debug(fmt, std::forward<TArgs>(args)...);
     }
 
     template <typename T>
-    void Logger::info(const T& msg)
+    void Logger::Info(const T& msg)
     {
         m_logger->info(msg);
     }
 
     template <typename... TArgs>
-    void Logger::info(fmt::format_string<TArgs...> fmt, TArgs&&... args)
+    void Logger::Info(fmt::format_string<TArgs...> fmt, TArgs&&... args)
     {
         m_logger->info(fmt, std::forward<TArgs>(args)...);
     }
 
     template <typename T>
-    void Logger::warn(const T& msg)
+    void Logger::Warn(const T& msg)
     {
         m_logger->warn(msg);
     }
 
     template <typename... TArgs>
-    void Logger::warn(fmt::format_string<TArgs...> fmt, TArgs&&... args)
+    void Logger::Warn(fmt::format_string<TArgs...> fmt, TArgs&&... args)
     {
         m_logger->warn(fmt, std::forward<TArgs>(args)...);
     }
 
     template <typename T>
-    void Logger::error(const T& msg)
+    void Logger::Error(const T& msg)
     {
         m_logger->error(msg);
     }
 
     template <typename... TArgs>
-    void Logger::error(fmt::format_string<TArgs...> fmt, TArgs&&... args)
+    void Logger::Error(fmt::format_string<TArgs...> fmt, TArgs&&... args)
     {
         m_logger->error(fmt, std::forward<TArgs>(args)...);
     }
 
     template <typename T>
-    void Logger::critical(const T& msg)
+    void Logger::Critical(const T& msg)
     {
         m_logger->critical(msg);
     }
 
     template <typename... TArgs>
-    void Logger::critical(fmt::format_string<TArgs...> fmt, TArgs&&... args)
+    void Logger::Critical(fmt::format_string<TArgs...> fmt, TArgs&&... args)
     {
         m_logger->critical(fmt, std::forward<TArgs>(args)...);
     }

@@ -1,8 +1,9 @@
-#ifndef INPUTCOMMANDMAPPING_H
-#define INPUTCOMMANDMAPPING_H
+#ifndef INPUT_COMMAND_MAPPING_H
+#define INPUT_COMMAND_MAPPING_H
 
 #include "InputCommand.h"
 #include "InputDevice.h"
+
 #include <unordered_map>
 #include <vector>
 
@@ -13,7 +14,7 @@ namespace Engine
     public:
         InputCommandMapping() = default;
         explicit InputCommandMapping(const std::vector<InputCommand>& commands);
-        InputCommand* findCommand(InputDevice::Type deviceType, int controlCode);
+        InputCommand* FindCommand(InputDevice::Type deviceType, int controlCode);
 
     private:
         std::unordered_map<InputDevice::Type, std::unordered_map<int, size_t>> m_mappingByDevice{};

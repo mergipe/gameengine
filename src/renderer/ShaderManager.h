@@ -1,9 +1,10 @@
-#ifndef SHADERMANAGER_H
-#define SHADERMANAGER_H
+#ifndef SHADER_MANAGER_H
+#define SHADER_MANAGER_H
 
 #include "Shader.h"
 #include "core/Filesystem.h"
 #include "core/StringId.h"
+
 #include <filesystem>
 #include <memory>
 #include <unordered_map>
@@ -19,16 +20,16 @@ namespace Engine
         ShaderManager& operator=(const ShaderManager&) = delete;
         ShaderManager& operator=(ShaderManager&&) = delete;
         ~ShaderManager() = default;
-        void clear();
-        const Shader& loadShader(const StringId& shaderId,
+        void Clear();
+        const Shader& LoadShader(const StringId& shaderId,
                                  const std::filesystem::path& vertexShaderRelativePath,
                                  const std::filesystem::path& fragmentShaderRelativePath,
                                  const std::optional<std::filesystem::path>& geometryShaderRelativePath = {});
-        const Shader& getShader(const StringId& shaderId) const;
+        const Shader& GetShader(const StringId& shaderId) const;
 
     private:
         std::unordered_map<StringId, std::unique_ptr<Shader>> m_shaders{};
-        const std::filesystem::path m_shadersPath{Filesystem::getResourcesPath() / "shaders"};
+        const std::filesystem::path m_shadersPath{Filesystem::GetResourcesPath() / "shaders"};
     };
 } // namespace Engine
 

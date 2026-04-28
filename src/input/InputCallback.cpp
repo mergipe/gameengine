@@ -2,7 +2,7 @@
 
 namespace Engine
 {
-    const InputCallback* InputCallbackMapping::getCommandCallback(const StringId& commandId) const
+    const InputCallback* InputCallbackMapping::GetCommandCallback(const StringId& commandId) const
     {
         const auto it{m_mapping.find(commandId)};
         if (it != m_mapping.end()) {
@@ -11,7 +11,7 @@ namespace Engine
         return nullptr;
     }
 
-    void InputCallbackMapping::setCommandCallback(const StringId& commandId, const InputCallback& callback)
+    void InputCallbackMapping::SetCommandCallback(const StringId& commandId, const InputCallback& callback)
     {
         m_mapping[commandId] = callback;
     }

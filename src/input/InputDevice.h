@@ -1,5 +1,5 @@
-#ifndef INPUTDEVICE_H
-#define INPUTDEVICE_H
+#ifndef INPUT_DEVICE_H
+#define INPUT_DEVICE_H
 
 #include <cstdint>
 #include <optional>
@@ -20,7 +20,7 @@ namespace Engine
         bool inUse{false};
     };
 
-    constexpr std::optional<InputDevice::Type> parseInputDeviceType(std::string_view inputDeviceTypeStr)
+    constexpr std::optional<InputDevice::Type> ParseInputDeviceType(std::string_view inputDeviceTypeStr)
     {
         using enum InputDevice::Type;
         if (inputDeviceTypeStr == "keyboard")

@@ -1,46 +1,47 @@
 #include "Filesystem.h"
+
 #include <SDL3/SDL.h>
 
 namespace Engine
 {
-    std::filesystem::path Filesystem::getBasePath()
+    std::filesystem::path Filesystem::GetBasePath()
     {
         static std::filesystem::path s_basePath{std::filesystem::canonical(SDL_GetBasePath()).parent_path()};
         return s_basePath;
     }
 
-    std::filesystem::path Filesystem::getRelativePath(std::string_view relativePath)
+    std::filesystem::path Filesystem::GetRelativePath(std::string_view relativePath)
     {
-        return getBasePath() / relativePath;
+        return GetBasePath() / relativePath;
     }
 
-    std::filesystem::path Filesystem::getLogsPath()
+    std::filesystem::path Filesystem::GetLogsPath()
     {
-        static std::filesystem::path s_logsPath{getBasePath() / "logs"};
+        static std::filesystem::path s_logsPath{GetBasePath() / "logs"};
         return s_logsPath;
     }
 
-    std::filesystem::path Filesystem::getConfigPath()
+    std::filesystem::path Filesystem::GetConfigPath()
     {
-        static std::filesystem::path s_configPath{getBasePath() / "config"};
+        static std::filesystem::path s_configPath{GetBasePath() / "config"};
         return s_configPath;
     }
 
-    std::filesystem::path Filesystem::getResourcesPath()
+    std::filesystem::path Filesystem::GetResourcesPath()
     {
-        static std::filesystem::path s_resourcesPath{getBasePath() / "resources"};
+        static std::filesystem::path s_resourcesPath{GetBasePath() / "resources"};
         return s_resourcesPath;
     }
 
-    std::filesystem::path Filesystem::getModulesPath()
+    std::filesystem::path Filesystem::GetModulesPath()
     {
-        static std::filesystem::path s_modulesPath{getBasePath() / "modules"};
+        static std::filesystem::path s_modulesPath{GetBasePath() / "modules"};
         return s_modulesPath;
     }
 
-    std::filesystem::path Filesystem::getScriptingLibraryPath()
+    std::filesystem::path Filesystem::GetScriptingLibraryPath()
     {
-        static std::filesystem::path s_scriptsPath{getModulesPath() / "lua_scripting"};
+        static std::filesystem::path s_scriptsPath{GetModulesPath() / "lua_scripting"};
         return s_scriptsPath;
     }
 } // namespace Engine

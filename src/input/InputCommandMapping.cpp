@@ -6,13 +6,13 @@ namespace Engine
         : m_commands{commands}
     {
         for (size_t i{0}; i < m_commands.size(); ++i) {
-            for (const auto& binding : m_commands[i].getBindings()) {
+            for (const auto& binding : m_commands[i].GetBindings()) {
                 m_mappingByDevice[binding.deviceType][binding.controlCode] = i;
             }
         }
     }
 
-    InputCommand* InputCommandMapping::findCommand(InputDevice::Type deviceType, int controlCode)
+    InputCommand* InputCommandMapping::FindCommand(InputDevice::Type deviceType, int controlCode)
     {
         InputCommand* command{nullptr};
         const auto mappingIt{m_mappingByDevice.find(deviceType)};

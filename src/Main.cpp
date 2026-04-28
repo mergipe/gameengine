@@ -1,4 +1,5 @@
 #include "game/Game.h"
+
 #include <iostream>
 
 int main(int, char*[])
@@ -7,10 +8,10 @@ int main(int, char*[])
         std::cerr << "Failed to initialize SDL: " << SDL_GetError() << '\n';
         std::abort();
     }
-    Engine::Game& game{Engine::Game::instance()};
-    game.init();
-    game.run();
-    game.shutDown();
+    Engine::Game& game{Engine::Game::Instance()};
+    game.Init();
+    game.Run();
+    game.ShutDown();
     SDL_Quit();
     return 0;
 }

@@ -1,29 +1,30 @@
 #include "InputHandler.h"
+
 #include "InputConfigLoader.h"
 #include "InputValue.h"
 #include "core/Assert.h"
 #include "core/Locator.h"
 #include "game/Game.h"
+
 #include <SDL3/SDL.h>
 #include <functional>
-#include <oneapi/tbb/detail/_template_helpers.h>
 #include <utility>
 
 namespace Engine
 {
     InputHandler::InputHandler(const std::filesystem::path& inputConfigFilepath)
     {
-        m_inputConfig = InputConfigLoader::load(inputConfigFilepath);
+        m_inputConfig = InputConfigLoader::Load(inputConfigFilepath);
         StringId emptyScopeId{"empty"};
         m_inputConfig.inputScopes.insert(std::make_pair(emptyScopeId, InputScope{emptyScopeId}));
-        if (Game::instance().hasDevMode()) {
+        if (Game::Instance().HasDevMode()) {
             m_inputConfig.inputScopes.insert(std::make_pair(m_devGuiScopeId, InputScope{m_devGuiScopeId}));
         }
         m_currentScope = &m_inputConfig.inputScopes.at(emptyScopeId);
         m_previousScope = m_currentScope;
-        m_engineCallbackMapping.setCommandCallback(
+        m_engineCallbackMapping.SetCommandCallback(
             StringId{"toggle_dev_mode"},
-            InputCallback{[](const InputValue&) { Game::instance().toggleDevMode(); }});
+            InputCallback{[](const InputValue&) { Game::Instance().ToggleDevMode(); }});
         // for now only keyboard support
         if (SDL_HasKeyboard()) {
             // the keyboard id will always be 0 because of x11 and wayland differences
@@ -31,21 +32,21 @@ namespace Engine
         }
     }
 
-    const StringId& InputHandler::getCurrentScopeId() const
+    const StringId& InputHandler::GetCurrentScopeId() const
     {
         ASSERT(m_currentScope != nullptr);
-        return m_currentScope->getId();
+        return m_currentScope->GetId();
     }
 
-    const StringId& InputHandler::getPreviousScopeId() const
+    const StringId& InputHandler::GetPreviousScopeId() const
     {
         ASSERT(m_previousScope != nullptr);
-        return m_previousScope->getId();
+        return m_previousScope->GetId();
     }
 
-    void InputHandler::switchScope(const StringId& scopeId)
+    void InputHandler::SwitchScope(const StringId& scopeId)
     {
-        if (m_currentScope == nullptr || m_currentScope->getId() != scopeId) {
+        if (m_currentScope == nullptr || m_currentScope->GetId() != scopeId) {
             const auto it{m_inputConfig.inputScopes.find(scopeId)};
             if (it != m_inputConfig.inputScopes.end()) {
                 m_previousScope = m_currentScope;
@@ -54,41 +55,41 @@ namespace Engine
         }
     }
 
-    void InputHandler::handleKeyboardKeyDownEvent(const SDL_KeyboardEvent& event)
+    void InputHandler::HandleKeyboardKeyDownEvent(const SDL_KeyboardEvent& event)
     {
         if (event.repeat) {
             return;
         }
-        if (auto* command{findCommand(InputDevice::Type::keyboard, event.scancode)}) {
-            handleControlDown(*command, InputDevice::Id{InputDevice::Type::keyboard, 0});
+        if (auto* command{FindCommand(InputDevice::Type::keyboard, event.scancode)}) {
+            HandleControlDown(*command, InputDevice::Id{InputDevice::Type::keyboard, 0});
         }
     }
 
-    void InputHandler::handleKeyboardKeyUpEvent(const SDL_KeyboardEvent& event)
+    void InputHandler::HandleKeyboardKeyUpEvent(const SDL_KeyboardEvent& event)
     {
-        if (auto* command{findCommand(InputDevice::Type::keyboard, event.scancode)}) {
-            handleControlUp(*command, InputDevice::Id{InputDevice::Type::keyboard, 0});
+        if (auto* command{FindCommand(InputDevice::Type::keyboard, event.scancode)}) {
+            HandleControlUp(*command, InputDevice::Id{InputDevice::Type::keyboard, 0});
         }
     }
 
-    void InputHandler::resolveInput()
+    void InputHandler::ResolveInput()
     {
         for (std::size_t i{0}; i < m_inputEventsCount; ++i) {
             auto& inputEvent{m_unhandledInputEvents[i]};
             if (inputEvent.isEngineCommand) {
                 const InputCallback* callback{
-                    m_engineCallbackMapping.getCommandCallback(inputEvent.commandId)};
+                    m_engineCallbackMapping.GetCommandCallback(inputEvent.commandId)};
                 if (callback) {
-                    callback->execute(inputEvent.inputValue);
+                    callback->Execute(inputEvent.inputValue);
                 }
             } else {
-                Locator::getEventBus()->dispatchEvent(std::move(inputEvent));
+                Locator::GetEventBus()->DispatchEvent(std::move(inputEvent));
             }
         }
         m_inputEventsCount = 0;
     }
 
-    const InputDevice::Id& InputHandler::acquireAvailableDevice()
+    const InputDevice::Id& InputHandler::AcquireAvailableDevice()
     {
         // for now only return the keyboard
         InputDevice& device{m_inputDevices.front()};
@@ -96,35 +97,35 @@ namespace Engine
         return device.id;
     }
 
-    InputCommand* InputHandler::findCommand(InputDevice::Type deviceType, int controlCode)
+    InputCommand* InputHandler::FindCommand(InputDevice::Type deviceType, int controlCode)
     {
         ASSERT(m_currentScope != nullptr);
-        InputCommand* command{m_currentScope->findCommand(deviceType, controlCode)};
+        InputCommand* command{m_currentScope->FindCommand(deviceType, controlCode)};
         if (!command) {
-            command = m_inputConfig.engineInputMapping.findCommand(deviceType, controlCode);
+            command = m_inputConfig.engineInputMapping.FindCommand(deviceType, controlCode);
         }
         return command;
     }
 
-    void InputHandler::triggerCommand(const InputCommand& command, const InputDevice::Id& deviceId,
+    void InputHandler::TriggerCommand(const InputCommand& command, const InputDevice::Id& deviceId,
                                       const InputValue& inputValue)
     {
         m_unhandledInputEvents[m_inputEventsCount++] =
-            InputEvent{command.getName(), deviceId, inputValue, command.isEngineCommand()};
+            InputEvent{command.GetName(), deviceId, inputValue, command.IsEngineCommand()};
     }
 
-    void InputHandler::handleControlDown(const InputCommand& command, const InputDevice::Id& deviceId)
+    void InputHandler::HandleControlDown(const InputCommand& command, const InputDevice::Id& deviceId)
     {
-        if (command.getType() == InputCommand::Type::control_down ||
-            command.getType() == InputCommand::Type::control_state) {
-            triggerCommand(command, deviceId, InputValue{1});
+        if (command.GetType() == InputCommand::Type::control_down ||
+            command.GetType() == InputCommand::Type::control_state) {
+            TriggerCommand(command, deviceId, InputValue{1});
         }
     }
 
-    void InputHandler::handleControlUp(const InputCommand& command, const InputDevice::Id& deviceId)
+    void InputHandler::HandleControlUp(const InputCommand& command, const InputDevice::Id& deviceId)
     {
-        if (command.getType() == InputCommand::Type::control_state) {
-            triggerCommand(command, deviceId, InputValue{0});
+        if (command.GetType() == InputCommand::Type::control_state) {
+            TriggerCommand(command, deviceId, InputValue{0});
         }
     }
 } // namespace Engine

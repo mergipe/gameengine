@@ -1,5 +1,5 @@
-#ifndef INPUTVALUE_H
-#define INPUTVALUE_H
+#ifndef INPUT_VALUE_H
+#define INPUT_VALUE_H
 
 namespace Engine
 {

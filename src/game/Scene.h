@@ -5,6 +5,7 @@
 #include "Systems.h"
 #include "input/InputHandler.h"
 #include "renderer/Renderer2D.h"
+
 #include <entt/entt.hpp>
 #include <memory>
 
@@ -20,8 +21,8 @@ namespace Engine
         Scene& operator=(const Scene&) = delete;
         Scene& operator=(Scene&&) = delete;
         ~Scene();
-        void update(float timeStep);
-        void render(float frameExtrapolationTimeStep);
+        void Update(float timeStep);
+        void Render(float frameExtrapolationTimeStep);
 
     private:
         InputHandler* m_inputHandler;

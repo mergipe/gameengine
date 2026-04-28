@@ -1,8 +1,10 @@
 #include "Renderer2D.h"
+
 #include "ShaderManager.h"
 #include "Shapes.h"
 #include "core/Locator.h"
 #include "core/Math.h"
+
 #include <SDL3/SDL.h>
 #include <array>
 #include <cstdlib>
@@ -10,19 +12,19 @@
 
 namespace Engine
 {
-    glm::mat4 getModelTransformation(const Rect& rect, const glm::vec3& rotation)
+    glm::mat4 GetModelTransformation(const Rect& rect, const glm::vec3& rotation)
     {
-        return Math::getTransformationMatrix(glm::vec3{rect.getCenter(), 0.0f}, rotation,
+        return Math::GetTransformationMatrix(glm::vec3{rect.GetCenter(), 0.0f}, rotation,
                                              glm::vec3{rect.width, rect.height, 1.0f});
     }
 
-    glm::mat4 getTextureTransformation(const Texture2D& texture, const Rect& textureArea)
+    glm::mat4 GetTextureTransformation(const Texture2D& texture, const Rect& textureArea)
     {
-        const float widthRatio{textureArea.width / static_cast<float>(texture.getWidth())};
-        const float heightRatio{textureArea.height / static_cast<float>(texture.getHeight())};
-        const glm::vec2 position{textureArea.getLeftX() / static_cast<float>(texture.getWidth()),
-                                 textureArea.getTopY() / static_cast<float>(texture.getHeight())};
-        return Math::getTransformationMatrix(glm::vec3{position, 0.0f}, glm::vec3{0.0f},
+        const float widthRatio{textureArea.width / static_cast<float>(texture.GetWidth())};
+        const float heightRatio{textureArea.height / static_cast<float>(texture.GetHeight())};
+        const glm::vec2 position{textureArea.GetLeftX() / static_cast<float>(texture.GetWidth()),
+                                 textureArea.GetTopY() / static_cast<float>(texture.GetHeight())};
+        return Math::GetTransformationMatrix(glm::vec3{position, 0.0f}, glm::vec3{0.0f},
                                              glm::vec3{widthRatio, heightRatio, 1.0f});
     }
 
@@ -35,19 +37,19 @@ namespace Engine
     {
         glDeleteVertexArrays(1, &m_spriteVao);
         glDeleteVertexArrays(1, &m_quadVao);
-        Locator::getLogger()->info("2D Renderer destroyed");
+        Locator::GetLogger()->Info("2D Renderer destroyed");
     }
 
-    void Renderer2D::init()
+    void Renderer2D::Init()
     {
         if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress))) {
-            Locator::getLogger()->critical("Failed to initialize GLAD");
+            Locator::GetLogger()->Critical("Failed to initialize GLAD");
             std::abort();
         }
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        setViewport(0, 0, m_window->getWidth(), m_window->getHeight());
-        setClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        SetViewport(0, 0, m_window->GetWidth(), m_window->GetHeight());
+        SetClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         constexpr std::array<GLfloat, 24> spriteVertexData{
             -0.5f, 0.5f,  0.0f, 1.0f, // top left
             0.5f,  -0.5f, 1.0f, 0.0f, // bottom right
@@ -83,59 +85,59 @@ namespace Engine
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
         m_shaderManager = std::make_unique<ShaderManager>();
-        m_shaderManager->loadShader(m_spriteShaderId, "sprite.vert", "sprite.frag")
-            .use()
-            .setUniform("textureSampler", 0);
-        m_shaderManager->loadShader(m_primitivesShaderId, "primitives.vert", "primitives.frag").use();
-        Locator::getLogger()->info("2D Renderer initialized");
+        m_shaderManager->LoadShader(m_spriteShaderId, "sprite.vert", "sprite.frag")
+            .Use()
+            .SetUniform("textureSampler", 0);
+        m_shaderManager->LoadShader(m_primitivesShaderId, "primitives.vert", "primitives.frag").Use();
+        Locator::GetLogger()->Info("2D Renderer initialized");
     }
 
-    void Renderer2D::setViewport(int x, int y, int width, int height) { glViewport(x, y, width, height); }
+    void Renderer2D::SetViewport(int x, int y, int width, int height) { glViewport(x, y, width, height); }
 
-    void Renderer2D::setViewportSize(int width, int height) { setViewport(0, 0, width, height); }
+    void Renderer2D::SetViewportSize(int width, int height) { SetViewport(0, 0, width, height); }
 
-    void Renderer2D::setClearColor(float red, float green, float blue, float alpha)
+    void Renderer2D::SetClearColor(float red, float green, float blue, float alpha)
     {
         glClearColor(red, green, blue, alpha);
     }
 
-    void Renderer2D::setupCamera(const Camera& camera)
+    void Renderer2D::SetupCamera(const Camera& camera)
     {
-        m_cameraTransformation = camera.getCameraTransformation();
-        m_projectionTransformation = camera.getProjectionTransformation();
+        m_cameraTransformation = camera.GetCameraTransformation();
+        m_projectionTransformation = camera.GetProjectionTransformation();
     }
 
-    void Renderer2D::drawRectangle(const Rect& rect, const glm::vec4& color, const glm::vec3& rotation)
+    void Renderer2D::DrawRectangle(const Rect& rect, const glm::vec4& color, const glm::vec3& rotation)
     {
-        m_shaderManager->getShader(m_primitivesShaderId)
-            .use()
-            .setUniform("model", getModelTransformation(rect, rotation))
-            .setUniform("camera", m_cameraTransformation)
-            .setUniform("projection", m_projectionTransformation)
-            .setUniform("color", color);
+        m_shaderManager->GetShader(m_primitivesShaderId)
+            .Use()
+            .SetUniform("model", GetModelTransformation(rect, rotation))
+            .SetUniform("camera", m_cameraTransformation)
+            .SetUniform("projection", m_projectionTransformation)
+            .SetUniform("color", color);
         glBindVertexArray(m_quadVao);
         glDrawArrays(GL_LINE_LOOP, 0, 4);
         glBindVertexArray(0);
     }
 
-    void Renderer2D::drawSprite(const Rect& spriteGeometry, const glm::vec3& rotation,
+    void Renderer2D::DrawSprite(const Rect& spriteGeometry, const glm::vec3& rotation,
                                 const Texture2D& texture, const Rect& textureArea, const glm::vec3& color)
     {
-        m_shaderManager->getShader(m_spriteShaderId)
-            .use()
-            .setUniform("model", getModelTransformation(spriteGeometry, rotation))
-            .setUniform("camera", m_cameraTransformation)
-            .setUniform("projection", m_projectionTransformation)
-            .setUniform("color", color)
-            .setUniform("textureTransform", getTextureTransformation(texture, textureArea));
+        m_shaderManager->GetShader(m_spriteShaderId)
+            .Use()
+            .SetUniform("model", GetModelTransformation(spriteGeometry, rotation))
+            .SetUniform("camera", m_cameraTransformation)
+            .SetUniform("projection", m_projectionTransformation)
+            .SetUniform("color", color)
+            .SetUniform("textureTransform", GetTextureTransformation(texture, textureArea));
         glActiveTexture(GL_TEXTURE0);
-        texture.bind();
+        texture.Bind();
         glBindVertexArray(m_spriteVao);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
     }
 
-    void Renderer2D::clear() { glClear(GL_COLOR_BUFFER_BIT); }
+    void Renderer2D::Clear() { glClear(GL_COLOR_BUFFER_BIT); }
 
-    void Renderer2D::present() { SDL_GL_SwapWindow(m_window->getWindowHandle()); }
+    void Renderer2D::Present() { SDL_GL_SwapWindow(m_window->GetWindowHandle()); }
 } // namespace Engine

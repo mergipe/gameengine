@@ -1,7 +1,8 @@
-#ifndef INPUTCONFIGLOADER_H
-#define INPUTCONFIGLOADER_H
+#ifndef INPUT_CONFIG_LOADER_H
+#define INPUT_CONFIG_LOADER_H
 
 #include "InputConfig.h"
+
 #include <filesystem>
 
 namespace Engine
@@ -10,7 +11,7 @@ namespace Engine
     {
     public:
         InputConfigLoader() = delete;
-        static InputConfig load(const std::filesystem::path& gameInputConfigFilepath);
+        static InputConfig Load(const std::filesystem::path& gameInputConfigFilepath);
     };
 } // namespace Engine
 
