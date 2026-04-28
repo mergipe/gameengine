@@ -2,16 +2,18 @@ include(FetchContent)
 include(ExternalProject)
 
 set(LUAJIT_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/luajit_install)
+set(LUAJIT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/luajit)
+set(LUAJIT_LIB_PATH ${LUAJIT_INSTALL_DIR}/lib/libluajit-5.1.a)
+set(LUAJIT_INC_DIR ${LUAJIT_SOURCE_DIR}/src)
 ExternalProject_Add(luajit_build
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/luajit
+        SOURCE_DIR ${LUAJIT_SOURCE_DIR}
         CONFIGURE_COMMAND ""
         BUILD_COMMAND make
         INSTALL_COMMAND make install PREFIX=${LUAJIT_INSTALL_DIR}
         BUILD_IN_SOURCE 1
+        BUILD_BYPRODUCTS ${LUAJIT_LIB_PATH}
 )
 add_library(luajit STATIC IMPORTED GLOBAL)
-set(LUAJIT_LIB_PATH "${LUAJIT_INSTALL_DIR}/lib/libluajit-5.1.a")
-set(LUAJIT_INC_DIR "${LUAJIT_INSTALL_DIR}/include/luajit-2.1")
 set_target_properties(luajit PROPERTIES
         IMPORTED_LOCATION ${LUAJIT_LIB_PATH}
         INTERFACE_INCLUDE_DIRECTORIES ${LUAJIT_INC_DIR}
