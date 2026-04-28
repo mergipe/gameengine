@@ -1,6 +1,6 @@
 #include "DevGui.h"
 
-#include "game/Game.h"
+#include "../Engine.h"
 
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>

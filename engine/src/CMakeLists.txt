@@ -1,5 +1,6 @@
 add_executable(${PROJECT_NAME}
         Main.cpp
+        Engine.cpp
         core/Config.cpp
         core/Filesystem.cpp
         core/IO.cpp
@@ -13,12 +14,6 @@ add_executable(${PROJECT_NAME}
         input/InputConfigLoader.cpp
         input/InputHandler.cpp
         input/InputScope.cpp
-        game/Entity.cpp
-        game/Game.cpp
-        game/Scene.cpp
-        game/SceneLoader.cpp
-        game/ScriptInstance.cpp
-        game/Systems.cpp
         physics/2d/Body2D.cpp
         physics/2d/PhysicsEngine2D.cpp
         renderer/Camera.cpp
@@ -27,7 +22,13 @@ add_executable(${PROJECT_NAME}
         renderer/ShaderManager.cpp
         resources/Font.cpp
         resources/ResourceManager.cpp
-        resources/Texture2D.cpp)
+        resources/Texture2D.cpp
+        scene/Entity.cpp
+        scene/Scene.cpp
+        scene/SceneLoader.cpp
+        scene/ScriptInstance.cpp
+        scene/Systems.cpp
+)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 set_target_properties(${PROJECT_NAME} PROPERTIES
         CXX_EXTENSIONS OFF

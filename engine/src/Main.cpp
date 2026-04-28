@@ -1,17 +1,8 @@
-#include "game/Game.h"
-
-#include <iostream>
+#include "Engine.h"
 
 int main(int, char*[])
 {
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
-        std::cerr << "Failed to initialize SDL: " << SDL_GetError() << '\n';
-        std::abort();
-    }
-    Engine::Game& game{Engine::Game::Instance()};
-    game.Init();
-    game.Run();
-    game.ShutDown();
-    SDL_Quit();
+    Engine::Engine& engine{Engine::Engine::Instance()};
+    engine.Start();
     return 0;
 }

@@ -1,10 +1,10 @@
 #include "SceneLoader.h"
 
+#include "../Engine.h"
 #include "Components.h"
 #include "core/IO.h"
 #include "core/Locator.h"
 #include "core/StringId.h"
-#include "game/Game.h"
 #include "input/InputCallback.h"
 #include "physics/2d/Body2D.h"
 #include "renderer/Camera.h"
@@ -93,7 +93,7 @@ namespace Engine
 
     MapData LoadTilemap(const YAML::Node& tilemapNode, entt::registry& registry)
     {
-        const auto& windowConfig{Game::Instance().GetWindowConfig()};
+        const auto& windowConfig{Engine::Instance().GetWindowConfig()};
         if (!tilemapNode.IsDefined()) {
             return {static_cast<float>(windowConfig.width), static_cast<float>(windowConfig.height)};
         }

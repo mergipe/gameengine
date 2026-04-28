@@ -1,39 +1,36 @@
-#include "Game.h"
+#include "Engine.h"
 
-#include "SceneLoader.h"
 #include "core/Config.h"
 #include "core/Filesystem.h"
 #include "core/Locator.h"
 #include "core/Logger.h"
 #include "core/Timer.h"
 #include "renderer/Renderer2D.h"
+#include "scene/SceneLoader.h"
 
 #include <SDL3/SDL.h>
 #include <filesystem>
 
 namespace Engine
 {
-    Game& Game::Instance()
+    Engine& Engine::Instance()
     {
-        static Game instance{};
+        static Engine instance{};
         return instance;
     }
 
-    void Game::Init()
+    void Engine::Start()
+    {
+        Init();
+        Run();
+        ShutDown();
+    }
+
+    void Engine::Init()
     {
         m_logger = std::make_unique<Logger>(Filesystem::GetLogsPath() / "log.txt");
         Locator::Provide(m_logger.get());
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-#ifdef __APPLE__
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-#else
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-#endif
-        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+        InitSDL();
         Config::VideoConfig videoConfig{Config::ParseVideoConfig()};
         m_window = std::make_unique<Window>(videoConfig.windowConfig);
         m_window->Init();
@@ -52,12 +49,31 @@ namespace Engine
         } else {
             m_devGui = std::make_unique<NullDevGui>();
         }
-        Locator::GetLogger()->Info("Game initialized");
+        Locator::GetLogger()->Info("Engine initialized");
     }
 
-    void Game::Run()
+    void Engine::InitSDL()
     {
-        Locator::GetLogger()->Info("Game started to run");
+        if (!SDL_Init(SDL_INIT_VIDEO)) {
+            Locator::GetLogger()->Critical("Failed to initialize SDL: {}", SDL_GetError());
+            std::abort();
+        }
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+#ifdef __APPLE__
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+#else
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+#endif
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+    }
+
+    void Engine::Run()
+    {
+        Locator::GetLogger()->Info("Engine started running");
         m_isRunning = true;
         m_currentScene =
             SceneLoader::Load(m_resourceManager->GetResourcePath("scenes") / "scene1.yaml", *m_inputHandler,
@@ -78,7 +94,7 @@ namespace Engine
         m_currentScene.reset();
     }
 
-    void Game::ShutDown()
+    void Engine::ShutDown()
     {
         m_devGui.reset();
         m_eventBus.reset();
@@ -86,10 +102,11 @@ namespace Engine
         m_inputHandler.reset();
         m_renderer.reset();
         m_window.reset();
-        Locator::GetLogger()->Info("Game resources destroyed");
+        SDL_Quit();
+        Locator::GetLogger()->Info("Engine shut down");
     }
 
-    void Game::ProcessEvents()
+    void Engine::ProcessEvents()
     {
         SDL_Event event{};
         while (SDL_PollEvent(&event)) {
@@ -119,9 +136,9 @@ namespace Engine
         m_inputHandler->ResolveInput();
     }
 
-    void Game::Update() { m_currentScene->Update(s_timeStep); }
+    void Engine::Update() { m_currentScene->Update(s_timeStep); }
 
-    void Game::Render(float frameExtrapolationTimeStep)
+    void Engine::Render(float frameExtrapolationTimeStep)
     {
         m_renderer->Clear();
         m_currentScene->Render(frameExtrapolationTimeStep);

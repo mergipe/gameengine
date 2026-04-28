@@ -1,10 +1,10 @@
 #include "InputHandler.h"
 
+#include "../Engine.h"
 #include "InputConfigLoader.h"
 #include "InputValue.h"
 #include "core/Assert.h"
 #include "core/Locator.h"
-#include "game/Game.h"
 
 #include <SDL3/SDL.h>
 #include <functional>
@@ -17,14 +17,14 @@ namespace Engine
         m_inputConfig = InputConfigLoader::Load(inputConfigFilepath);
         StringId emptyScopeId{"empty"};
         m_inputConfig.inputScopes.insert(std::make_pair(emptyScopeId, InputScope{emptyScopeId}));
-        if (Game::Instance().HasDevMode()) {
+        if (Engine::Instance().HasDevMode()) {
             m_inputConfig.inputScopes.insert(std::make_pair(m_devGuiScopeId, InputScope{m_devGuiScopeId}));
         }
         m_currentScope = &m_inputConfig.inputScopes.at(emptyScopeId);
         m_previousScope = m_currentScope;
         m_engineCallbackMapping.SetCommandCallback(
             StringId{"toggle_dev_mode"},
-            InputCallback{[](const InputValue&) { Game::Instance().ToggleDevMode(); }});
+            InputCallback{[](const InputValue&) { Engine::Instance().ToggleDevMode(); }});
         // for now only keyboard support
         if (SDL_HasKeyboard()) {
             // the keyboard id will always be 0 because of x11 and wayland differences

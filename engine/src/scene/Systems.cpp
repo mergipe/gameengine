@@ -1,8 +1,8 @@
 #include "Systems.h"
 
+#include "../Engine.h"
 #include "Components.h"
 #include "Entity.h"
-#include "Game.h"
 #include "ScriptingApi.h"
 #include "core/Locator.h"
 #include "core/Timer.h"

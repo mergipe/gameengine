@@ -1,6 +1,6 @@
 #include "Scene.h"
 
-#include "Game.h"
+#include "../Engine.h"
 #include "Systems.h"
 #include "core/Locator.h"
 
@@ -20,7 +20,7 @@ namespace Engine
         , m_playerInputSystem{std::make_unique<PlayerInputSystem>(m_registry.get())}
         , m_sceneData{sceneData}
     {
-        if (Game::Instance().HasDevMode()) {
+        if (Engine::Instance().HasDevMode()) {
             m_debugRenderingSystem = std::make_unique<DebugRenderingSystem>(m_registry.get());
         }
         m_scriptingSystem->Start();
@@ -49,7 +49,7 @@ namespace Engine
     void Scene::Render(float frameExtrapolationTimeStep)
     {
         m_renderingSystem->Update(*m_renderer, frameExtrapolationTimeStep);
-        if (Game::Instance().IsDevModeEnabled()) {
+        if (Engine::Instance().IsDevModeEnabled()) {
             m_debugRenderingSystem->Update(*m_renderer, frameExtrapolationTimeStep);
         }
     }

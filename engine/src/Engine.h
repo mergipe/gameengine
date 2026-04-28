@@ -1,32 +1,30 @@
-#ifndef GAME_H
-#define GAME_H
+#ifndef ENGINE_H
+#define ENGINE_H
 
 #include "core/Logger.h"
 #include "core/Window.h"
 #include "debug/DevGui.h"
 #include "events/EventBus.h"
-#include "game/Scene.h"
 #include "input/InputHandler.h"
 #include "renderer/Renderer2D.h"
 #include "resources/ResourceManager.h"
+#include "scene/Scene.h"
 
 #include <memory>
 
 namespace Engine
 {
-    class Game final
+    class Engine final
     {
     public:
-        static Game& Instance();
-        Game() = default;
-        Game(const Game&) = delete;
-        Game(Game&&) = delete;
-        Game& operator=(const Game&) = delete;
-        Game& operator=(Game&&) = delete;
-        ~Game() = default;
-        void Init();
-        void Run();
-        void ShutDown();
+        static Engine& Instance();
+        Engine() = default;
+        Engine(const Engine&) = delete;
+        Engine(Engine&&) = delete;
+        Engine& operator=(const Engine&) = delete;
+        Engine& operator=(Engine&&) = delete;
+        ~Engine() = default;
+        void Start();
         const Config::WindowConfig& GetWindowConfig() const { return m_window->GetConfig(); }
         bool HasDevMode() const { return m_hasDevMode; }
         bool IsDevModeEnabled() const { return m_isDevModeEnabled; }
@@ -34,6 +32,10 @@ namespace Engine
         static constexpr SDL_Scancode s_toggleDevModeKey{SDL_SCANCODE_F12};
 
     private:
+        void Init();
+        void InitSDL();
+        void Run();
+        void ShutDown();
         void ProcessEvents();
         void Update();
         void Render(float frameExtrapolationTimeStep);
