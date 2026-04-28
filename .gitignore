@@ -1,5 +1,4 @@
-/build*/
-logs/
-.vs/
-.cache
-imgui.ini
+engine/build/
+engine/logs/
+engine/resources
+engine/imgui.ini
