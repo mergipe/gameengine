@@ -1,7 +1,5 @@
 ## TODO
 
-- Separate sample game code from engine code
-
 ### Input system
 
 - Implement on the fly remapping
