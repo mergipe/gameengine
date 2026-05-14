@@ -2,7 +2,7 @@
 #define SHADER_MANAGER_H
 
 #include "Shader.h"
-#include "core/Filesystem.h"
+#include "core/FileSystem.h"
 #include "core/StringId.h"
 
 #include <filesystem>
@@ -28,8 +28,9 @@ namespace Engine
         const Shader& GetShader(const StringId& shaderId) const;
 
     private:
+        static std::string ReadShaderFile(const std::filesystem::path& relativePath);
+        static inline const std::filesystem::path s_shadersPath{FileSystem::GetAbsolutePath("shaders")};
         std::unordered_map<StringId, std::unique_ptr<Shader>> m_shaders{};
-        const std::filesystem::path m_shadersPath{Filesystem::GetShadersPath()};
     };
 } // namespace Engine
 

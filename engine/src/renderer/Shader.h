@@ -1,6 +1,8 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+#include "core/StringId.h"
+
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <string_view>
@@ -16,7 +18,7 @@ namespace Engine
         Shader& operator=(const Shader&) = delete;
         Shader& operator=(Shader&&) = delete;
         ~Shader();
-        GLuint GetId() const { return m_id; }
+        [[nodiscard]] GLuint GetId() const { return m_id; }
         void Compile(const char* vertexShaderCode, const char* fragmentShaderCode,
                      const char* geometryShaderCode = nullptr);
         const Shader& Use() const;
@@ -28,7 +30,7 @@ namespace Engine
         const Shader& SetUniform(std::string_view name, const glm::vec4& vector) const;
 
     private:
-        static void CheckCompileErrors(GLuint id, std::string_view type);
+        static void CheckCompileErrors(GLuint id, const StringId& type);
         static constexpr GLsizei s_infoLogBufferMaxLength{1024};
         GLuint m_id{};
     };

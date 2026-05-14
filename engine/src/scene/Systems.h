@@ -1,14 +1,13 @@
 #ifndef SYSTEMS_H
 #define SYSTEMS_H
 
+#include "Entity.h"
 #include "ScriptClass.h"
 #include "ScriptInstance.h"
+#include "core/FileSystem.h"
 #include "events/EventBus.h"
-#include "input/InputHandler.h"
-#include "physics/2d/PhysicsEngine2D.h"
-#include "renderer/Renderer2D.h"
+#include "input/InputManager.h"
 
-#include <entt/entity/registry.hpp>
 #include <filesystem>
 #include <functional>
 #include <memory>
@@ -47,9 +46,6 @@ namespace Engine
         }
         void Start();
         void Update(float timeStep);
-
-    private:
-        PhysicsEngine2D m_physicsEngine2D{}; // NOTE: maybe put this in another place
     };
 
     class RenderingSystem final : public System
@@ -59,10 +55,10 @@ namespace Engine
             : System{registry}
         {
         }
-        void Update(Renderer2D& renderer, float frameExtrapolationTimeStep);
+        void Update(float frameExtrapolationTimeStep);
     };
 
-    class DebugRenderingSystem final : public System // TODO: implement this
+    class DebugRenderingSystem final : public System
     {
     public:
         explicit DebugRenderingSystem(entt::registry* registry)
@@ -70,7 +66,7 @@ namespace Engine
         {
         }
         void RegisterRenderFunction(const std::function<void()>& function);
-        void Update(Renderer2D& renderer, float frameExtrapolationTimeStep);
+        void Update(float frameExtrapolationTimeStep);
 
     private:
         std::vector<std::function<void()>> m_renderFunctions{};
@@ -93,12 +89,13 @@ namespace Engine
             : System{registry}
         {
         }
-        void Start(InputHandler& inputHandler);
+        void Start();
         void SubscribeToEvents(EventBus& eventBus);
         void OnInputCommand(const InputEvent& event) const;
     };
 
-    class ScriptingSystem final : public System
+    class ScriptingSystem final
+        : public System // TODO: move this to a separate file (maybe change name to ScriptEngine)
     {
     public:
         explicit ScriptingSystem(entt::registry* registry);
@@ -107,18 +104,22 @@ namespace Engine
         ScriptingSystem& operator=(const ScriptingSystem&) = delete;
         ScriptingSystem& operator=(ScriptingSystem&&) = delete;
         ~ScriptingSystem() override;
-        std::optional<ScriptInstance> CreateScriptInstance(const std::filesystem::path& filepath,
+        std::optional<ScriptInstance> CreateScriptInstance(const std::filesystem::path& filePath,
                                                            std::string_view className, entt::entity entity);
         void Start();
         void Update(float timeStep);
+        void ShutDown();
 
     private:
-        std::unique_ptr<ScriptClass> LoadScriptClass(const std::filesystem::path& filepath,
+        static inline const std::filesystem::path s_scriptingLibPath{FileSystem::GetAbsolutePath("lua")};
+        std::unique_ptr<ScriptClass> LoadScriptClass(const std::filesystem::path& filePath,
                                                      std::string_view className);
         void CreateScriptBindings();
         void StoreScriptClass(const StringId& scriptId, std::unique_ptr<ScriptClass> scriptClass);
+        sol::object GetComponent(Entity entity, const sol::table& type);
         ScriptClass* GetScriptClass(const StringId& scriptId) const;
         std::unordered_map<StringId, std::unique_ptr<ScriptClass>> m_scriptClasses{};
+        std::unordered_map<const void*, std::function<sol::object(Entity)>> m_componentTypes{};
         sol::state m_lua{};
     };
 } // namespace Engine

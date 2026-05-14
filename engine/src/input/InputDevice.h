@@ -1,9 +1,10 @@
 #ifndef INPUT_DEVICE_H
 #define INPUT_DEVICE_H
 
-#include <cstdint>
+#include "core/StringId.h"
+#include "core/Types.h"
+
 #include <optional>
-#include <string_view>
 
 namespace Engine
 {
@@ -12,7 +13,7 @@ namespace Engine
         struct Id {
             bool operator==(const Id& other) const { return type == other.type && id == other.id; }
             Type type;
-            std::uint32_t id;
+            U32 id;
         };
         bool operator==(const InputDevice& other) const { return id == other.id; }
 
@@ -20,10 +21,10 @@ namespace Engine
         bool inUse{false};
     };
 
-    constexpr std::optional<InputDevice::Type> ParseInputDeviceType(std::string_view inputDeviceTypeStr)
+    constexpr std::optional<InputDevice::Type> ParseInputDeviceType(const StringId& deviceTypeName)
     {
         using enum InputDevice::Type;
-        if (inputDeviceTypeStr == "keyboard")
+        if (deviceTypeName == SID("keyboard"))
             return keyboard;
         return {};
     }

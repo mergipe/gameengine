@@ -81,6 +81,3 @@ target_include_directories(sol SYSTEM INTERFACE sol/include)
 
 add_library(entt INTERFACE)
 target_include_directories(entt SYSTEM INTERFACE entt/src)
-
-add_library(wyhash INTERFACE)
-target_include_directories(wyhash SYSTEM INTERFACE wyhash/include)

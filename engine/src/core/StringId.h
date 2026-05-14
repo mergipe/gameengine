@@ -2,29 +2,18 @@
 #define STRING_ID_H
 
 #include "Hash.h"
+#include "Types.h"
 
-#include <cstdint>
+#include <iostream>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 
 namespace Engine
 {
-    using StringIdType = std::uint32_t;
+    using StringIdType = U32;
 
-    /**
-     * Stores interned strings mapped by its hash values.
-     */
-    class StringIdTable
-    {
-    public:
-        StringIdTable() = delete;
-        static StringIdType InternString(std::string_view sv);
-        static std::string_view GetString(StringIdType id);
-
-    private:
-        static inline std::unordered_map<StringIdType, std::string> s_table{};
-    };
+    constexpr U32 operator""_sid(const char* str, std::size_t) { return Hash::Hash32(str); }
 
     /**
      * Wraps a view to an interned string and its hashed value.
@@ -32,20 +21,27 @@ namespace Engine
     class StringId
     {
     public:
+        static StringId Intern(std::string_view str);
         StringId() = default;
-        explicit StringId(std::string_view sv)
-            : m_sid{StringIdTable::InternString(sv)}
-        {
-            m_str = StringIdTable::GetString(m_sid);
-        }
+        constexpr explicit StringId(const char* str);
         bool operator==(const StringId& other) const { return m_sid == other.m_sid; }
-        std::string_view GetString() const { return m_str; }
-        StringIdType GetSid() const { return m_sid; }
+        [[nodiscard]] std::string_view GetString() const { return m_str; }
+        [[nodiscard]] StringIdType GetSid() const { return m_sid; }
 
     private:
+        static inline std::unordered_map<StringIdType, std::string> s_stringIdTable{};
+        explicit StringId(std::string_view str, StringIdType sid);
         std::string_view m_str{};
         StringIdType m_sid{};
     };
+
+    constexpr StringId::StringId(const char* str)
+        : m_str{str}, m_sid{Hash::Hash32(str)}
+    {
+    }
+
+#define SID(str)                                                                                             \
+    StringId { str }
 } // namespace Engine
 
 template <>

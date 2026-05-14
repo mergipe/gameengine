@@ -1,9 +1,8 @@
 add_executable(${PROJECT_NAME}
         Main.cpp
         Engine.cpp
-        core/Config.cpp
-        core/Filesystem.cpp
-        core/IO.cpp
+        core/ConfigManager.cpp
+        core/FileSystem.cpp
         core/Logger.cpp
         core/StringId.cpp
         core/Timer.cpp
@@ -12,20 +11,21 @@ add_executable(${PROJECT_NAME}
         input/InputCallback.cpp
         input/InputCommandMapping.cpp
         input/InputConfigLoader.cpp
-        input/InputHandler.cpp
+        input/InputManager.cpp
         input/InputScope.cpp
-        physics/2d/Body2D.cpp
-        physics/2d/PhysicsEngine2D.cpp
+        physics/PhysicsEngine2D.cpp
         renderer/Camera.cpp
-        renderer/Renderer2D.cpp
+        renderer/RenderManager.cpp
         renderer/Shader.cpp
         renderer/ShaderManager.cpp
+        resources/EntityLoader.cpp
         resources/Font.cpp
         resources/ResourceManager.cpp
         resources/Texture2D.cpp
         scene/Entity.cpp
         scene/Scene.cpp
-        scene/SceneLoader.cpp
+        scene/SceneManager.cpp
+        scene/ScriptingApi.cpp
         scene/ScriptInstance.cpp
         scene/Systems.cpp
 )
@@ -36,7 +36,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 add_dependencies(${PROJECT_NAME} luajit_build)
 target_link_sdl(${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME} PRIVATE box2d entt glad glm imgui luajit sol spdlog stb_image wyhash yaml-cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE box2d entt glad glm imgui luajit sol spdlog stb_image yaml-cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${OPENGL_LIBRARIES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE SOL_ALL_SAFETIES_ON=1 SOL_LUAJIT=1 ENGINE_BASE_DIR="${CMAKE_SOURCE_DIR}")
 

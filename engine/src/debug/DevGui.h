@@ -8,6 +8,8 @@ namespace Engine
     class DevGui
     {
     public:
+        virtual void Init() = 0;
+        virtual void ShutDown() = 0;
         virtual ~DevGui() = default;
         virtual void ProcessEvent(const SDL_Event& event) = 0;
         virtual bool WantCaptureKeyboard() = 0;
@@ -20,6 +22,8 @@ namespace Engine
     class NullDevGui final : public DevGui
     {
     public:
+        void Init() override {}
+        void ShutDown() override {}
         void ProcessEvent([[maybe_unused]] const SDL_Event& event) override {}
         bool WantCaptureKeyboard() override { return false; }
         bool WantCaptureMouse() override { return false; }
@@ -37,12 +41,9 @@ namespace Engine
     class DevGuiImpl final : public DevGui
     {
     public:
-        explicit DevGuiImpl(const Window& window);
-        DevGuiImpl(const DevGuiImpl&) = delete;
-        DevGuiImpl(DevGuiImpl&&) = delete;
-        DevGuiImpl& operator=(const DevGuiImpl&) = delete;
-        DevGuiImpl& operator=(DevGuiImpl&&) = delete;
-        ~DevGuiImpl() override;
+        explicit DevGuiImpl(const Window* window);
+        void Init() override;
+        void ShutDown() override;
         void ProcessEvent(const SDL_Event& event) override;
         bool WantCaptureKeyboard() override;
         bool WantCaptureMouse() override;
@@ -51,6 +52,7 @@ namespace Engine
         void Show() override;
 
     private:
+        const Window* m_window{};
         DevGuiData m_data{};
     };
 } // namespace Engine

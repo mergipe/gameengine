@@ -1,6 +1,7 @@
 #include "DevGui.h"
 
-#include "../Engine.h"
+#include "Engine.h"
+#include "core/Locator.h"
 
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
@@ -10,8 +11,12 @@ namespace Engine
 {
     void ShowMetricsOverlay(bool* show);
 
-    DevGuiImpl::DevGuiImpl(const Window& window)
-        : DevGui{}
+    DevGuiImpl::DevGuiImpl(const Window* window)
+        : DevGui{}, m_window{window}
+    {
+    }
+
+    void DevGuiImpl::Init()
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -27,18 +32,20 @@ namespace Engine
             style.WindowRounding = 0.0f;
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
-        float uiScale{window.GetDisplayScale()};
+        float uiScale{m_window->GetDisplayScale()};
         style.FontScaleDpi = uiScale;
         style.ScaleAllSizes(SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay()));
-        ImGui_ImplSDL3_InitForOpenGL(window.GetWindowHandle(), window.GetGLContext());
+        ImGui_ImplSDL3_InitForOpenGL(m_window->GetWindowHandle(), m_window->GetGLContext());
         ImGui_ImplOpenGL3_Init("#version 330 core");
+        Locator::GetLogger()->Info("Dev gui initialized");
     }
 
-    DevGuiImpl::~DevGuiImpl()
+    void DevGuiImpl::ShutDown()
     {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplSDL3_Shutdown();
         ImGui::DestroyContext();
+        Locator::GetLogger()->Info("Dev gui shut down");
     }
 
     void DevGuiImpl::ProcessEvent(const SDL_Event& event) { ImGui_ImplSDL3_ProcessEvent(&event); }

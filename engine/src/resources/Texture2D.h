@@ -1,9 +1,12 @@
 #ifndef TEXTURE_2D_H
 #define TEXTURE_2D_H
 
+#include "core/StringId.h"
+#include "core/Yaml.h"
+#include "renderer/Shapes.h"
+
 #include <glad/glad.h>
-#include <optional>
-#include <string_view>
+#include <unordered_map>
 
 namespace Engine
 {
@@ -14,29 +17,15 @@ namespace Engine
         clampToEdge = GL_CLAMP_TO_EDGE
     };
 
-    constexpr std::optional<TextureFiltering> ParseTextureFiltering(std::string_view filteringStr)
-    {
-        using enum TextureFiltering;
-        if (filteringStr == "nearest")
-            return nearest;
-        if (filteringStr == "linear")
-            return linear;
-        return {};
-    }
-
-    constexpr std::optional<TextureWrapping> ParseTextureWrapping(std::string_view wrappingStr)
-    {
-        using enum TextureWrapping;
-        if (wrappingStr == "repeat")
-            return repeat;
-        if (wrappingStr == "mirroredRepeat")
-            return mirroredRepeat;
-        if (wrappingStr == "clampToEdge")
-            return clampToEdge;
-        return {};
-    }
+    struct Sprite {
+        static Sprite ParseFromYAML(const YAML::Node& rootNode);
+        StringId id{};
+        Rect textureArea{};
+    };
 
     struct TextureConfig {
+        static TextureConfig ParseFromYAML(const YAML::Node& rootNode);
+        std::unordered_map<StringId, Sprite> sprites{};
         TextureFiltering minFilter{TextureFiltering::linear};
         TextureFiltering magFilter{TextureFiltering::linear};
         TextureWrapping wrapX{TextureWrapping::repeat};
@@ -56,10 +45,12 @@ namespace Engine
         ~Texture2D();
         GLsizei GetWidth() const { return m_width; }
         GLsizei GetHeight() const { return m_height; }
+        std::optional<Sprite> GetSprite(const StringId& spriteId) const;
         void Create(const unsigned char* data, GLsizei width, GLsizei height, GLint imageFormat);
         void Bind() const;
 
     private:
+        std::unordered_map<StringId, Sprite> m_sprites{};
         GLuint m_id{};
         GLsizei m_width{};
         GLsizei m_height{};

@@ -7,22 +7,18 @@
 
 namespace Engine
 {
-    StringIdType StringIdTable::InternString(std::string_view sv)
+    StringId StringId::Intern(std::string_view str)
     {
-        const StringIdType sid{Hash::Hash32(sv.data(), sv.size())};
-        if (!s_table.contains(sid)) {
-            s_table[sid] = std::string{sv};
-            Locator::GetLogger()->Debug("[StringId] Interned '{}' as '{}'", sv, sid);
+        const StringIdType sid{Hash::Hash32(str.data())};
+        if (!s_stringIdTable.contains(sid)) {
+            s_stringIdTable[sid] = std::string{str};
+            Locator::GetLogger()->Debug("[StringId] Interned '{}' as '{}'", str, sid);
         }
-        return sid;
+        return StringId{s_stringIdTable[sid], sid};
     }
 
-    std::string_view StringIdTable::GetString(StringIdType id)
+    StringId::StringId(std::string_view str, StringIdType sid)
+        : m_str{str}, m_sid{sid}
     {
-        const auto it{s_table.find(id)};
-        if (it != s_table.end()) {
-            return it->second;
-        }
-        return {};
     }
 } // namespace Engine

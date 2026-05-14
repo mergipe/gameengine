@@ -2,14 +2,15 @@
 
 #include "InputBinding.h"
 #include "InputCommand.h"
-#include "core/Filesystem.h"
+#include "core/ConfigManager.h"
+#include "core/Locator.h"
+#include "core/Yaml.h"
 
 #include <SDL3/SDL.h>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <yaml-cpp/yaml.h>
 
 namespace Engine
 {
@@ -17,10 +18,11 @@ namespace Engine
     {
         std::vector<InputBinding> inputBindings{};
         if (bindingsNode.IsDefined()) {
-            for (YAML::const_iterator it{bindingsNode.begin()}; it != bindingsNode.end(); ++it) {
+            for (auto it{bindingsNode.begin()}; it != bindingsNode.end(); ++it) {
                 const YAML::Node& bindingNode{*it};
                 const std::string deviceTypeString{bindingNode["device"].as<std::string>()};
-                const InputDevice::Type deviceType{ParseInputDeviceType(deviceTypeString).value()};
+                const StringId typeSid{StringId::Intern(deviceTypeString)};
+                const InputDevice::Type deviceType{ParseInputDeviceType(typeSid).value()};
                 const std::string controlName{bindingNode["control"].as<std::string>()};
                 int controlCode{};
                 switch (deviceType) {
@@ -38,13 +40,14 @@ namespace Engine
     {
         std::vector<InputCommand> inputCommands{};
         if (commandsNode.IsDefined()) {
-            for (YAML::const_iterator it{commandsNode.begin()}; it != commandsNode.end(); ++it) {
+            for (auto it{commandsNode.begin()}; it != commandsNode.end(); ++it) {
                 const YAML::Node commandNode{*it};
                 const std::string name{commandNode["name"].as<std::string>()};
                 const std::string typeString{commandNode["type"].as<std::string>()};
-                const InputCommand::Type type{ParseInputCommandType(typeString).value()};
-                const std::vector<InputBinding> bindings{ParseInputBindings(commandNode["bindings"])};
-                inputCommands.emplace_back(StringId{name}, type, bindings, areEngineCommands);
+                const StringId typeSid{StringId::Intern(typeString)};
+                const InputCommand::Type type{ParseInputCommandType(typeSid).value()};
+                const std::vector bindings{ParseInputBindings(commandNode["bindings"])};
+                inputCommands.emplace_back(StringId::Intern(name), type, bindings, areEngineCommands);
             }
         }
         return inputCommands;
@@ -54,25 +57,32 @@ namespace Engine
     {
         std::unordered_map<StringId, InputScope> inputScopes{};
         if (scopesNode.IsDefined()) {
-            for (YAML::const_iterator it{scopesNode.begin()}; it != scopesNode.end(); ++it) {
+            for (auto it{scopesNode.begin()}; it != scopesNode.end(); ++it) {
                 const YAML::Node scopeNode{*it};
                 const std::string name{scopeNode["name"].as<std::string>()};
-                const std::vector<InputCommand> commands{ParseInputCommands(scopeNode["commands"], false)};
-                const StringId scopeId{name};
+                const std::vector commands{ParseInputCommands(scopeNode["commands"], false)};
+                const StringId scopeId{StringId::Intern(name)};
                 inputScopes.insert(std::make_pair(scopeId, InputScope{scopeId, commands}));
             }
         }
         return inputScopes;
     }
 
-    InputConfig InputConfigLoader::Load(const std::filesystem::path& gameInputConfigFilepath)
+    InputConfig InputConfigLoader::Load(const std::filesystem::path& gameInputConfigFilePath)
     {
-        const auto engineInputConfigFilepath{Filesystem::GetConfigPath() / "engine_input.yaml"};
-        const YAML::Node engineInputRootNode{YAML::LoadFile(engineInputConfigFilepath)};
-        const auto engineInputMapping{
-            InputCommandMapping{ParseInputCommands(engineInputRootNode["commands"], true)}};
-        const YAML::Node gameInputRootNode{YAML::LoadFile(gameInputConfigFilepath)};
-        const auto inputScopes{ParseInputScopes(gameInputRootNode["scopes"])};
-        return InputConfig{engineInputMapping, inputScopes};
+        // TODO: think of how to improve this InputConfig
+        if (!FileSystem::IsFile(s_engineInputConfigFilePath)) {
+            Locator::GetLogger()->Error("Engine input config file not found!");
+            std::abort();
+        }
+        InputConfig inputConfig{};
+        const YAML::Node engineInputRootNode{YAML::LoadFile(s_engineInputConfigFilePath)};
+        inputConfig.engineInputMapping =
+            InputCommandMapping{ParseInputCommands(engineInputRootNode["commands"], true)};
+        if (FileSystem::IsFile(gameInputConfigFilePath)) {
+            const YAML::Node gameInputRootNode{YAML::LoadFile(gameInputConfigFilePath)};
+            inputConfig.inputScopes = ParseInputScopes(gameInputRootNode["scopes"]);
+        }
+        return inputConfig;
     }
 } // namespace Engine

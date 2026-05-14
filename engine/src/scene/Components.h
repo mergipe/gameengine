@@ -4,98 +4,88 @@
 #include "ScriptInstance.h"
 #include "core/Math.h"
 #include "core/StringId.h"
-#include "core/Timer.h"
 #include "input/InputCallback.h"
 #include "input/InputDevice.h"
-#include "physics/2d/Body2D.h"
+#include "physics/Physics2DTypes.h"
 #include "renderer/Camera.h"
-#include "renderer/Shapes.h"
 
-#include <glm/glm.hpp>
-#include <memory>
 #include <vector>
 
 namespace Engine
 {
     struct IdComponent final {
-        StringId sid{};
+        StringId value{};
     };
 
     struct TagComponent final {
-        StringId name{};
+        StringId value{};
     };
 
     struct TransformComponent final {
-        glm::mat4 GetTransformationMatrix() const
-        {
-            return Math::GetTransformationMatrix(position, rotation, scale);
-        }
-        glm::vec3 GetRight() const
-        {
-            return Math::GetRotationMatrix(rotation) * glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
-        }
-        glm::vec3 GetUp() const
-        {
-            return Math::GetRotationMatrix(rotation) * glm::vec4{0.0f, 1.0f, 0.0f, 1.0f};
-        }
-        glm::vec3 GetForward() const
-        {
-            return Math::GetRotationMatrix(rotation) * glm::vec4{0.0f, 0.0f, 1.0f, 1.0f};
-        }
-
         glm::vec3 position{0.0f};
         glm::vec3 scale{1.0f};
         glm::vec3 rotation{0.0f};
     };
 
-    struct RigidBody2DComponent final {
-        BodyData2D bodyData{};
-        Body2D body{};
-    };
-
     struct SpriteComponent final {
         StringId textureId{};
-        Rect textureArea{};
-        glm::vec3 color{1.0f};
+        StringId spriteId{};
+        glm::vec3 color{1.0f}; // TODO: change to 0-255
         int zIndex{0};
     };
 
     struct SpriteAnimationComponent final {
-        explicit SpriteAnimationComponent(int framesCount = 1, int framesPerSecond = 1,
-                                          bool shouldLoop = true)
-            : framesCount{framesCount}, framesPerSecond{framesPerSecond}, shouldLoop{shouldLoop}
-        {
-        }
-        Timer::Ticks startTime{Timer::GetTicks()};
-        int currentFrame{0};
-        int framesCount{};
-        int framesPerSecond{};
-        bool shouldLoop{};
+    };
+
+    struct RigidBody2DComponent final {
+        Body2DData bodyData{};
+    };
+
+    struct RigidBody2DRuntimeComponent final {
+        b2BodyId bodyId{};
     };
 
     struct BoxCollider2DComponent final {
-        ShapeData2D shapeData{};
-        float width{};
-        float height{};
+        Shape2DData shapeData{};
+        float width{1.0f};
+        float height{1.0f};
     };
 
     struct CircleCollider2DComponent final {
-        ShapeData2D shapeData{};
-        float radius{};
+        Shape2DData shapeData{};
+        float radius{1.0f};
     };
 
-    struct PlayerInputComponent final {
-        InputCallbackMapping callbackMapping{};
-        StringId defaultInputScope{};
-        InputDevice::Id inputDeviceId{};
+    struct ScriptDef final {
+        std::string filePath{};
+        std::string className{};
     };
 
     struct ScriptComponent final {
+        std::vector<ScriptDef> scriptDefs{};
+    };
+
+    struct ScriptRuntimeComponent final {
         std::vector<ScriptInstance> scriptInstances{};
     };
 
+    struct InputCallbackDef final {
+        StringId scriptId{};
+        std::string callbackName{};
+    };
+
+    struct PlayerInputComponent final {
+        std::unordered_map<StringId, InputCallbackDef> callbackDefs{};
+        StringId defaultInputScope{};
+    };
+
+    struct PlayerInputRuntimeComponent final {
+        InputCallbackMapping callbackMapping{};
+        InputDevice::Id inputDeviceId{};
+    };
+
     struct CameraComponent final {
-        std::unique_ptr<Camera> camera{};
+        Camera camera{};
     };
 } // namespace Engine
 

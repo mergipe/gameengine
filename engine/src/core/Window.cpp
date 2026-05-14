@@ -6,22 +6,13 @@
 
 namespace Engine
 {
-    Window::Window(const Config::WindowConfig& config)
+    Window::Window(const WindowConfig& config)
         : m_config{config}
     {
         if (m_config.width <= 0 || m_config.height <= 0) {
             m_config.width = 800;
             m_config.height = 600;
         }
-    }
-
-    Window::~Window()
-    {
-        SDL_GL_DestroyContext(m_glContext);
-        m_glContext = nullptr;
-        SDL_DestroyWindow(m_windowHandle);
-        m_windowHandle = nullptr;
-        Locator::GetLogger()->Info("Window destroyed");
     }
 
     void Window::Init()
@@ -53,5 +44,14 @@ namespace Engine
         SDL_GL_MakeCurrent(m_windowHandle, m_glContext);
         m_displayScale = SDL_GetWindowDisplayScale(m_windowHandle);
         Locator::GetLogger()->Info("Window initialized");
+    }
+
+    void Window::Close()
+    {
+        SDL_GL_DestroyContext(m_glContext);
+        m_glContext = nullptr;
+        SDL_DestroyWindow(m_windowHandle);
+        m_windowHandle = nullptr;
+        Locator::GetLogger()->Info("Window closed");
     }
 } // namespace Engine

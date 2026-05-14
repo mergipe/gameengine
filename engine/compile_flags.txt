@@ -16,5 +16,4 @@
 -isystem./thirdparty/sol/include
 -isystem./thirdparty/spdlog/include
 -isystem./thirdparty/stb_image/include
--isystem./thirdparty/wyhash/include
 -isystem./thirdparty/yaml-cpp/include

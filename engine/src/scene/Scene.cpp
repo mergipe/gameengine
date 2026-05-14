@@ -1,39 +1,31 @@
 #include "Scene.h"
 
-#include "../Engine.h"
+#include "Engine.h"
 #include "Systems.h"
 #include "core/Locator.h"
 
-#include <utility>
-
 namespace Engine
 {
-    Scene::Scene(InputHandler* inputHandler, Renderer2D* renderer, std::unique_ptr<entt::registry> registry,
-                 std::unique_ptr<ScriptingSystem> scriptingSystem, const SceneData& sceneData)
-        : m_inputHandler{inputHandler}
-        , m_renderer{renderer}
-        , m_registry{std::move(registry)}
-        , m_scriptingSystem{std::move(scriptingSystem)}
-        , m_physicsSystem{std::make_unique<PhysicsSystem>(m_registry.get())}
-        , m_renderingSystem{std::make_unique<RenderingSystem>(m_registry.get())}
-        , m_animationSystem{std::make_unique<SpriteAnimationSystem>(m_registry.get())}
-        , m_playerInputSystem{std::make_unique<PlayerInputSystem>(m_registry.get())}
-        , m_sceneData{sceneData}
+    Scene::Scene(SceneContext* sceneContext)
+        : m_physicsSystem{std::make_unique<PhysicsSystem>(&sceneContext->registry)}
+        , m_renderingSystem{std::make_unique<RenderingSystem>(&sceneContext->registry)}
+        , m_animationSystem{std::make_unique<SpriteAnimationSystem>(&sceneContext->registry)}
+        , m_playerInputSystem{std::make_unique<PlayerInputSystem>(&sceneContext->registry)}
+        , m_sceneContext{sceneContext}
     {
         if (Engine::Instance().HasDevMode()) {
-            m_debugRenderingSystem = std::make_unique<DebugRenderingSystem>(m_registry.get());
+            m_debugRenderingSystem = std::make_unique<DebugRenderingSystem>(&sceneContext->registry);
         }
-        m_scriptingSystem->Start();
-        m_playerInputSystem->Start(*m_inputHandler);
+        m_sceneContext->scriptingSystem->Start();
+        m_playerInputSystem->Start();
         m_physicsSystem->Start();
     }
 
     Scene::~Scene()
     {
         // the destruction order is important
-        m_registry.reset();
-        m_scriptingSystem.reset();
-        Locator::GetResourceManager()->Clear(); // NOTE: we shouldn't always do this
+        m_sceneContext->scriptingSystem.reset();
+        Locator::GetResourceManager()->Clear(); // TODO: improve resource management between scenes
     }
 
     void Scene::Update(float timeStep)
@@ -43,14 +35,14 @@ namespace Engine
         m_playerInputSystem->SubscribeToEvents(eventBus);
         m_physicsSystem->Update(timeStep);
         m_animationSystem->Update();
-        m_scriptingSystem->Update(timeStep);
+        m_sceneContext->scriptingSystem->Update(timeStep);
     }
 
     void Scene::Render(float frameExtrapolationTimeStep)
     {
-        m_renderingSystem->Update(*m_renderer, frameExtrapolationTimeStep);
+        m_renderingSystem->Update(frameExtrapolationTimeStep);
         if (Engine::Instance().IsDevModeEnabled()) {
-            m_debugRenderingSystem->Update(*m_renderer, frameExtrapolationTimeStep);
+            m_debugRenderingSystem->Update(frameExtrapolationTimeStep);
         }
     }
 } // namespace Engine

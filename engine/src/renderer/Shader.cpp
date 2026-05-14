@@ -14,17 +14,17 @@ namespace Engine
         const GLuint vertexShader{glCreateShader(GL_VERTEX_SHADER)};
         glShaderSource(vertexShader, 1, &vertexShaderCode, nullptr);
         glCompileShader(vertexShader);
-        CheckCompileErrors(vertexShader, "vertex");
+        CheckCompileErrors(vertexShader, SID("vertex"));
         const GLuint fragmentShader{glCreateShader(GL_FRAGMENT_SHADER)};
         glShaderSource(fragmentShader, 1, &fragmentShaderCode, nullptr);
         glCompileShader(fragmentShader);
-        CheckCompileErrors(vertexShader, "fragment");
+        CheckCompileErrors(vertexShader, SID("fragment"));
         GLuint geometryShader{};
         if (geometryShaderCode) {
             geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
             glShaderSource(geometryShader, 1, &geometryShaderCode, nullptr);
             glCompileShader(geometryShader);
-            CheckCompileErrors(geometryShader, "geometry");
+            CheckCompileErrors(geometryShader, SID("geometry"));
         }
         m_id = glCreateProgram();
         glAttachShader(m_id, vertexShader);
@@ -33,7 +33,7 @@ namespace Engine
             glAttachShader(m_id, geometryShader);
         }
         glLinkProgram(m_id);
-        CheckCompileErrors(m_id, "program");
+        CheckCompileErrors(m_id, SID("program"));
         glDeleteShader(vertexShader);
         glDeleteShader(fragmentShader);
         if (geometryShaderCode) {
@@ -49,7 +49,9 @@ namespace Engine
 
     const Shader& Shader::SetUniform(std::string_view name, bool value) const
     {
-        glUniform1i(glGetUniformLocation(m_id, name.data()), static_cast<GLint>(value));
+        glUniform1i(
+            glGetUniformLocation(m_id, name.data()),
+            static_cast<GLint>(value)); // TODO: store all uniform locations after loading the shader?
         return *this;
     }
 
@@ -83,11 +85,11 @@ namespace Engine
         return *this;
     }
 
-    void Shader::CheckCompileErrors(GLuint id, std::string_view type)
+    void Shader::CheckCompileErrors(GLuint id, const StringId& type)
     {
         GLint success{};
         std::array<GLchar, s_infoLogBufferMaxLength> infoLog{};
-        if (type == "program") {
+        if (type == SID("program")) {
             glGetProgramiv(id, GL_LINK_STATUS, &success);
             if (!success) {
                 glGetProgramInfoLog(id, s_infoLogBufferMaxLength, nullptr, infoLog.data());
@@ -97,7 +99,8 @@ namespace Engine
             glGetShaderiv(id, GL_COMPILE_STATUS, &success);
             if (!success) {
                 glGetShaderInfoLog(id, s_infoLogBufferMaxLength, nullptr, infoLog.data());
-                Locator::GetLogger()->Error("Error compiling {} shader: {}", type, infoLog.data());
+                Locator::GetLogger()->Error("Error compiling {} shader: {}", type.GetString(),
+                                            infoLog.data());
             }
         }
     }

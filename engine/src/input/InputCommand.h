@@ -5,7 +5,6 @@
 #include "core/StringId.h"
 
 #include <optional>
-#include <string_view>
 #include <vector>
 
 namespace Engine
@@ -20,10 +19,10 @@ namespace Engine
             : m_name{name}, m_bindings{bindings}, m_type{type}, m_isEngineCommand{isEngineCommand}
         {
         }
-        const StringId& GetName() const { return m_name; }
-        std::vector<InputBinding> GetBindings() const { return m_bindings; }
-        Type GetType() const { return m_type; }
-        bool IsEngineCommand() const { return m_isEngineCommand; }
+        [[nodiscard]] const StringId& GetName() const { return m_name; }
+        [[nodiscard]] std::vector<InputBinding> GetBindings() const { return m_bindings; }
+        [[nodiscard]] Type GetType() const { return m_type; }
+        [[nodiscard]] bool IsEngineCommand() const { return m_isEngineCommand; }
 
     private:
         StringId m_name{};
@@ -32,12 +31,12 @@ namespace Engine
         bool m_isEngineCommand{false};
     };
 
-    constexpr std::optional<InputCommand::Type> ParseInputCommandType(std::string_view inputCommandTypeStr)
+    constexpr std::optional<InputCommand::Type> ParseInputCommandType(const StringId& commandTypeName)
     {
         using enum InputCommand::Type;
-        if (inputCommandTypeStr == "control_down")
+        if (commandTypeName == SID("control_down"))
             return control_down;
-        if (inputCommandTypeStr == "control_state")
+        if (commandTypeName == SID("control_state"))
             return control_state;
         return {};
     }

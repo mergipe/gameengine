@@ -1,6 +1,7 @@
 #include "ResourceManager.h"
 
-#include "core/Filesystem.h"
+#include "EntityLoader.h"
+#include "core/FileSystem.h"
 #include "core/Locator.h"
 
 #include <array>
@@ -9,13 +10,18 @@
 
 namespace Engine
 {
-    ResourceManager::ResourceManager()
+    std::filesystem::path ResourceManager::GetResourcePath(const std::filesystem::path& relativePath)
+    {
+        return s_resourcesPath / relativePath;
+    }
+
+    void ResourceManager::Init()
     {
         constexpr int width{32};
         constexpr int height{width};
         constexpr int channels{3};
-        constexpr std::array<unsigned char, 4 * channels> canonicalCheckeredData{0,   0, 0,   255, 0, 255,
-                                                                                 255, 0, 255, 0,   0, 0};
+        constexpr std::array<unsigned char, 4 * channels> canonicalCheckerboardData{0,   0, 0,   255, 0, 255,
+                                                                                    255, 0, 255, 0,   0, 0};
         std::array<unsigned char, width * height * channels> fallbackTextureData{};
         for (size_t y{0}; y < height; ++y) {
             const size_t v{y / (height / 2)};
@@ -23,30 +29,82 @@ namespace Engine
                 const size_t rgbComponent{x % channels};
                 const size_t u{x / (width * channels / 2) * channels + rgbComponent};
                 fallbackTextureData.at(y * width * channels + x) =
-                    canonicalCheckeredData.at(v * 2 * channels + u);
+                    canonicalCheckerboardData.at(v * 2 * channels + u);
             }
         }
         m_fallbackTexture = std::make_unique<Texture2D>(TextureConfig{});
         m_fallbackTexture->Create(fallbackTextureData.data(), width, height, GL_RGB);
+        Locator::GetLogger()->Info("Resource manager initialized");
     }
 
-    std::filesystem::path ResourceManager::GetResourcePath(const std::filesystem::path& relativePath) const
-    {
-        return Filesystem::GetResourcesPath() / relativePath;
-    }
+    void ResourceManager::ShutDown() { Locator::GetLogger()->Info("Resource manager shut down"); }
 
     void ResourceManager::Clear() { m_textures.clear(); }
 
-    void ResourceManager::LoadTexture(const std::filesystem::path& relativeFilepath,
-                                      const TextureConfig& textureConfig)
+    void ResourceManager::LoadResource(const std::filesystem::path& relativeFilePath)
     {
-        const std::filesystem::path filepath{Filesystem::GetResourcesPath() / relativeFilepath};
+        const std::filesystem::path absoluteFilePath{s_resourcesPath / relativeFilePath};
+        if (!FileSystem::IsFile(absoluteFilePath)) {
+            Locator::GetLogger()->Error("Resource {} not found", absoluteFilePath.c_str());
+            return;
+        }
+        const std::filesystem::path metadataFilePath{absoluteFilePath.string() + s_metadataFileExtension};
+        if (!FileSystem::IsFile(metadataFilePath)) {
+            Locator::GetLogger()->Error("Resource metadata {} not found", metadataFilePath.c_str());
+            return;
+        }
+        const YAML::Node metadataNode{YAML::LoadFile(metadataFilePath)};
+        if (!metadataNode["resource_type"]) {
+            Locator::GetLogger()->Error("Missing resource_type field on metadata file {}",
+                                        metadataFilePath.c_str());
+            return;
+        }
+        const StringId resourceTypeSid{StringId::Intern(metadataNode["resource_type"].as<std::string>())};
+        const auto resourceType{ParseResourceType(resourceTypeSid)};
+        if (!resourceType) {
+            Locator::GetLogger()->Error("Unknown resource_type: {} on metadata file {}",
+                                        resourceTypeSid.GetString(), metadataFilePath.c_str());
+            return;
+        }
+        const StringId resourceId{StringId::Intern(relativeFilePath.c_str())};
+        switch (*resourceType) {
+        case ResourceType::texture:
+            LoadTexture(resourceId, absoluteFilePath, metadataNode);
+            break;
+        case ResourceType::font:
+            LoadFont(resourceId, absoluteFilePath, metadataNode);
+            break;
+        case ResourceType::entity_template:
+            LoadTemplate(resourceId, absoluteFilePath);
+            break;
+        }
+    }
+
+    const Texture2D& ResourceManager::GetTexture(const StringId& id) const
+    {
+        if (const auto it{m_textures.find(id)}; it != m_textures.end()) {
+            return *it->second;
+        }
+        return *m_fallbackTexture;
+    }
+
+    std::optional<entt::handle> ResourceManager::GetTemplate(const StringId& id) const
+    {
+        if (const auto it{m_templates.find(id)}; it != m_templates.end()) {
+            return it->second;
+        }
+        return {};
+    }
+
+    void ResourceManager::LoadTexture(const StringId& id, const std::filesystem::path& filePath,
+                                      const YAML::Node& metadataNode)
+    {
         int width{};
         int height{};
         int channels{};
-        bool ok{static_cast<bool>(stbi_info(filepath.c_str(), &width, &height, &channels))};
+        bool ok{static_cast<bool>(stbi_info(filePath.c_str(), &width, &height, &channels))};
         if (!ok) {
-            Locator::GetLogger()->Error("Failed to get info from texture file {}: {}", filepath.c_str(),
+            Locator::GetLogger()->Error("Failed to get info from texture file {}: {}", filePath.c_str(),
                                         stbi_failure_reason());
             return;
         }
@@ -59,26 +117,34 @@ namespace Engine
             desiredChannels = STBI_rgb_alpha;
             imageFormat = GL_RGBA;
         }
-        unsigned char* data{stbi_load(filepath.c_str(), &width, &height, &channels, desiredChannels)};
+        unsigned char* data{stbi_load(filePath.c_str(), &width, &height, &channels, desiredChannels)};
         if (!data) {
-            Locator::GetLogger()->Error("Failed to open texture file {}: {}", filepath.c_str(),
+            Locator::GetLogger()->Error("Failed to open texture file {}: {}", filePath.c_str(),
                                         stbi_failure_reason());
             return;
         }
+        const auto textureConfig{TextureConfig::ParseFromYAML(metadataNode)};
         auto texture{std::make_unique<Texture2D>(textureConfig)};
         texture->Create(data, width, height, imageFormat);
         stbi_image_free(data);
-        StringId textureId{relativeFilepath.c_str()};
-        m_textures.insert(std::make_pair(textureId, std::move(texture)));
-        Locator::GetLogger()->Info("Texture loaded from {} as '{}'", filepath.c_str(), textureId.GetSid());
+        m_textures.insert(std::make_pair(id, std::move(texture)));
+        Locator::GetLogger()->Info("Texture {} loaded with id {}", filePath.c_str(), id.GetSid());
     }
 
-    const Texture2D& ResourceManager::GetTexture(const StringId& textureId) const
+    void ResourceManager::LoadFont([[maybe_unused]] const StringId& id,
+                                   [[maybe_unused]] const std::filesystem::path& filePath,
+                                   [[maybe_unused]] const YAML::Node& metadataNode)
     {
-        const auto textureIterator{m_textures.find(textureId)};
-        if (textureIterator != m_textures.end()) {
-            return *textureIterator->second;
+    }
+
+    void ResourceManager::LoadTemplate(const StringId& id, const std::filesystem::path& filePath)
+    {
+        const auto entityNode{YAML::LoadFile(filePath)};
+        auto entity{EntityLoader::Load(m_templateRegistry, entityNode)};
+        if (m_templateRegistry.valid(entity)) {
+            m_templates.emplace(id, entt::handle{m_templateRegistry, entity});
+        } else {
+            Locator::GetLogger()->Error("Loaded entity {} is not valid!", id.GetString());
         }
-        return *m_fallbackTexture;
     }
 } // namespace Engine

@@ -1,10 +1,15 @@
 #include "ShaderManager.h"
 
-#include "core/IO.h"
+#include "core/FileSystem.h"
 #include "core/Locator.h"
 
 namespace Engine
 {
+    std::string ShaderManager::ReadShaderFile(const std::filesystem::path& relativePath)
+    {
+        return FileSystem::ReadStringFromFile(s_shadersPath / relativePath);
+    }
+
     void ShaderManager::Clear() { m_shaders.clear(); }
 
     const Shader&
@@ -12,12 +17,11 @@ namespace Engine
                               const std::filesystem::path& fragmentShaderRelativePath,
                               const std::optional<std::filesystem::path>& geometryShaderRelativePath)
     {
-        const std::string vertexShaderCode{IO::ReadStringFromFile(m_shadersPath / vertexShaderRelativePath)};
-        const std::string fragmentShaderCode{
-            IO::ReadStringFromFile(m_shadersPath / fragmentShaderRelativePath)};
+        const std::string vertexShaderCode{ReadShaderFile(vertexShaderRelativePath)};
+        const std::string fragmentShaderCode{ReadShaderFile(fragmentShaderRelativePath)};
         std::string geometryShaderCode{};
         if (geometryShaderRelativePath) {
-            geometryShaderCode = IO::ReadStringFromFile(m_shadersPath / *geometryShaderRelativePath);
+            geometryShaderCode = ReadShaderFile(*geometryShaderRelativePath);
         }
         auto shader{std::make_unique<Shader>()};
         shader->Compile(vertexShaderCode.c_str(), fragmentShaderCode.c_str(),

@@ -3,6 +3,7 @@
 
 #include "core/StringId.h"
 
+#include <entt/entity/handle.hpp>
 #include <entt/entity/registry.hpp>
 
 namespace Engine
@@ -10,19 +11,18 @@ namespace Engine
     class Entity
     {
     public:
-        Entity(entt::entity id, entt::registry* registry);
-        const StringId& GetId() const;
-        template <typename T> T& GetComponent();
+        explicit Entity(entt::handle handle);
+        [[nodiscard]] const StringId& GetId() const;
+        template <typename T> T& GetComponent() const;
 
     private:
-        entt::entity m_id{};
-        entt::registry* m_registry{};
+        entt::handle m_handle{};
     };
 
     template <typename T>
-    T& Entity::GetComponent()
+    T& Entity::GetComponent() const
     {
-        return m_registry->get<T>(m_id);
+        return m_handle.get<T>();
     }
 } // namespace Engine
 

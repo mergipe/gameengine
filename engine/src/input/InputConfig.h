@@ -13,4 +13,4 @@ namespace Engine
     };
 } // namespace Engine
 
-#endif // INPUTCONFIG_H
+#endif

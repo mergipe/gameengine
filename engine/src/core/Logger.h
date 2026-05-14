@@ -1,6 +1,8 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#include "FileSystem.h"
+
 #include <filesystem>
 #include <memory>
 #include <spdlog/common.h>
@@ -20,9 +22,9 @@ namespace Engine
             error = spdlog::level::level_enum::err,
             critical = spdlog::level::level_enum::critical,
         };
-        explicit Logger(Level level = Level::trace);
-        explicit Logger(const std::filesystem::path& logFilepath, Level level = Level::trace);
-        void AddFileSink(const std::filesystem::path& logFilepath);
+        void Init();
+        void ShutDown();
+        void AddFileSink(const std::filesystem::path& logFilePath);
         void SetLevel(Level level);
         template <typename T> void Trace(const T& msg);
         template <typename... TArgs> void Trace(fmt::format_string<TArgs...> fmt, TArgs&&... args);
@@ -38,9 +40,11 @@ namespace Engine
         template <typename... TArgs> void Critical(fmt::format_string<TArgs...> fmt, TArgs&&... args);
 
     private:
-        static constexpr std::string s_loggerLevelEnvVariableName{"LOGGER_LEVEL"};
-        static constexpr std::string s_loggerName{"logger"};
-        std::shared_ptr<spdlog::logger> m_logger{spdlog::stdout_color_mt(s_loggerName)};
+        static constexpr auto s_levelEnvVariableName{"LOGGER_LEVEL"};
+        static constexpr auto s_name{"logger"};
+        static inline const std::filesystem::path s_logFilePath{FileSystem::GetAbsolutePath("logs") /
+                                                                "log.txt"};
+        std::shared_ptr<spdlog::logger> m_logger{spdlog::stdout_color_mt(s_name)};
     };
 
     template <typename T>

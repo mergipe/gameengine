@@ -1,15 +1,14 @@
 #include "Engine.h"
 
-#include "core/Config.h"
-#include "core/Filesystem.h"
+#include "core/ConfigManager.h"
 #include "core/Locator.h"
 #include "core/Logger.h"
 #include "core/Timer.h"
-#include "renderer/Renderer2D.h"
-#include "scene/SceneLoader.h"
+#include "imgui.h"
+#include "renderer/RenderManager.h"
+#include "scene/SceneManager.h"
 
 #include <SDL3/SDL.h>
-#include <filesystem>
 
 namespace Engine
 {
@@ -28,28 +27,37 @@ namespace Engine
 
     void Engine::Init()
     {
-        m_logger = std::make_unique<Logger>(Filesystem::GetLogsPath() / "log.txt");
+        m_logger = std::make_unique<Logger>();
+        m_logger->Init();
         Locator::Provide(m_logger.get());
         InitSDL();
-        Config::VideoConfig videoConfig{Config::ParseVideoConfig()};
+        ConfigManager::Init();
+        const VideoConfig& videoConfig{ConfigManager::GetVideoConfig()};
         m_window = std::make_unique<Window>(videoConfig.windowConfig);
         m_window->Init();
         SDL_GL_SetSwapInterval(videoConfig.vsync);
-        m_renderer = std::make_unique<Renderer2D>(m_window.get());
-        m_renderer->Init();
+        m_renderManager = std::make_unique<RenderManager>(m_window.get());
+        m_renderManager->Init();
+        Locator::Provide(m_renderManager.get());
         m_resourceManager = std::make_unique<ResourceManager>();
+        m_resourceManager->Init();
         Locator::Provide(m_resourceManager.get());
-        const std::filesystem::path inputConfigFilepath{m_resourceManager->GetResourcePath("input") /
-                                                        "game_input.yaml"}; // FIXME: hardcoded input file
-        m_inputHandler = std::make_unique<InputHandler>(inputConfigFilepath);
+        m_inputManager = std::make_unique<InputManager>();
+        m_inputManager->Init();
+        Locator::Provide(m_inputManager.get());
         m_eventBus = std::make_unique<EventBus>();
         Locator::Provide(m_eventBus.get());
         if (m_hasDevMode) {
-            m_devGui = std::make_unique<DevGuiImpl>(*m_window);
+            m_devGui = std::make_unique<DevGuiImpl>(m_window.get());
         } else {
             m_devGui = std::make_unique<NullDevGui>();
         }
-        Locator::GetLogger()->Info("Engine initialized");
+        m_devGui->Init();
+        m_sceneManager = std::make_unique<SceneManager>();
+        m_sceneManager->Init();
+        m_physicsEngine2D = std::make_unique<PhysicsEngine2D>();
+        m_physicsEngine2D->Init();
+        Locator::Provide(m_physicsEngine2D.get());
     }
 
     void Engine::InitSDL()
@@ -75,9 +83,7 @@ namespace Engine
     {
         Locator::GetLogger()->Info("Engine started running");
         m_isRunning = true;
-        m_currentScene =
-            SceneLoader::Load(m_resourceManager->GetResourcePath("scenes") / "scene1.yaml", *m_inputHandler,
-                              *m_renderer); // FIXME: hardcoded scene file
+        m_sceneManager->LoadScene(ConfigManager::GetGameConfig().initialScene);
         Timer::Ticks previousTicks{Timer::GetTicks()};
         float lag{0.0f};
         while (m_isRunning) {
@@ -91,19 +97,19 @@ namespace Engine
             }
             Render(lag / 1000.0f);
         }
-        m_currentScene.reset();
     }
 
     void Engine::ShutDown()
     {
-        m_devGui.reset();
+        m_sceneManager->ShutDown();
+        m_devGui->ShutDown();
         m_eventBus.reset();
-        m_resourceManager.reset();
-        m_inputHandler.reset();
-        m_renderer.reset();
-        m_window.reset();
+        m_resourceManager->ShutDown();
+        m_inputManager->ShutDown();
+        m_renderManager->ShutDown();
+        m_window->Close();
         SDL_Quit();
-        Locator::GetLogger()->Info("Engine shut down");
+        m_logger->ShutDown();
     }
 
     void Engine::ProcessEvents()
@@ -112,41 +118,42 @@ namespace Engine
         while (SDL_PollEvent(&event)) {
             m_devGui->ProcessEvent(event);
             if (m_devGui->WantCaptureKeyboard() || m_devGui->WantCaptureMouse()) {
-                m_inputHandler->SwitchScope(m_inputHandler->GetDevGuiScopeId());
-            } else if (m_inputHandler->GetCurrentScopeId() == m_inputHandler->GetDevGuiScopeId()) {
-                m_inputHandler->SwitchScope(m_inputHandler->GetPreviousScopeId());
+                m_inputManager->SwitchScope(m_inputManager->GetDevGuiScopeId());
+            } else if (m_inputManager->GetCurrentScopeId() == m_inputManager->GetDevGuiScopeId()) {
+                m_inputManager->SwitchScope(m_inputManager->GetPreviousScopeId());
             }
             switch (event.type) {
             case SDL_EVENT_QUIT:
                 m_isRunning = false;
                 break;
             case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-                m_renderer->SetViewportSize(event.window.data1, event.window.data2);
+                m_renderManager->SetViewportSize(event.window.data1, event.window.data2);
                 break;
             case SDL_EVENT_KEY_DOWN:
-                m_inputHandler->HandleKeyboardKeyDownEvent(event.key);
+                m_inputManager->HandleKeyboardKeyDownEvent(event.key);
                 break;
             case SDL_EVENT_KEY_UP:
-                m_inputHandler->HandleKeyboardKeyUpEvent(event.key);
+                m_inputManager->HandleKeyboardKeyUpEvent(event.key);
                 break;
             default:
                 break;
             }
         }
-        m_inputHandler->ResolveInput();
+        m_inputManager->ResolveInput();
     }
 
-    void Engine::Update() { m_currentScene->Update(s_timeStep); }
+    void Engine::Update() { m_sceneManager->GetCurrentScene()->Update(s_timeStep); }
 
     void Engine::Render(float frameExtrapolationTimeStep)
     {
-        m_renderer->Clear();
-        m_currentScene->Render(frameExtrapolationTimeStep);
+        m_renderManager->Clear();
+        m_sceneManager->GetCurrentScene()->Render(frameExtrapolationTimeStep);
         m_devGui->NewFrame();
         if (m_isDevModeEnabled) {
+            m_sceneManager->RenderDevGui();
             m_devGui->Show();
         }
         m_devGui->Render();
-        m_renderer->Present();
+        m_renderManager->Present();
     }
 } // namespace Engine

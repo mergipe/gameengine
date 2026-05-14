@@ -1,0 +1,26 @@
+components:
+  tag: player
+  transform:
+    scale: {x: 0.4, y: 0.4, z: 0}
+  rigid_body_2d:
+    type: dynamic
+    gravity_scale: 0
+    angular_damping: 10
+    linear_damping: 0
+  box_collider_2d:
+    density: 1
+    is_trigger: false
+    material:
+      friction: 0
+      restitution: 0
+      rolling_resistance: 0
+      tangent_speed: 0
+  sprite:
+    texture_id: textures/space-shooter-spritesheet.png
+    color: {r: 1.0, g: 1.0, b: 1.0}
+    z_index: 4
+  player_input:
+    default_scope: gameplay
+  scripts:
+    - file_path: scripts/player/player_controller.lua
+      class_name: PlayerController

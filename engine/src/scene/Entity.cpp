@@ -4,10 +4,10 @@
 
 namespace Engine
 {
-    Entity::Entity(entt::entity id, entt::registry* registry)
-        : m_id{id}, m_registry{registry}
+    Entity::Entity(entt::handle handle)
+        : m_handle{handle}
     {
     }
 
-    const StringId& Entity::GetId() const { return m_registry->get<IdComponent>(m_id).sid; }
+    const StringId& Entity::GetId() const { return m_handle.get<IdComponent>().value; }
 } // namespace Engine

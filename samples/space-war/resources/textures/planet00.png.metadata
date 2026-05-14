@@ -1,0 +1,5 @@
+resource_type: texture
+min_filter: linear
+mag_filter: linear
+generate_mipmap: true
+mipmap_filter: linear

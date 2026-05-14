@@ -5,10 +5,11 @@
 #include "core/Window.h"
 #include "debug/DevGui.h"
 #include "events/EventBus.h"
-#include "input/InputHandler.h"
-#include "renderer/Renderer2D.h"
+#include "input/InputManager.h"
+#include "physics/PhysicsEngine2D.h"
+#include "renderer/RenderManager.h"
 #include "resources/ResourceManager.h"
-#include "scene/Scene.h"
+#include "scene/SceneManager.h"
 
 #include <memory>
 
@@ -25,9 +26,8 @@ namespace Engine
         Engine& operator=(Engine&&) = delete;
         ~Engine() = default;
         void Start();
-        const Config::WindowConfig& GetWindowConfig() const { return m_window->GetConfig(); }
-        bool HasDevMode() const { return m_hasDevMode; }
-        bool IsDevModeEnabled() const { return m_isDevModeEnabled; }
+        [[nodiscard]] bool HasDevMode() const { return m_hasDevMode; }
+        [[nodiscard]] bool IsDevModeEnabled() const { return m_isDevModeEnabled; }
         void ToggleDevMode() { m_isDevModeEnabled = !m_isDevModeEnabled; }
         static constexpr SDL_Scancode s_toggleDevModeKey{SDL_SCANCODE_F12};
 
@@ -44,12 +44,13 @@ namespace Engine
         static constexpr float s_timeStep{1.0f / s_updateRate};
         std::unique_ptr<Logger> m_logger{};
         std::unique_ptr<Window> m_window{};
-        std::unique_ptr<Renderer2D> m_renderer{};
-        std::unique_ptr<InputHandler> m_inputHandler{};
+        std::unique_ptr<RenderManager> m_renderManager{};
+        std::unique_ptr<InputManager> m_inputManager{};
         std::unique_ptr<ResourceManager> m_resourceManager{};
         std::unique_ptr<EventBus> m_eventBus{};
-        std::unique_ptr<Scene> m_currentScene{};
         std::unique_ptr<DevGui> m_devGui{};
+        std::unique_ptr<SceneManager> m_sceneManager{};
+        std::unique_ptr<PhysicsEngine2D> m_physicsEngine2D{};
         bool m_hasDevMode{true};
         bool m_isDevModeEnabled{false};
         bool m_isRunning{false};

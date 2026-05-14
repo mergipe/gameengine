@@ -1,0 +1,70 @@
+resources:
+  - textures/space-shooter-spritesheet.png
+  - textures/planet00.png
+  - templates/player.template
+  - templates/planet.template
+entities:
+  - components:
+      id: Camera
+      tag: camera
+      transform:
+        position: {x: 0, y: 0, z: 3}
+        scale: {x: 1, y: 1, z: 1}
+        rotation: {x: 0, y: 0, z: 0}
+      camera:
+        projection: orthographic
+        viewport: {x: 3840, y: 2160}
+        z_near: 0.1
+        z_far: 100
+        #fov_y: 45
+  - components:
+      template: templates/player.template
+      id: Player1
+      transform:
+        position: {x: -1500, y: 0, z: 0}
+      box_collider_2d:
+        width: 228
+        height: 163
+      sprite:
+        sprite_id: spaceShips_007
+      player_input:
+        commands:
+          - name: rotate_left_p1
+            script_id: scripts/player/player_controller.lua
+            callback: OnRotateLeft
+          - name: rotate_right_p1
+            script_id: scripts/player/player_controller.lua
+            callback: OnRotateRight
+          - name: accelerate_p1
+            script_id: scripts/player/player_controller.lua
+            callback: OnAccelerate
+          - name: shoot_p1
+            script_id: scripts/player/player_controller.lua
+            callback: OnShoot
+  - components:
+      template: templates/player.template
+      id: Player2
+      transform:
+        position: {x: 1500, y: 0, z: 0}
+      box_collider_2d:
+        width: 252
+        height: 216
+      sprite:
+        sprite_id: spaceShips_002
+      player_input:
+        commands:
+          - name: rotate_left_p2
+            script_id: scripts/player/player_controller.lua
+            callback: OnRotateLeft
+          - name: rotate_right_p2
+            script_id: scripts/player/player_controller.lua
+            callback: OnRotateRight
+          - name: accelerate_p2
+            script_id: scripts/player/player_controller.lua
+            callback: OnAccelerate
+          - name: shoot_p2
+            script_id: scripts/player/player_controller.lua
+            callback: OnShoot
+  - components:
+      template: templates/planet.template
+      id: Planet

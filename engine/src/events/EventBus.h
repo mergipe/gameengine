@@ -84,7 +84,7 @@ namespace Engine
     void EventBus::DispatchEvent(TArgs&&... args)
     {
         TEvent event{std::forward<TArgs>(args)...};
-        dispatchEvent(std::move(event));
+        DispatchEvent(std::move(event));
     }
 
     template <typename TEvent>

@@ -1,11 +1,12 @@
 #ifndef TIME_H
 #define TIME_H
 
-#include <cstdint>
+#include "Types.h"
 
 namespace Engine::Timer
 {
-    using Ticks = std::uint64_t;
+    using Ticks = U64;
+
     Ticks GetTicks();
 } // namespace Engine::Timer
 
