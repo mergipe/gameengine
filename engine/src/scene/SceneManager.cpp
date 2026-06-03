@@ -119,6 +119,55 @@ namespace Engine
                             ImGui::InputInt("Z-index", &spriteComponent->zIndex);
                         }
                     }
+                    if (auto* cameraComponent{m_ecsRegistry.try_get<CameraComponent>(selectedEntity)}) {
+                        if (ImGui::CollapsingHeader("Camera", treeNodeFlags)) {
+                            auto& camera{cameraComponent->camera};
+                            constexpr std::array<const char*, 2> projectionTypeNames{"Orthographic",
+                                                                                     "Perspective"};
+                            std::size_t selectedProjection{
+                                static_cast<std::size_t>(camera.GetProjectionType())};
+                            const char* projectionTypeName{projectionTypeNames[selectedProjection]};
+                            if (ImGui::BeginCombo("Projection type", projectionTypeName)) {
+                                for (std::size_t i{0}; i < projectionTypeNames.size(); ++i) {
+                                    const bool isSelected{selectedProjection == i};
+                                    if (ImGui::Selectable(projectionTypeNames[i], isSelected)) {
+                                        selectedProjection = i;
+                                        if (static_cast<std::size_t>(camera.GetProjectionType()) != i) {
+                                            camera.SetProjectionType(
+                                                static_cast<ProjectionType>(selectedProjection));
+                                        }
+                                    }
+                                    if (isSelected) {
+                                        ImGui::SetItemDefaultFocus();
+                                    }
+                                }
+                                ImGui::EndCombo();
+                            }
+                            float zNear{camera.GetZNear()};
+                            ImGui::DragFloat("Near plane", &zNear);
+                            if (zNear != camera.GetZNear()) {
+                                camera.SetZNear(zNear);
+                            }
+                            float zFar{camera.GetZFar()};
+                            ImGui::DragFloat("Far plane", &zFar);
+                            if (zFar != camera.GetZFar()) {
+                                camera.SetZFar(zFar);
+                            }
+                            if (camera.GetProjectionType() == ProjectionType::orthographic) {
+                                float orthoSize{camera.GetOrthoSize()};
+                                ImGui::DragFloat("Size", &orthoSize);
+                                if (orthoSize != camera.GetOrthoSize()) {
+                                    camera.SetOrthoSize(orthoSize);
+                                }
+                            } else {
+                                float fovY{glm::degrees(camera.GetPerspectiveFovY())};
+                                ImGui::DragFloat("Field of view", &fovY, 0.1f, 0.0f, 180.0f);
+                                if (fovY != camera.GetPerspectiveFovY()) {
+                                    camera.SetPerspectiveFovY(glm::radians(fovY));
+                                }
+                            }
+                        }
+                    }
                 }
                 ImGui::EndChild();
             }

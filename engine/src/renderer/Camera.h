@@ -24,6 +24,11 @@ namespace Engine
     class Camera
     {
     public:
+        [[nodiscard]] ProjectionType GetProjectionType() const;
+        [[nodiscard]] float GetZNear() const;
+        [[nodiscard]] float GetZFar() const;
+        [[nodiscard]] float GetOrthoSize() const;
+        [[nodiscard]] float GetPerspectiveFovY() const;
         [[nodiscard]] AABB GetNearPlaneAABB() const;
         [[nodiscard]] AABB GetFarPlaneAABB() const;
         [[nodiscard]] const glm::mat4& GetViewMatrix();
@@ -50,7 +55,7 @@ namespace Engine
         float m_zFar{};
         float m_aspectRatio{};
         float m_orthoSize{};
-        float m_perspectiveFovY{};
+        float m_perspectiveFovY{glm::radians(45.0f)};
         bool m_viewDirty{true};
         bool m_projectionDirty{true};
     };

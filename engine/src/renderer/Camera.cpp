@@ -6,6 +6,16 @@
 
 namespace Engine
 {
+    ProjectionType Camera::GetProjectionType() const { return m_projectionType; }
+
+    float Camera::GetZNear() const { return m_zNear; }
+
+    float Camera::GetZFar() const { return m_zFar; }
+
+    float Camera::GetOrthoSize() const { return m_orthoSize; }
+
+    float Camera::GetPerspectiveFovY() const { return m_perspectiveFovY; }
+
     AABB Camera::GetNearPlaneAABB() const
     {
         if (m_projectionType == ProjectionType::orthographic) {
