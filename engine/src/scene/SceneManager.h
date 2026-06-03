@@ -2,10 +2,10 @@
 #define SCENE_MANAGER_H
 
 #include "Scene.h"
-#include "SceneContext.h"
 #include "core/Yaml.h"
 
 #include <memory>
+#include <entt/entity/registry.hpp>
 
 namespace Engine
 {
@@ -25,9 +25,10 @@ namespace Engine
 
     private:
         void LoadEntities(const YAML::Node& entitiesNode);
-        SceneContext m_sceneContext{};
-        SceneManagerDebugUIData m_debugUIData{};
+
+        entt::registry m_ecsRegistry{};
         std::unique_ptr<Scene> m_currentScene{};
+        SceneManagerDebugUIData m_debugUIData{};
     };
 } // namespace Engine
 

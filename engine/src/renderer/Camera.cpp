@@ -84,7 +84,7 @@ namespace Engine
 
     void Camera::SetTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
     {
-        m_transformMatrix = Math::GetTransformMatrix(position, rotation, scale);
+        m_transformMatrix = Math::BuildTransformMatrix(position, rotation, scale);
         m_position = position;
         m_viewDirty = true;
         m_projectionDirty = true;

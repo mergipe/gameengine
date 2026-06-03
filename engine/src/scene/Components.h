@@ -1,13 +1,13 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
-#include "ScriptInstance.h"
 #include "core/Math.h"
 #include "core/StringId.h"
 #include "input/InputCallback.h"
 #include "input/InputDevice.h"
 #include "physics/Physics2DTypes.h"
 #include "renderer/Camera.h"
+#include "scripting/ScriptInstance.h"
 
 #include <vector>
 

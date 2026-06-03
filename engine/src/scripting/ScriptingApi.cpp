@@ -1,7 +1,7 @@
 #include "ScriptingApi.h"
 
-#include "Components.h"
 #include "core/Locator.h"
+#include "scene/Components.h"
 
 namespace Engine::ScriptingApi
 {
@@ -24,19 +24,19 @@ namespace Engine::ScriptingApi
     glm::vec3 Transform::GetRight() const
     {
         const auto& transformComponent = m_entity.GetComponent<TransformComponent>();
-        return Math::GetRotationMatrix(transformComponent.rotation) * glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
+        return Math::BuildRotationMatrix(transformComponent.rotation) * glm::vec4{1.0f, 0.0f, 0.0f, 1.0f};
     }
 
     glm::vec3 Transform::GetUp() const
     {
         const auto& transformComponent = m_entity.GetComponent<TransformComponent>();
-        return Math::GetRotationMatrix(transformComponent.rotation) * glm::vec4{0.0f, 1.0f, 0.0f, 1.0f};
+        return Math::BuildRotationMatrix(transformComponent.rotation) * glm::vec4{0.0f, 1.0f, 0.0f, 1.0f};
     }
 
     glm::vec3 Transform::GetForward() const
     {
         const auto& transformComponent = m_entity.GetComponent<TransformComponent>();
-        return Math::GetRotationMatrix(transformComponent.rotation) * glm::vec4{0.0f, 0.0f, 1.0f, 1.0f};
+        return Math::BuildRotationMatrix(transformComponent.rotation) * glm::vec4{0.0f, 0.0f, 1.0f, 1.0f};
     }
 
     void Transform::SetPosition(glm::vec3 position) const

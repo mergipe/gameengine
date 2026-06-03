@@ -197,7 +197,7 @@ namespace Engine
         const float textureWidth{static_cast<float>(texture->GetWidth())};
         const float textureHeight{static_cast<float>(texture->GetHeight())};
         glm::vec3 ndcPivotPoint{pivotPoint.x - 0.5f, pivotPoint.y - 0.5f, 0.0f};
-        glm::mat4 transform{Math::GetTransformMatrix(glm::vec3{position}, rotation, scale, ndcPivotPoint)};
+        glm::mat4 transform{Math::BuildTransformMatrix(glm::vec3{position}, rotation, scale, ndcPivotPoint)};
         m_sprites.emplace_back(transform,
                                glm::vec2{subTextureUvTopLeft.x / textureWidth,
                                          1 - (subTextureUvTopLeft.y + subTextureSize.y) / textureHeight},

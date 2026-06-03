@@ -1,7 +1,7 @@
 #ifndef SCRIPTING_API_H
 #define SCRIPTING_API_H
 
-#include "Entity.h"
+#include "scene/Entity.h"
 
 #include <glm/glm.hpp>
 

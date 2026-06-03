@@ -10,6 +10,7 @@
 #include "renderer/RenderManager.h"
 #include "resources/ResourceManager.h"
 #include "scene/SceneManager.h"
+#include "scripting/ScriptSystem.h"
 
 #include <memory>
 
@@ -19,12 +20,14 @@ namespace Engine
     {
     public:
         static Engine& Instance();
+
         Engine() = default;
         Engine(const Engine&) = delete;
         Engine(Engine&&) = delete;
         Engine& operator=(const Engine&) = delete;
         Engine& operator=(Engine&&) = delete;
         ~Engine() = default;
+
         void Start();
         [[nodiscard]] bool HasDevMode() const { return m_hasDevMode; }
         [[nodiscard]] bool IsDevModeEnabled() const { return m_isDevModeEnabled; }
@@ -39,9 +42,11 @@ namespace Engine
         void ProcessEvents();
         void Update();
         void Render(float frameExtrapolationTimeStep);
+
         static constexpr float s_updateRate{60.0f};
         static constexpr float s_timeStep{1.0f / s_updateRate};
         static constexpr float s_timeStepInNs{1'000'000'000.0f * s_timeStep};
+
         std::unique_ptr<Logger> m_logger{};
         std::unique_ptr<Window> m_window{};
         std::unique_ptr<RenderManager> m_renderManager{};
@@ -51,6 +56,8 @@ namespace Engine
         std::unique_ptr<DevGui> m_devGui{};
         std::unique_ptr<SceneManager> m_sceneManager{};
         std::unique_ptr<PhysicsEngine2D> m_physicsEngine2D{};
+        std::unique_ptr<ScriptSystem> m_scriptSystem{};
+
         bool m_hasDevMode{true};
         bool m_isDevModeEnabled{false};
         bool m_isRunning{false};

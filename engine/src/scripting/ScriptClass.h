@@ -14,8 +14,8 @@ namespace Engine
             : m_className{className}, m_luaClass{luaClass}
         {
         }
-        std::string_view GetClassName() const { return m_className; }
-        sol::optional<sol::function> GetConstructor() const { return m_luaClass["new"]; }
+        [[nodiscard]] std::string_view GetClassName() const { return m_className; }
+        [[nodiscard]] sol::optional<sol::function> GetConstructor() const { return m_luaClass["new"]; }
         const sol::table& GetLuaClass() { return m_luaClass; }
 
     private:

@@ -29,9 +29,9 @@ add_executable(${PROJECT_NAME}
         scene/Entity.cpp
         scene/Scene.cpp
         scene/SceneManager.cpp
-        scene/ScriptingApi.cpp
-        scene/ScriptInstance.cpp
-        scene/Systems.cpp
+        scripting/ScriptingApi.cpp
+        scripting/ScriptInstance.cpp
+        scripting/ScriptSystem.cpp
 )
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 set_target_properties(${PROJECT_NAME} PROPERTIES

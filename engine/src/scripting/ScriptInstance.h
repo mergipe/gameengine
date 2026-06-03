@@ -13,7 +13,7 @@ namespace Engine
     {
     public:
         ScriptInstance(const StringId& scriptClassId, const sol::table& instance);
-        const StringId& GetScriptClassId() const { return m_scriptClassId; }
+        [[nodiscard]] const StringId& GetScriptClassId() const { return m_scriptClassId; }
         void OnStart();
         void OnUpdate(float timeStep);
         template <typename... TArgs> void Call(std::string_view function, TArgs&&... args);

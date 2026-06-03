@@ -6,7 +6,7 @@
 #include "core/Yaml.h"
 #include "resources/EntityLoader.h"
 
-#include <glm/gtc/type_ptr.inl>
+#include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 #include <string>
 
@@ -26,33 +26,31 @@ namespace Engine
 
     void SceneManager::Init()
     {
-        m_sceneContext.scriptingSystem = std::make_unique<ScriptingSystem>(&m_sceneContext.registry);
-        Locator::Provide(m_sceneContext.scriptingSystem.get());
         // TODO: initializes registry storages for template copying; find a better way
-        m_sceneContext.registry.storage<IdComponent>();
-        m_sceneContext.registry.storage<TagComponent>();
-        m_sceneContext.registry.storage<TransformComponent>();
-        m_sceneContext.registry.storage<SpriteComponent>();
-        m_sceneContext.registry.storage<SpriteAnimationComponent>();
-        m_sceneContext.registry.storage<RigidBody2DComponent>();
-        m_sceneContext.registry.storage<BoxCollider2DComponent>();
-        m_sceneContext.registry.storage<CircleCollider2DComponent>();
-        m_sceneContext.registry.storage<PlayerInputComponent>();
-        m_sceneContext.registry.storage<ScriptComponent>();
-        m_sceneContext.registry.storage<CameraComponent>();
+        m_ecsRegistry.storage<IdComponent>();
+        m_ecsRegistry.storage<TagComponent>();
+        m_ecsRegistry.storage<TransformComponent>();
+        m_ecsRegistry.storage<SpriteComponent>();
+        m_ecsRegistry.storage<SpriteAnimationComponent>();
+        m_ecsRegistry.storage<RigidBody2DComponent>();
+        m_ecsRegistry.storage<BoxCollider2DComponent>();
+        m_ecsRegistry.storage<CircleCollider2DComponent>();
+        m_ecsRegistry.storage<PlayerInputComponent>();
+        m_ecsRegistry.storage<ScriptComponent>();
+        m_ecsRegistry.storage<CameraComponent>();
         Locator::GetLogger()->Info("Scene manager initialized");
     }
 
     void SceneManager::ShutDown()
     {
-        m_sceneContext.registry.clear();
+        m_ecsRegistry.clear();
         m_currentScene.reset();
         Locator::GetLogger()->Info("Scene manager shut down");
     }
 
     void SceneManager::LoadScene(const StringId& sceneId)
     {
-        m_sceneContext.registry.clear(); // TODO: improve entity management between scenes
+        m_ecsRegistry.clear(); // TODO: improve entity management between scenes
         if (FileSystem::IsFile(sceneId.GetString())) {
             Locator::GetLogger()->Error("Scene {} not found!", sceneId.GetString());
             return;
@@ -60,7 +58,8 @@ namespace Engine
         const YAML::Node rootNode{YAML::LoadFile(ResourceManager::GetResourcePath(sceneId.GetString()))};
         LoadResources(rootNode["resources"]);
         LoadEntities(rootNode["entities"]);
-        m_currentScene = std::make_unique<Scene>(&m_sceneContext);
+        m_currentScene = std::make_unique<Scene>(&m_ecsRegistry);
+        m_currentScene->Start();
     }
 
     void SceneManager::RenderDevGui()
@@ -77,8 +76,7 @@ namespace Engine
                 static entt::entity selectedEntity{};
                 if (ImGui::BeginChild("entity_list_pane", ImVec2{150, 0},
                                       ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX)) {
-                    for (const auto view{m_sceneContext.registry.view<IdComponent>()};
-                         const auto entity : view) {
+                    for (const auto view{m_ecsRegistry.view<IdComponent>()}; const auto entity : view) {
                         const auto id{view.get<IdComponent>(entity)};
                         if (ImGui::Selectable(id.value.GetString().data(), selectedEntity == entity)) {
                             selectedEntity = entity;
@@ -88,15 +86,14 @@ namespace Engine
                 ImGui::EndChild();
                 ImGui::SameLine();
                 if (ImGui::BeginChild("entity_edit_pane")) {
-                    if (auto* idComponent{m_sceneContext.registry.try_get<IdComponent>(selectedEntity)}) {
+                    if (auto* idComponent{m_ecsRegistry.try_get<IdComponent>(selectedEntity)}) {
                         ImGui::Text("ID: %s", idComponent->value.GetString().data());
                     }
-                    if (auto* tagComponent{m_sceneContext.registry.try_get<TagComponent>(selectedEntity)}) {
+                    if (auto* tagComponent{m_ecsRegistry.try_get<TagComponent>(selectedEntity)}) {
                         ImGui::Text("Tag: %s", tagComponent->value.GetString().data());
                     }
                     ImGuiTreeNodeFlags treeNodeFlags{ImGuiTreeNodeFlags_DefaultOpen};
-                    if (auto* transformComponent{
-                            m_sceneContext.registry.try_get<TransformComponent>(selectedEntity)}) {
+                    if (auto* transformComponent{m_ecsRegistry.try_get<TransformComponent>(selectedEntity)}) {
                         if (ImGui::CollapsingHeader("Transform", treeNodeFlags)) {
                             ImGui::DragFloat3("Position", glm::value_ptr(transformComponent->position), 0.1f);
                             glm::vec3 rotation{glm::degrees(transformComponent->rotation)};
@@ -105,8 +102,7 @@ namespace Engine
                             ImGui::DragFloat3("Scale", glm::value_ptr(transformComponent->scale), 0.01f);
                         }
                     }
-                    if (auto* spriteComponent{
-                            m_sceneContext.registry.try_get<SpriteComponent>(selectedEntity)}) {
+                    if (auto* spriteComponent{m_ecsRegistry.try_get<SpriteComponent>(selectedEntity)}) {
                         if (ImGui::CollapsingHeader("Sprite", treeNodeFlags)) {
                             ImGui::Text("Texture ID: %s", spriteComponent->textureId.GetString().data());
                             ImGui::Text("Sprite ID: %s", spriteComponent->spriteId.GetString().data());
@@ -144,7 +140,7 @@ namespace Engine
         }
         for (auto entityIt{entitiesNode.begin()}; entityIt != entitiesNode.end(); ++entityIt) {
             const auto& entityNode{*entityIt};
-            EntityLoader::Load(m_sceneContext.registry, entityNode);
+            EntityLoader::Load(m_ecsRegistry, entityNode);
         }
     }
 } // namespace Engine

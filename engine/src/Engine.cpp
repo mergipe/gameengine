@@ -57,6 +57,9 @@ namespace Engine
         m_physicsEngine2D = std::make_unique<PhysicsEngine2D>();
         m_physicsEngine2D->Init();
         Locator::Provide(m_physicsEngine2D.get());
+        m_scriptSystem = std::make_unique<ScriptSystem>();
+        m_scriptSystem->Init();
+        Locator::Provide(m_scriptSystem.get());
     }
 
     void Engine::InitSDL()
@@ -105,6 +108,7 @@ namespace Engine
     void Engine::ShutDown()
     {
         m_sceneManager->ShutDown();
+        m_scriptSystem->ShutDown();
         m_devGui->ShutDown();
         m_eventBus.reset();
         m_resourceManager->ShutDown();
