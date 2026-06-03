@@ -13,18 +13,21 @@ entities:
         rotation: {x: 0, y: 0, z: 0}
       camera:
         projection: orthographic
-        viewport: {x: 3840, y: 2160}
         z_near: 0.1
         z_far: 100
-        #fov_y: 45
+        perspective:
+            fov_y: 45
+        orthographic:
+            size: 2160
   - components:
       template: templates/player.template
       id: Player1
       transform:
         position: {x: -1500, y: 0, z: 0}
       box_collider_2d:
-        width: 228
-        height: 163
+        width: 84
+        height: 30
+        edge_radius: 30
       sprite:
         sprite_id: spaceShips_007
       player_input:

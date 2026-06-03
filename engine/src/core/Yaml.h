@@ -1,6 +1,8 @@
 #ifndef YAML_H
 #define YAML_H
 
+#include "core/Types.h"
+
 #include <glm/glm.hpp>
 #include <yaml-cpp/yaml.h>
 
@@ -57,6 +59,36 @@ namespace YAML
                 vector.z = node["z"].as<float>();
             } else if (node["b"]) {
                 vector.b = node["b"].as<float>();
+            }
+            return true;
+        }
+    };
+
+    template <>
+    struct convert<Engine::RGBA8> {
+        static Node encode(Engine::RGBA8 color)
+        {
+            Node node{};
+            node["r"] = color.r;
+            node["g"] = color.g;
+            node["b"] = color.b;
+            node["a"] = color.a;
+            return node;
+        }
+
+        static bool decode(const Node& node, Engine::RGBA8& color)
+        {
+            if (node["r"]) {
+                color.r = node["r"].as<Engine::U8>();
+            }
+            if (node["g"]) {
+                color.g = node["g"].as<Engine::U8>();
+            }
+            if (node["b"]) {
+                color.b = node["b"].as<Engine::U8>();
+            }
+            if (node["a"]) {
+                color.a = node["a"].as<Engine::U8>();
             }
             return true;
         }

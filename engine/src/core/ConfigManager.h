@@ -13,8 +13,8 @@ namespace Engine
 {
     struct WindowConfig {
         std::string title{"Game Engine"};
-        int width{800};
-        int height{600};
+        int width{};
+        int height{};
         bool isFullscreen{false};
         bool isResizable{true};
         bool isBorderless{false};

@@ -7,24 +7,24 @@
 
 namespace Engine
 {
+    struct WindowSize {
+        int width{};
+        int height{};
+    };
+
     class Window
     {
     public:
-        explicit Window(const WindowConfig& config);
-        void Init();
-        void Close();
+        void Create(const WindowConfig& config);
+        void Destroy();
         [[nodiscard]] SDL_Window* GetWindowHandle() const { return m_windowHandle; }
         [[nodiscard]] SDL_GLContext GetGLContext() const { return m_glContext; }
-        [[nodiscard]] const WindowConfig& GetConfig() const { return m_config; }
-        [[nodiscard]] int GetWidth() const { return m_config.width; }
-        [[nodiscard]] int GetHeight() const { return m_config.height; }
-        [[nodiscard]] float GetDisplayScale() const { return m_displayScale; }
+        [[nodiscard]] WindowSize GetSize() const;
+        [[nodiscard]] float GetDisplayScale() const;
 
     private:
-        WindowConfig m_config{};
         SDL_Window* m_windowHandle{};
         SDL_GLContext m_glContext{};
-        float m_displayScale{1.0f};
     };
 } // namespace Engine
 

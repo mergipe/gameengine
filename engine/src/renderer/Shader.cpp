@@ -8,8 +8,8 @@ namespace Engine
 {
     Shader::~Shader() { glDeleteProgram(m_id); }
 
-    void Shader::Compile(const char* vertexShaderCode, const char* fragmentShaderCode,
-                         const char* geometryShaderCode)
+    void Shader::Create(const char* vertexShaderCode, const char* fragmentShaderCode,
+                        const char* geometryShaderCode)
     {
         const GLuint vertexShader{glCreateShader(GL_VERTEX_SHADER)};
         glShaderSource(vertexShader, 1, &vertexShaderCode, nullptr);
@@ -41,6 +41,13 @@ namespace Engine
         }
     }
 
+    const Shader& Shader::BindUniformBlock(std::string_view blockName, GLuint bindingPoint) const
+    {
+        const auto blockIndex{glGetUniformBlockIndex(m_id, blockName.data())};
+        glUniformBlockBinding(m_id, blockIndex, bindingPoint);
+        return *this;
+    }
+
     const Shader& Shader::Use() const
     {
         glUseProgram(m_id);
@@ -49,15 +56,20 @@ namespace Engine
 
     const Shader& Shader::SetUniform(std::string_view name, bool value) const
     {
-        glUniform1i(
-            glGetUniformLocation(m_id, name.data()),
-            static_cast<GLint>(value)); // TODO: store all uniform locations after loading the shader?
+        glUniform1i(glGetUniformLocation(m_id, name.data()),
+                    static_cast<GLint>(value)); // TODO: store all uniform locations after loading the shader?
         return *this;
     }
 
     const Shader& Shader::SetUniform(std::string_view name, GLint value) const
     {
         glUniform1i(glGetUniformLocation(m_id, name.data()), value);
+        return *this;
+    }
+
+    const Shader& Shader::SetUniform(std::string_view name, U32 value) const
+    {
+        glUniform1ui(glGetUniformLocation(m_id, name.data()), value);
         return *this;
     }
 
@@ -73,7 +85,7 @@ namespace Engine
         return *this;
     }
 
-    const Shader& Shader::SetUniform(std::string_view name, const glm::vec3& vector) const
+    const Shader& Shader::SetUniform(std::string_view name, glm::vec3 vector) const
     {
         glUniform3f(glGetUniformLocation(m_id, name.data()), vector.x, vector.y, vector.z);
         return *this;

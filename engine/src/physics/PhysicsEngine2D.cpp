@@ -13,19 +13,25 @@ namespace Engine
         const Physics2DConfig& config{ConfigManager::GetPhysics2DConfig()};
         worldDef.gravity = b2Vec2{config.gravity.x, config.gravity.y};
         worldDef.maximumLinearSpeed = config.maxLinearSpeed;
-        m_world = b2CreateWorld(&worldDef);
+        m_worldId = b2CreateWorld(&worldDef);
         Locator::GetLogger()->Info("Physics engine 2D initialized");
     }
 
     void PhysicsEngine2D::ShutDown()
     {
-        b2DestroyWorld(m_world);
+        b2DestroyWorld(m_worldId);
         Locator::GetLogger()->Info("Physics engine 2D shut down");
     }
 
-    void PhysicsEngine2D::Update(float timeStep) { b2World_Step(m_world, timeStep, s_subStepCount); }
+    void PhysicsEngine2D::Update(float timeStep) { b2World_Step(m_worldId, timeStep, s_subStepCount); }
 
-    b2BodyEvents PhysicsEngine2D::GetBodyEvents() { return b2World_GetBodyEvents(m_world); }
+    void PhysicsEngine2D::DebugDraw()
+    {
+        m_physics2DDebugDraw.Draw(m_worldId);
+        m_physics2DDebugDraw.RenderDevGui();
+    }
+
+    b2BodyEvents PhysicsEngine2D::GetBodyEvents() { return b2World_GetBodyEvents(m_worldId); }
 
     b2BodyId PhysicsEngine2D::CreateBody(const Body2DData& bodyData, glm::vec2 position, float rotation,
                                          entt::entity entity)
@@ -38,7 +44,7 @@ namespace Engine
         bodyDef.angularDamping = bodyData.angularDamping;
         bodyDef.linearDamping = bodyData.linearDamping;
         bodyDef.userData = reinterpret_cast<void*>(entity);
-        return b2CreateBody(m_world, &bodyDef);
+        return b2CreateBody(m_worldId, &bodyDef);
     }
 
     void PhysicsEngine2D::CreateDefaultShape(b2BodyId bodyId)
@@ -62,10 +68,10 @@ namespace Engine
     }
 
     void PhysicsEngine2D::CreateBoxShape(b2BodyId bodyId, const Shape2DData& shapeData, float width,
-                                         float height)
+                                         float height, float edgeRadius)
     {
         const b2ShapeDef shapeDef{CreateShapeDef(shapeData)};
-        const b2Polygon box{b2MakeBox(width / 2.0f, height / 2.0f)};
+        const b2Polygon box{b2MakeRoundedBox(width / 2.0f, height / 2.0f, edgeRadius)};
         b2CreatePolygonShape(bodyId, &shapeDef, &box);
     }
 
@@ -91,6 +97,11 @@ namespace Engine
     {
         const auto linearVelocity{b2Body_GetLinearVelocity(bodyId)};
         return glm::vec2{linearVelocity.x, linearVelocity.y};
+    }
+
+    void PhysicsEngine2D::SetTransform(b2BodyId bodyId, glm::vec2 position, float rotation)
+    {
+        b2Body_SetTransform(bodyId, b2Vec2{position.x, position.y}, b2MakeRot(rotation));
     }
 
     void PhysicsEngine2D::SetLinearVelocity(b2BodyId bodyId, glm::vec2 velocity) const

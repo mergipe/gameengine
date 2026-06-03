@@ -20,7 +20,7 @@ namespace Engine
         void ShutDown();
         const StringId& GetCurrentScopeId() const;
         const StringId& GetPreviousScopeId() const;
-        const StringId& GetDevGuiScopeId() const { return m_devGuiScopeId; }
+        const StringId& GetDevGuiScopeId() const { return s_devGuiScopeId; }
         void SwitchScope(const StringId& scopeId);
         void HandleKeyboardKeyDownEvent(const SDL_KeyboardEvent& event);
         void HandleKeyboardKeyUpEvent(const SDL_KeyboardEvent& event);
@@ -33,12 +33,14 @@ namespace Engine
                             const InputValue& inputValue);
         void HandleControlDown(const InputCommand& command, const InputDevice::Id& deviceId);
         void HandleControlUp(const InputCommand& command, const InputDevice::Id& deviceId);
+
         static constexpr int s_maxInputEventsByFrame{16};
+        static constexpr StringId s_devGuiScopeId{SID("dev-gui")};
+
         std::array<InputEvent, s_maxInputEventsByFrame> m_unhandledInputEvents{};
         InputConfig m_inputConfig{};
         InputCallbackMapping m_engineCallbackMapping{};
         std::vector<InputDevice> m_inputDevices{};
-        StringId m_devGuiScopeId{SID("dev-gui")};
         InputScope* m_currentScope{};
         InputScope* m_previousScope{};
         std::size_t m_inputEventsCount{};

@@ -4,5 +4,5 @@
 
 namespace Engine::Timer
 {
-    Ticks GetTicks() { return SDL_GetTicks(); }
+    Ticks GetTicks() { return SDL_GetTicksNS(); }
 } // namespace Engine::Timer

@@ -84,6 +84,9 @@ namespace Engine
         if (node["height"]) {
             boxCollider.height = node["height"].as<float>();
         }
+        if (node["edge_radius"]) {
+            boxCollider.edgeRadius = node["edge_radius"].as<float>();
+        }
     }
 
     void LoadCircleCollider2D(const entt::handle& entityHandle, const YAML::Node& node)
@@ -104,8 +107,11 @@ namespace Engine
         if (node["sprite_id"]) {
             spriteComponent.spriteId = StringId::Intern(node["sprite_id"].as<std::string>());
         }
+        if (node["pivot_point"]) {
+            spriteComponent.pivotPoint = node["pivot_point"].as<glm::vec2>();
+        }
         if (node["color"]) {
-            spriteComponent.color = node["color"].as<glm::vec3>();
+            spriteComponent.color = node["color"].as<RGBA8>();
         }
         if (node["z_index"]) {
             spriteComponent.zIndex = node["z_index"].as<int>();
@@ -171,18 +177,23 @@ namespace Engine
                 cameraComponent.camera.SetProjectionType(*projectionType);
             }
         }
-        if (node["viewport"]) {
-            const auto viewport{node["viewport"].as<glm::vec2>()};
-            cameraComponent.camera.SetViewport(viewport.x, viewport.y);
-        }
         if (node["z_near"]) {
             cameraComponent.camera.SetZNear(node["z_near"].as<float>());
         }
         if (node["z_far"]) {
             cameraComponent.camera.SetZFar(node["z_far"].as<float>());
         }
-        if (node["fov_y"]) {
-            cameraComponent.camera.SetFovY(glm::radians(node["fov_y"].as<float>()));
+        if (node["perspective"]) {
+            const auto perspectiveNode{node["perspective"]};
+            if (perspectiveNode["fov_y"]) {
+                cameraComponent.camera.SetPerspectiveFovY(glm::radians(perspectiveNode["fov_y"].as<float>()));
+            }
+        }
+        if (node["orthographic"]) {
+            const auto orthoNode{node["orthographic"]};
+            if (orthoNode["size"]) {
+                cameraComponent.camera.SetOrthoSize(orthoNode["size"].as<float>());
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 #include "Scene.h"
 
+#include "Components.h"
 #include "Engine.h"
 #include "Systems.h"
 #include "core/Locator.h"
@@ -13,9 +14,6 @@ namespace Engine
         , m_playerInputSystem{std::make_unique<PlayerInputSystem>(&sceneContext->registry)}
         , m_sceneContext{sceneContext}
     {
-        if (Engine::Instance().HasDevMode()) {
-            m_debugRenderingSystem = std::make_unique<DebugRenderingSystem>(&sceneContext->registry);
-        }
         m_sceneContext->scriptingSystem->Start();
         m_playerInputSystem->Start();
         m_physicsSystem->Start();
@@ -41,8 +39,14 @@ namespace Engine
     void Scene::Render(float frameExtrapolationTimeStep)
     {
         m_renderingSystem->Update(frameExtrapolationTimeStep);
-        if (Engine::Instance().IsDevModeEnabled()) {
-            m_debugRenderingSystem->Update(frameExtrapolationTimeStep);
+    }
+
+    void Scene::OnViewportResize(int width, int height)
+    {
+        const auto view{m_sceneContext->registry.view<CameraComponent>()};
+        for (const auto entity : view) {
+            auto& cameraComponent{view.get<CameraComponent>(entity)};
+            cameraComponent.camera.SetViewport(static_cast<float>(width), static_cast<float>(height));
         }
     }
 } // namespace Engine

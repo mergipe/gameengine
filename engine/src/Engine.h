@@ -40,8 +40,8 @@ namespace Engine
         void Update();
         void Render(float frameExtrapolationTimeStep);
         static constexpr float s_updateRate{60.0f};
-        static constexpr float s_timeStepInMs{1000.0f / s_updateRate};
         static constexpr float s_timeStep{1.0f / s_updateRate};
+        static constexpr float s_timeStepInNs{1'000'000'000.0f * s_timeStep};
         std::unique_ptr<Logger> m_logger{};
         std::unique_ptr<Window> m_window{};
         std::unique_ptr<RenderManager> m_renderManager{};

@@ -4,6 +4,7 @@
 #include "Engine.h"
 #include "Entity.h"
 #include "ScriptingApi.h"
+#include "core/AABB.h"
 #include "core/Locator.h"
 #include "events/Events.h"
 #include "renderer/RenderManager.h"
@@ -20,15 +21,6 @@ namespace Engine
         return glm::vec2{position + velocity * extrapolationTimeStep};
     }
 
-    constexpr bool IsOutsideOrthoCameraView(const Camera& camera, const Rect& rect)
-    {
-        const Rect cameraPlaneGeometry{camera.GetNearPlaneGeometry()};
-        return rect.GetRightX() < cameraPlaneGeometry.GetLeftX() ||
-               rect.GetLeftX() > cameraPlaneGeometry.GetRightX() ||
-               rect.GetTopY() < cameraPlaneGeometry.GetBottomY() ||
-               rect.GetBottomY() > cameraPlaneGeometry.GetTopY();
-    }
-
     void PhysicsSystem::Start()
     {
         const auto view{GetRegistry().view<const TransformComponent, const RigidBody2DComponent>(
@@ -43,13 +35,15 @@ namespace Engine
             auto& rigidBodyRuntime{registry.emplace<RigidBody2DRuntimeComponent>(entity, bodyId)};
             bool hasCollider{false};
             if (const auto* boxCollider{registry.try_get<BoxCollider2DComponent>(entity)}) {
-                physicsEngine->CreateBoxShape(rigidBodyRuntime.bodyId, boxCollider->shapeData,
-                                              boxCollider->width, boxCollider->height);
+                physicsEngine->CreateBoxShape(
+                    rigidBodyRuntime.bodyId, boxCollider->shapeData, boxCollider->width * transform.scale.x,
+                    boxCollider->height * transform.scale.y, boxCollider->edgeRadius);
                 hasCollider = true;
             }
             if (const auto* circleCollider{registry.try_get<CircleCollider2DComponent>(entity)}) {
                 physicsEngine->CreateCircleShape(rigidBodyRuntime.bodyId, circleCollider->shapeData,
-                                                 circleCollider->radius);
+                                                 circleCollider->radius *
+                                                     std::max(transform.scale.x, transform.scale.y));
                 hasCollider = true;
             }
             if (!hasCollider) {
@@ -60,15 +54,27 @@ namespace Engine
 
     void PhysicsSystem::Update(float timeStep)
     {
-        Locator::GetPhysicsEngine2D()->Update(timeStep);
-        b2BodyEvents events{Locator::GetPhysicsEngine2D()->GetBodyEvents()};
+        const auto physicsEngine{Locator::GetPhysicsEngine2D()};
+        const auto view{GetRegistry().view<TransformComponent, RigidBody2DRuntimeComponent>()};
+        for (const auto entity : view) {
+            auto [transform, rigidBody] = view.get<TransformComponent, RigidBody2DRuntimeComponent>(entity);
+            const auto position{glm::vec2{transform.position}};
+            const auto rotation{transform.rotation.z};
+            if (physicsEngine->GetPosition(rigidBody.bodyId) != position ||
+                physicsEngine->GetRotationAngle(rigidBody.bodyId) != rotation) {
+                physicsEngine->SetTransform(rigidBody.bodyId, position, rotation);
+            }
+        }
+        physicsEngine->Update(timeStep);
+        b2BodyEvents events{physicsEngine->GetBodyEvents()};
         for (int i{0}; i < events.moveCount; ++i) {
             const b2BodyMoveEvent* event{events.moveEvents + i};
             entt::entity entity{static_cast<entt::entity>(reinterpret_cast<std::uintptr_t>(event->userData))};
-            TransformComponent& transform{GetRegistry().get<TransformComponent>(entity)};
-            transform.position.x = event->transform.p.x;
-            transform.position.y = event->transform.p.y;
-            transform.rotation.z = b2Rot_GetAngle(event->transform.q);
+            if (auto* transform{GetRegistry().try_get<TransformComponent>(entity)}) {
+                transform->position.x = event->transform.p.x;
+                transform->position.y = event->transform.p.y;
+                transform->rotation.z = b2Rot_GetAngle(event->transform.q);
+            }
         }
     }
 
@@ -81,13 +87,12 @@ namespace Engine
             cameraPtr = &camera.camera;
             if (!cameraPtr)
                 continue;
-            cameraPtr->SetModelTransformation(
-                Math::GetTransformationMatrix(transform.position, transform.rotation, transform.scale));
+            cameraPtr->SetTransform(transform.position, transform.rotation, transform.scale);
             break;
         }
         if (!cameraPtr)
             return;
-        Locator::GetRenderManager()->SetupCamera(*cameraPtr);
+        Locator::GetRenderManager()->SetCamera(*cameraPtr);
         GetRegistry().sort<SpriteComponent>(
             [](const SpriteComponent& lhs, const SpriteComponent& rhs) { return lhs.zIndex < rhs.zIndex; });
         auto spriteView{GetRegistry().view<const TransformComponent, const SpriteComponent>()};
@@ -100,36 +105,28 @@ namespace Engine
                 renderPosition =
                     GetExtrapolatedPosition(transform.position, velocity, frameExtrapolationTimeStep);
             }
-            const auto& texture{Locator::GetResourceManager()->GetTexture(spriteComponent.textureId)};
-            Rect textureArea{};
+            const Texture2D* texture{(&Locator::GetResourceManager()->GetTexture(spriteComponent.textureId))};
+            glm::vec2 subTextureUvTopLeft{0.0f, 0.0f};
+            glm::vec2 subTextureSize{};
             if (!spriteComponent.spriteId.GetString().empty()) {
-                if (const auto sprite{texture.GetSprite(spriteComponent.spriteId)}) {
-                    textureArea = sprite->textureArea;
+                if (const auto sprite{texture->GetSprite(spriteComponent.spriteId)}) {
+                    subTextureUvTopLeft = sprite->uvTopLeft;
+                    subTextureSize = sprite->size;
                 }
             } else {
-                textureArea.width = static_cast<float>(texture.GetWidth());
-                textureArea.height = static_cast<float>(texture.GetHeight());
+                subTextureSize.x = static_cast<float>(texture->GetWidth());
+                subTextureSize.y = static_cast<float>(texture->GetHeight());
             }
-            textureArea.pivotPoint = glm::vec2{0, 1};
-            const float spriteWidth{textureArea.width * transform.scale.x};
-            const float spriteHeight{textureArea.height * transform.scale.y};
-            const Rect spriteGeometry{renderPosition, spriteWidth, spriteHeight};
-            if (!IsOutsideOrthoCameraView(*cameraPtr, spriteGeometry)) {
-                Locator::GetRenderManager()->DrawSprite(spriteGeometry, transform.rotation, texture,
-                                                        textureArea, spriteComponent.color);
+            const float spriteWidth{subTextureSize.x * transform.scale.x};
+            const float spriteHeight{subTextureSize.y * transform.scale.y};
+            Locator::GetRenderManager()->AddSprite(glm::vec3{renderPosition, 0.0f}, transform.rotation,
+                                                   glm::vec3{spriteWidth, spriteHeight, 1.0f},
+                                                   spriteComponent.pivotPoint, texture, subTextureUvTopLeft,
+                                                   subTextureSize, spriteComponent.color);
+            if (Engine::Instance().IsDevModeEnabled()) {
+                DebugRenderer* debugRenderer{Locator::GetDebugRenderer()};
+                debugRenderer->AddTransformAxes(renderPosition, transform.rotation.z, spriteWidth * 0.75f);
             }
-        }
-    }
-
-    void DebugRenderingSystem::RegisterRenderFunction(const std::function<void()>& function)
-    {
-        m_renderFunctions.push_back(function);
-    }
-
-    void DebugRenderingSystem::Update([[maybe_unused]] float frameExtrapolationTimeStep)
-    {
-        for (auto& function : m_renderFunctions) {
-            function();
         }
     }
 
@@ -318,8 +315,8 @@ namespace Engine
         m_lua.new_usertype<glm::vec3>(
             "Vec3", sol::constructors<glm::vec3(), glm::vec3(float), glm::vec3(float, float, float)>(), "x",
             &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
-        m_lua.new_usertype<Rect>("Rect", "position", &Rect::position, "width", &Rect::width, "height",
-                                 &Rect::height, "pivot_point", &Rect::pivotPoint);
+        m_lua.new_usertype<AABB>("AABB", "center", &AABB::center, "width", &AABB::width, "height",
+                                 &AABB::height);
         m_lua.new_usertype<InputValue>("InputValue", "value", &InputValue::value);
         sol::usertype transform{m_lua.new_usertype<ScriptingApi::Transform>("Transform")};
         transform["position"] =

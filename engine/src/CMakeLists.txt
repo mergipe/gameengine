@@ -6,6 +6,7 @@ add_executable(${PROJECT_NAME}
         core/Logger.cpp
         core/StringId.cpp
         core/Timer.cpp
+        core/Types.cpp
         core/Window.cpp
         debug/DevGui.cpp
         input/InputCallback.cpp
@@ -14,7 +15,10 @@ add_executable(${PROJECT_NAME}
         input/InputManager.cpp
         input/InputScope.cpp
         physics/PhysicsEngine2D.cpp
+        physics/Physics2DDebugDraw.cpp
+        renderer/Buffer.cpp
         renderer/Camera.cpp
+        renderer/DebugRenderer.cpp
         renderer/RenderManager.cpp
         renderer/Shader.cpp
         renderer/ShaderManager.cpp

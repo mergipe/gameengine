@@ -3,14 +3,14 @@
 
 #include "Scene.h"
 #include "SceneContext.h"
+#include "core/Yaml.h"
 
 #include <memory>
-#include <yaml-cpp/yaml.h>
 
 namespace Engine
 {
-    struct SceneManagerUIData {
-        bool showEntityEditor{};
+    struct SceneManagerDebugUIData {
+        bool showEntityEditor{false};
     };
 
     class SceneManager
@@ -21,11 +21,12 @@ namespace Engine
         void LoadScene(const StringId& sceneId);
         [[nodiscard]] Scene* GetCurrentScene() const { return m_currentScene.get(); }
         void RenderDevGui();
+        void OnViewportResize(int width, int height);
 
     private:
         void LoadEntities(const YAML::Node& entitiesNode);
         SceneContext m_sceneContext{};
-        SceneManagerUIData m_uiData{};
+        SceneManagerDebugUIData m_debugUIData{};
         std::unique_ptr<Scene> m_currentScene{};
     };
 } // namespace Engine

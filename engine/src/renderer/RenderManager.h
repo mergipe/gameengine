@@ -2,8 +2,8 @@
 #define RENDER_MANAGER_H
 
 #include "Camera.h"
-#include "ShaderManager.h"
-#include "Shapes.h"
+#include "DebugRenderer.h"
+#include "RenderContext.h"
 #include "core/StringId.h"
 #include "core/Window.h"
 #include "resources/Texture2D.h"
@@ -13,31 +13,44 @@
 
 namespace Engine
 {
+    struct SpriteData {
+        glm::mat4 transform{};
+        glm::vec2 subTextureNormalizedUv{};
+        glm::vec2 subTextureNormalizedSize{};
+        int textureIndex{};
+        RGBA8 color{};
+    };
+
     class RenderManager
     {
     public:
-        explicit RenderManager(Window* window);
         void Init();
         void ShutDown();
         void SetViewport(int x, int y, int width, int height);
-        void SetViewportSize(int width, int height);
+        void OnViewportResize(int width, int height);
         void SetClearColor(float red, float green, float blue, float alpha);
-        void SetupCamera(const Camera& camera);
-        void DrawRectangle(const Rect& rect, const glm::vec4& color, const glm::vec3& rotation);
-        void DrawSprite(const Rect& spriteGeometry, const glm::vec3& rotation, const Texture2D& texture,
-                        const Rect& textureArea, const glm::vec3& color = glm::vec3{1.0f});
+        void SetCamera(Camera& camera);
+        void AddSprite(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, glm::vec2 pivotPoint,
+                       const Texture2D* texture, glm::vec2 subTextureUvTopLeft, glm::vec2 subTextureSize,
+                       RGBA8 color);
         void Clear();
-        void Present();
+        void Flush();
+        void Present(const Window& window);
+        void RenderDevGui();
 
     private:
-        glm::mat4 m_cameraTransformation{};
-        glm::mat4 m_projectionTransformation{};
-        StringId m_spriteShaderId{SID("sprite-shader")};
-        StringId m_primitivesShaderId{SID("primitives-shader")};
-        std::unique_ptr<ShaderManager> m_shaderManager{};
-        Window* m_window{};
-        GLuint m_spriteVao{};
-        GLuint m_quadVao{};
+        void FlushSprites();
+
+        constexpr static StringId s_spriteShaderId{SID("sprite-shader")};
+        constexpr static int s_spritesBatchSize{1024};
+        constexpr static U32 s_textureUnitsCount{16};
+
+        std::array<const Texture2D*, s_textureUnitsCount> m_spriteTextures{};
+        RenderContext m_renderContext{};
+        VertexArray m_spriteVertexArray{};
+        std::vector<SpriteData> m_sprites{};
+        std::unique_ptr<DebugRenderer> m_debugRenderer{};
+        U32 m_spriteTextureCount{0};
     };
 } // namespace Engine
 

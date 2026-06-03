@@ -3,7 +3,6 @@
 
 #include "core/StringId.h"
 #include "core/Yaml.h"
-#include "renderer/Shapes.h"
 
 #include <glad/glad.h>
 #include <unordered_map>
@@ -20,7 +19,8 @@ namespace Engine
     struct Sprite {
         static Sprite ParseFromYAML(const YAML::Node& rootNode);
         StringId id{};
-        Rect textureArea{};
+        glm::vec2 uvTopLeft{};
+        glm::vec2 size{};
     };
 
     struct TextureConfig {
@@ -43,11 +43,12 @@ namespace Engine
         Texture2D& operator=(const Texture2D&) = delete;
         Texture2D& operator=(Texture2D&&) = delete;
         ~Texture2D();
+        bool operator==(const Texture2D& texture) const;
         GLsizei GetWidth() const { return m_width; }
         GLsizei GetHeight() const { return m_height; }
         std::optional<Sprite> GetSprite(const StringId& spriteId) const;
         void Create(const unsigned char* data, GLsizei width, GLsizei height, GLint imageFormat);
-        void Bind() const;
+        void Bind(U32 unit) const;
 
     private:
         std::unordered_map<StringId, Sprite> m_sprites{};

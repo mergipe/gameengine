@@ -30,7 +30,8 @@ namespace Engine
     struct SpriteComponent final {
         StringId textureId{};
         StringId spriteId{};
-        glm::vec3 color{1.0f}; // TODO: change to 0-255
+        glm::vec2 pivotPoint{0.5f, 0.5f};
+        RGBA8 color{255, 255, 255, 255};
         int zIndex{0};
     };
 
@@ -49,6 +50,7 @@ namespace Engine
         Shape2DData shapeData{};
         float width{1.0f};
         float height{1.0f};
+        float edgeRadius{0.0f};
     };
 
     struct CircleCollider2DComponent final {

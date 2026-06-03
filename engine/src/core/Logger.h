@@ -26,6 +26,8 @@ namespace Engine
         void ShutDown();
         void AddFileSink(const std::filesystem::path& logFilePath);
         void SetLevel(Level level);
+        template <typename T> void Log(Level level, const T& msg);
+        template <typename... TArgs> void Log(Level level, fmt::format_string<TArgs...> fmt, TArgs&&... args);
         template <typename T> void Trace(const T& msg);
         template <typename... TArgs> void Trace(fmt::format_string<TArgs...> fmt, TArgs&&... args);
         template <typename T> void Debug(const T& msg);
@@ -46,6 +48,17 @@ namespace Engine
                                                                 "log.txt"};
         std::shared_ptr<spdlog::logger> m_logger{spdlog::stdout_color_mt(s_name)};
     };
+
+    template <typename T> void Logger::Log(Level level, const T& msg)
+    {
+        m_logger->log(static_cast<spdlog::level::level_enum>(level), msg);
+    }
+
+    template <typename... TArgs> void Logger::Log(Level level, fmt::format_string<TArgs...> fmt,
+                                                  TArgs&&... args)
+    {
+        m_logger->log(static_cast<spdlog::level::level_enum>(level), fmt, std::forward<TArgs>(args)...);
+    }
 
     template <typename T>
     void Logger::Trace(const T& msg)

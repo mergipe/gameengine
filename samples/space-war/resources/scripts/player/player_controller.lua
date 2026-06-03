@@ -3,9 +3,9 @@ require("entity_script")
 PlayerController = EntityScript:new()
 
 function PlayerController:OnStart()
-  self.rotation_speed = 10000000000
+  self.rotation_speed = 300000000
   self.rotation_value = 0
-  self.acceleration_magnitude = 10000000
+  self.acceleration_magnitude = 2000000
   self.is_accelerating = false
   self.is_shooting = false
   self.transform = self:GetComponent(Transform)

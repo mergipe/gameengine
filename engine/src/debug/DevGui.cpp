@@ -32,12 +32,12 @@ namespace Engine
             style.WindowRounding = 0.0f;
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
-        float uiScale{m_window->GetDisplayScale()};
-        style.FontScaleDpi = uiScale;
+        // TODO: scale based on window size
+        style.FontScaleDpi = m_window->GetDisplayScale();
         style.ScaleAllSizes(SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay()));
         ImGui_ImplSDL3_InitForOpenGL(m_window->GetWindowHandle(), m_window->GetGLContext());
         ImGui_ImplOpenGL3_Init("#version 330 core");
-        Locator::GetLogger()->Info("Dev gui initialized");
+        Locator::GetLogger()->Info("Dev GUI initialized");
     }
 
     void DevGuiImpl::ShutDown()
@@ -45,7 +45,7 @@ namespace Engine
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplSDL3_Shutdown();
         ImGui::DestroyContext();
-        Locator::GetLogger()->Info("Dev gui shut down");
+        Locator::GetLogger()->Info("Dev GUI shut down");
     }
 
     void DevGuiImpl::ProcessEvent(const SDL_Event& event) { ImGui_ImplSDL3_ProcessEvent(&event); }
@@ -76,6 +76,15 @@ namespace Engine
 
     void DevGuiImpl::Show()
     {
+        ImGui::SetNextWindowPos(ImVec2{0.0f, 0.0f});
+        const auto windowSize{m_window->GetSize()};
+        ImGui::SetNextWindowSize(
+            ImVec2{static_cast<float>(windowSize.width), static_cast<float>(windowSize.height)});
+        ImGui::SetNextWindowBgAlpha(0.0f);
+        ImGui::Begin(s_overlayId, nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs |
+                         ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar);
+        ImGui::End();
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("Profile/Debug")) {
                 ImGui::MenuItem("Metrics overlay", nullptr, &m_data.showMetricsOverlay);
@@ -110,7 +119,7 @@ namespace Engine
                 }
                 ImGui::EndPopup();
             }
-            ImGui::End();
         }
+        ImGui::End();
     }
 } // namespace Engine

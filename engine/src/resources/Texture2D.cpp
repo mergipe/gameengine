@@ -34,9 +34,8 @@ namespace Engine
         sprite.id = StringId::Intern(rootNode["id"].as<std::string>(std::string{}));
         const int x{rootNode["x"].as<int>(0)};
         const int y{rootNode["y"].as<int>(0)};
-        sprite.textureArea.position = glm::vec2{x, y};
-        sprite.textureArea.width = rootNode["width"].as<float>(0.0f);
-        sprite.textureArea.height = rootNode["height"].as<float>(0.0f);
+        sprite.uvTopLeft = glm::vec2{x, y};
+        sprite.size = glm::vec2{rootNode["width"].as<float>(0.0f), rootNode["height"].as<float>(0.0f)};
         return sprite;
     }
 
@@ -121,6 +120,8 @@ namespace Engine
 
     Texture2D::~Texture2D() { glDeleteTextures(1, &m_id); }
 
+    bool Texture2D::operator==(const Texture2D& other) const { return m_id == other.m_id; }
+
     std::optional<Sprite> Texture2D::GetSprite(const StringId& spriteId) const
     {
         if (const auto sprite{m_sprites.find(spriteId)}; sprite != m_sprites.end()) {
@@ -149,5 +150,9 @@ namespace Engine
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    void Texture2D::Bind() const { glBindTexture(GL_TEXTURE_2D, m_id); }
+    void Texture2D::Bind(U32 unit) const
+    {
+        glActiveTexture(GL_TEXTURE0 + unit);
+        glBindTexture(GL_TEXTURE_2D, m_id);
+    }
 } // namespace Engine

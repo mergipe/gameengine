@@ -17,6 +17,8 @@ namespace Engine
         virtual void NewFrame() = 0;
         virtual void Render() = 0;
         virtual void Show() = 0;
+
+        constexpr static auto s_overlayId{"Overlay"};
     };
 
     class NullDevGui final : public DevGui

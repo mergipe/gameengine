@@ -6,7 +6,7 @@ components:
   sprite:
     texture_id: textures/planet00.png
     z_index: 1
-    color: {r: 1, g: 1, b: 1}
+    color: {r: 255, g: 255, b: 255, a: 255}
   rigid_body_2d:
     type: static
     gravity_scale: 0

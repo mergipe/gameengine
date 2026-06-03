@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "Shapes.h"
+#include "core/AABB.h"
 #include "core/StringId.h"
 
 #include <glm/glm.hpp>
@@ -24,27 +24,35 @@ namespace Engine
     class Camera
     {
     public:
+        [[nodiscard]] AABB GetNearPlaneAABB() const;
+        [[nodiscard]] AABB GetFarPlaneAABB() const;
+        [[nodiscard]] const glm::mat4& GetViewMatrix();
+        [[nodiscard]] const glm::mat4& GetProjectionMatrix();
+        [[nodiscard]] glm::vec3 GetNormalizedScreenPosition(glm::vec3 worldPosition) const;
         void SetViewport(float viewportWidth, float viewportHeight);
         void SetProjectionType(ProjectionType projectionType);
         void SetZNear(float zNear);
         void SetZFar(float zFar);
-        void SetFovY(float fovY);
-        [[nodiscard]] glm::mat4 GetProjectionTransformation() const;
-        [[nodiscard]] Rect GetNearPlaneGeometry() const;
-        [[nodiscard]] Rect GetFarPlaneGeometry() const;
-        [[nodiscard]] glm::mat4 GetCameraTransformation() const;
-        void SetModelTransformation(const glm::mat4& modelTransformation);
+        void SetPerspectiveFovY(float perspectiveFovY);
+        void SetOrthoSize(float orthoSize);
+        void SetTransform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
 
     private:
-        glm::mat4 m_modelTransformation{};
+        void UpdateViewMatrix();
+        void UpdateProjectionMatrix();
+
+        glm::mat4 m_transformMatrix{};
+        glm::mat4 m_viewMatrix{};
+        glm::mat4 m_projectionMatrix{};
         glm::vec3 m_position{};
         ProjectionType m_projectionType{ProjectionType::orthographic};
         float m_zNear{};
         float m_zFar{};
-        float m_viewportWidth{};
-        float m_viewportHeight{};
-        float m_fovY{};
         float m_aspectRatio{};
+        float m_orthoSize{};
+        float m_perspectiveFovY{};
+        bool m_viewDirty{true};
+        bool m_projectionDirty{true};
     };
 } // namespace Engine
 

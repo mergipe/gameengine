@@ -19,7 +19,7 @@ namespace Engine
         StringId emptyScopeId{SID("empty")};
         m_inputConfig.inputScopes.insert(std::make_pair(emptyScopeId, InputScope{emptyScopeId}));
         if (Engine::Instance().HasDevMode()) {
-            m_inputConfig.inputScopes.insert(std::make_pair(m_devGuiScopeId, InputScope{m_devGuiScopeId}));
+            m_inputConfig.inputScopes.insert(std::make_pair(s_devGuiScopeId, InputScope{s_devGuiScopeId}));
         }
         m_currentScope = &m_inputConfig.inputScopes.at(emptyScopeId);
         m_previousScope = m_currentScope;

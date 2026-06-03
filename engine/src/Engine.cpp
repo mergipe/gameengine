@@ -4,7 +4,6 @@
 #include "core/Locator.h"
 #include "core/Logger.h"
 #include "core/Timer.h"
-#include "imgui.h"
 #include "renderer/RenderManager.h"
 #include "scene/SceneManager.h"
 
@@ -33,10 +32,10 @@ namespace Engine
         InitSDL();
         ConfigManager::Init();
         const VideoConfig& videoConfig{ConfigManager::GetVideoConfig()};
-        m_window = std::make_unique<Window>(videoConfig.windowConfig);
-        m_window->Init();
+        m_window = std::make_unique<Window>();
+        m_window->Create(videoConfig.windowConfig);
         SDL_GL_SetSwapInterval(videoConfig.vsync);
-        m_renderManager = std::make_unique<RenderManager>(m_window.get());
+        m_renderManager = std::make_unique<RenderManager>();
         m_renderManager->Init();
         Locator::Provide(m_renderManager.get());
         m_resourceManager = std::make_unique<ResourceManager>();
@@ -72,7 +71,11 @@ namespace Engine
 #ifdef __APPLE__
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 #else
+#ifdef DEBUG
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+#else
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+#endif
 #endif
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -85,17 +88,17 @@ namespace Engine
         m_isRunning = true;
         m_sceneManager->LoadScene(ConfigManager::GetGameConfig().initialScene);
         Timer::Ticks previousTicks{Timer::GetTicks()};
-        float lag{0.0f};
+        float lagInNs{0.0f};
         while (m_isRunning) {
             const Timer::Ticks currentTicks{Timer::GetTicks()};
-            lag += static_cast<float>(currentTicks - previousTicks);
+            lagInNs += static_cast<float>(currentTicks - previousTicks);
             previousTicks = currentTicks;
             ProcessEvents();
-            while (lag >= s_timeStepInMs) {
+            while (lagInNs >= s_timeStepInNs) {
                 Update();
-                lag -= s_timeStepInMs;
+                lagInNs -= s_timeStepInNs;
             }
-            Render(lag / 1000.0f);
+            Render(lagInNs / 1'000'000'000.0f);
         }
     }
 
@@ -107,7 +110,7 @@ namespace Engine
         m_resourceManager->ShutDown();
         m_inputManager->ShutDown();
         m_renderManager->ShutDown();
-        m_window->Close();
+        m_window->Destroy();
         SDL_Quit();
         m_logger->ShutDown();
     }
@@ -127,7 +130,8 @@ namespace Engine
                 m_isRunning = false;
                 break;
             case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-                m_renderManager->SetViewportSize(event.window.data1, event.window.data2);
+                m_renderManager->OnViewportResize(event.window.data1, event.window.data2);
+                m_sceneManager->OnViewportResize(event.window.data1, event.window.data2);
                 break;
             case SDL_EVENT_KEY_DOWN:
                 m_inputManager->HandleKeyboardKeyDownEvent(event.key);
@@ -150,10 +154,13 @@ namespace Engine
         m_sceneManager->GetCurrentScene()->Render(frameExtrapolationTimeStep);
         m_devGui->NewFrame();
         if (m_isDevModeEnabled) {
+            m_renderManager->RenderDevGui();
+            m_physicsEngine2D->DebugDraw();
             m_sceneManager->RenderDevGui();
             m_devGui->Show();
         }
+        m_renderManager->Flush();
         m_devGui->Render();
-        m_renderManager->Present();
+        m_renderManager->Present(*m_window);
     }
 } // namespace Engine

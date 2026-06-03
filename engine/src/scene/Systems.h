@@ -15,7 +15,6 @@
 #include <sol/sol.hpp>
 #include <string_view>
 #include <unordered_map>
-#include <vector>
 
 namespace Engine
 {
@@ -56,20 +55,6 @@ namespace Engine
         {
         }
         void Update(float frameExtrapolationTimeStep);
-    };
-
-    class DebugRenderingSystem final : public System
-    {
-    public:
-        explicit DebugRenderingSystem(entt::registry* registry)
-            : System{registry}
-        {
-        }
-        void RegisterRenderFunction(const std::function<void()>& function);
-        void Update(float frameExtrapolationTimeStep);
-
-    private:
-        std::vector<std::function<void()>> m_renderFunctions{};
     };
 
     class SpriteAnimationSystem final : public System

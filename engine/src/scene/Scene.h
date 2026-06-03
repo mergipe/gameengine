@@ -19,11 +19,11 @@ namespace Engine
         ~Scene();
         void Update(float timeStep);
         void Render(float frameExtrapolationTimeStep);
+        void OnViewportResize(int width, int height);
 
     private:
         std::unique_ptr<PhysicsSystem> m_physicsSystem{};
         std::unique_ptr<RenderingSystem> m_renderingSystem{};
-        std::unique_ptr<DebugRenderingSystem> m_debugRenderingSystem{};
         std::unique_ptr<SpriteAnimationSystem> m_animationSystem{};
         std::unique_ptr<PlayerInputSystem> m_playerInputSystem{};
         SceneContext* m_sceneContext{};

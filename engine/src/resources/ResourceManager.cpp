@@ -34,6 +34,7 @@ namespace Engine
         }
         m_fallbackTexture = std::make_unique<Texture2D>(TextureConfig{});
         m_fallbackTexture->Create(fallbackTextureData.data(), width, height, GL_RGB);
+        stbi_set_flip_vertically_on_load(true);
         Locator::GetLogger()->Info("Resource manager initialized");
     }
 

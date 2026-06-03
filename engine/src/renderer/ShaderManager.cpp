@@ -24,8 +24,8 @@ namespace Engine
             geometryShaderCode = ReadShaderFile(*geometryShaderRelativePath);
         }
         auto shader{std::make_unique<Shader>()};
-        shader->Compile(vertexShaderCode.c_str(), fragmentShaderCode.c_str(),
-                        geometryShaderRelativePath ? geometryShaderCode.c_str() : nullptr);
+        shader->Create(vertexShaderCode.c_str(), fragmentShaderCode.c_str(),
+                       geometryShaderRelativePath ? geometryShaderCode.c_str() : nullptr);
         m_shaders.insert(std::make_pair(shaderId, std::move(shader)));
         Locator::GetLogger()->Info("'{}' shader loaded", shaderId.GetString());
         return *m_shaders.at(shaderId);

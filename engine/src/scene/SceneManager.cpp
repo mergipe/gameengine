@@ -6,7 +6,7 @@
 #include "core/Yaml.h"
 #include "resources/EntityLoader.h"
 
-#include <entt/meta/factory.hpp>
+#include <glm/gtc/type_ptr.inl>
 #include <imgui.h>
 #include <string>
 
@@ -40,40 +40,6 @@ namespace Engine
         m_sceneContext.registry.storage<PlayerInputComponent>();
         m_sceneContext.registry.storage<ScriptComponent>();
         m_sceneContext.registry.storage<CameraComponent>();
-        entt::meta_factory<IdComponent>{}.type("Id").data<&IdComponent::value>("value");
-        entt::meta_factory<TagComponent>{}.type("Tag").data<&TagComponent::value>("value");
-        entt::meta_factory<TransformComponent>{}
-            .type("Transform")
-            .data<&TransformComponent::position>("position")
-            .data<&TransformComponent::scale>("scale")
-            .data<&TransformComponent::rotation>("rotation");
-        entt::meta_factory<SpriteComponent>{}
-            .type("Sprite")
-            .data<&SpriteComponent::textureId>("textureId")
-            .data<&SpriteComponent::spriteId>("spriteId")
-            .data<&SpriteComponent::color>("color")
-            .data<&SpriteComponent::zIndex>("zIndex");
-        entt::meta_factory<SpriteAnimationComponent>{}.type("SpriteAnimation");
-        entt::meta_factory<RigidBody2DComponent>{}
-            .type("RigidBody2D")
-            .data<&RigidBody2DComponent::bodyData>("bodyData");
-        entt::meta_factory<BoxCollider2DComponent>{}
-            .type("BoxCollider2D")
-            .data<&BoxCollider2DComponent::shapeData>("shapeData")
-            .data<&BoxCollider2DComponent::width>("width")
-            .data<&BoxCollider2DComponent::height>("height");
-        entt::meta_factory<CircleCollider2DComponent>{}
-            .type("CircleCollider2D")
-            .data<&CircleCollider2DComponent::shapeData>("shapeData")
-            .data<&CircleCollider2DComponent::radius>("radius");
-        entt::meta_factory<PlayerInputComponent>{}
-            .type("PlayerInput")
-            .data<&PlayerInputComponent::callbackDefs>("callbackMapping")
-            .data<&PlayerInputComponent::defaultInputScope>("defaultInputScope");
-        entt::meta_factory<ScriptRuntimeComponent>{}
-            .type("Script")
-            .data<&ScriptRuntimeComponent::scriptInstances>("scriptInstances");
-        // entt::meta_factory<CameraComponent>{}.type("Camera").data<&CameraComponent::camera>("camera");
         Locator::GetLogger()->Info("Scene manager initialized");
     }
 
@@ -101,13 +67,13 @@ namespace Engine
     {
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("Scene")) {
-                ImGui::MenuItem("Entities", nullptr, &m_uiData.showEntityEditor);
+                ImGui::MenuItem("Entities", nullptr, &m_debugUIData.showEntityEditor);
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
         }
-        if (m_uiData.showEntityEditor) {
-            if (ImGui::Begin("Entity editor", &m_uiData.showEntityEditor)) {
+        if (m_debugUIData.showEntityEditor) {
+            if (ImGui::Begin("Entity editor", &m_debugUIData.showEntityEditor)) {
                 static entt::entity selectedEntity{};
                 if (ImGui::BeginChild("entity_list_pane", ImVec2{150, 0},
                                       ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX)) {
@@ -121,23 +87,53 @@ namespace Engine
                 }
                 ImGui::EndChild();
                 ImGui::SameLine();
-                if (ImGui::BeginChild("entity_view_pane")) {
-                    for (auto [storageId, storage] : m_sceneContext.registry.storage()) {
-                        if (storage.contains(selectedEntity)) {
-                            const auto type{entt::resolve(storage.info())};
-                            if (!type)
-                                continue;
-                            if (ImGui::CollapsingHeader(type.name(), ImGuiTreeNodeFlags_DefaultOpen)) {
-                                for (auto [dataId, data] : type.data()) {
-                                    ImGui::TextUnformatted(data.name());
-                                }
-                            }
+                if (ImGui::BeginChild("entity_edit_pane")) {
+                    if (auto* idComponent{m_sceneContext.registry.try_get<IdComponent>(selectedEntity)}) {
+                        ImGui::Text("ID: %s", idComponent->value.GetString().data());
+                    }
+                    if (auto* tagComponent{m_sceneContext.registry.try_get<TagComponent>(selectedEntity)}) {
+                        ImGui::Text("Tag: %s", tagComponent->value.GetString().data());
+                    }
+                    ImGuiTreeNodeFlags treeNodeFlags{ImGuiTreeNodeFlags_DefaultOpen};
+                    if (auto* transformComponent{
+                            m_sceneContext.registry.try_get<TransformComponent>(selectedEntity)}) {
+                        if (ImGui::CollapsingHeader("Transform", treeNodeFlags)) {
+                            ImGui::DragFloat3("Position", glm::value_ptr(transformComponent->position), 0.1f);
+                            glm::vec3 rotation{glm::degrees(transformComponent->rotation)};
+                            ImGui::DragFloat3("Rotation", glm::value_ptr(rotation), 0.1f);
+                            transformComponent->rotation = glm::radians(rotation);
+                            ImGui::DragFloat3("Scale", glm::value_ptr(transformComponent->scale), 0.01f);
+                        }
+                    }
+                    if (auto* spriteComponent{
+                            m_sceneContext.registry.try_get<SpriteComponent>(selectedEntity)}) {
+                        if (ImGui::CollapsingHeader("Sprite", treeNodeFlags)) {
+                            ImGui::Text("Texture ID: %s", spriteComponent->textureId.GetString().data());
+                            ImGui::Text("Sprite ID: %s", spriteComponent->spriteId.GetString().data());
+                            ImGui::DragFloat2("Pivot point", glm::value_ptr(spriteComponent->pivotPoint),
+                                              0.01f, 0.0f, 1.0f);
+                            float color[4] = {
+                                spriteComponent->color.r / 255.0f, spriteComponent->color.g / 255.0f,
+                                spriteComponent->color.b / 255.0f, spriteComponent->color.a / 255.0f};
+                            ImGui::ColorEdit4("Color", color, ImGuiColorEditFlags_Uint8);
+                            spriteComponent->color.r = static_cast<U8>(color[0] * 255.0f);
+                            spriteComponent->color.g = static_cast<U8>(color[1] * 255.0f);
+                            spriteComponent->color.b = static_cast<U8>(color[2] * 255.0f);
+                            spriteComponent->color.a = static_cast<U8>(color[3] * 255.0f);
+                            ImGui::InputInt("Z-index", &spriteComponent->zIndex);
                         }
                     }
                 }
                 ImGui::EndChild();
-                ImGui::End();
             }
+            ImGui::End();
+        }
+    }
+
+    void SceneManager::OnViewportResize(int width, int height)
+    {
+        if (m_currentScene) {
+            m_currentScene->OnViewportResize(width, height);
         }
     }
 

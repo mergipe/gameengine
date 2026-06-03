@@ -1,36 +1,93 @@
 #include "RenderManager.h"
 
 #include "ShaderManager.h"
-#include "Shapes.h"
 #include "core/Locator.h"
 #include "core/Math.h"
 
 #include <SDL3/SDL.h>
 #include <array>
 #include <cstdlib>
-#include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace Engine
 {
-    glm::mat4 GetModelTransformation(const Rect& rect, const glm::vec3& rotation)
+    constexpr std::string_view GetOpenGLDebugSourceName(GLenum source)
     {
-        return Math::GetTransformationMatrix(glm::vec3{rect.GetCenter(), 0.0f}, rotation,
-                                             glm::vec3{rect.width, rect.height, 1.0f});
+        switch (source) {
+        case GL_DEBUG_SOURCE_API:
+            return "API";
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+            return "WINDOW_SYSTEM";
+        case GL_DEBUG_SOURCE_SHADER_COMPILER:
+            return "SHADER_COMPILER";
+        case GL_DEBUG_SOURCE_THIRD_PARTY:
+            return "THIRD_PARTY";
+        case GL_DEBUG_SOURCE_APPLICATION:
+            return "APPLICATION";
+        case GL_DEBUG_SOURCE_OTHER:
+            return "OTHER";
+        default:
+            return "UNKNOWN";
+        }
     }
 
-    glm::mat4 GetTextureTransformation(const Texture2D& texture, const Rect& textureArea)
+    constexpr std::string_view GetOpenGLDebugTypeName(GLenum type)
     {
-        const float widthRatio{textureArea.width / static_cast<float>(texture.GetWidth())};
-        const float heightRatio{textureArea.height / static_cast<float>(texture.GetHeight())};
-        const glm::vec2 position{textureArea.GetLeftX() / static_cast<float>(texture.GetWidth()),
-                                 textureArea.GetTopY() / static_cast<float>(texture.GetHeight())};
-        return Math::GetTransformationMatrix(glm::vec3{position, 0.0f}, glm::vec3{0.0f},
-                                             glm::vec3{widthRatio, heightRatio, 1.0f});
+        switch (type) {
+        case GL_DEBUG_TYPE_ERROR:
+            return "ERROR";
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+            return "DEPRECATED_BEHAVIOR";
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+            return "UNDEFINED_BEHAVIOR";
+        case GL_DEBUG_TYPE_PORTABILITY:
+            return "PORTABILITY";
+        case GL_DEBUG_TYPE_PERFORMANCE:
+            return "PERFORMANCE";
+        case GL_DEBUG_TYPE_MARKER:
+            return "MARKER";
+        case GL_DEBUG_TYPE_PUSH_GROUP:
+            return "PUSH_GROUP";
+        case GL_DEBUG_TYPE_POP_GROUP:
+            return "POP_GROUP";
+        case GL_DEBUG_TYPE_OTHER:
+            return "OTHER";
+        default:
+            return "UNKNOWN";
+        }
     }
 
-    RenderManager::RenderManager(Window* window)
-        : m_window{window}
+    constexpr std::string_view GetOpenGLDebugSeverityName(GLenum severity)
     {
+        switch (severity) {
+        case GL_DEBUG_SEVERITY_HIGH:
+            return "HIGH";
+        case GL_DEBUG_SEVERITY_MEDIUM:
+            return "MEDIUM";
+        case GL_DEBUG_SEVERITY_LOW:
+            return "LOW";
+        case GL_DEBUG_SEVERITY_NOTIFICATION:
+            return "NOTIFICATION";
+        default:
+            return "UNKNOWN";
+        }
+    }
+
+    void APIENTRY GLDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity,
+                                [[maybe_unused]] GLsizei length, const GLchar* message,
+                                [[maybe_unused]] const void* userParam)
+    {
+        auto loggerLevel{Logger::Level::warn};
+        if (type == GL_DEBUG_TYPE_ERROR || type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR) {
+            loggerLevel = Logger::Level::error;
+        } else if (severity == GL_DEBUG_SEVERITY_LOW) {
+            loggerLevel = Logger::Level::debug;
+        } else if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
+            loggerLevel = Logger::Level::trace;
+        }
+        Locator::GetLogger()->Log(loggerLevel, "[OpenGL] {}: {} | Source: {} | Type: {} | Severity: {}", id,
+                                  message, GetOpenGLDebugSourceName(source), GetOpenGLDebugTypeName(type),
+                                  GetOpenGLDebugSeverityName(severity));
     }
 
     void RenderManager::Init()
@@ -39,105 +96,155 @@ namespace Engine
             Locator::GetLogger()->Critical("Failed to initialize GLAD");
             std::abort();
         }
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        SetViewport(0, 0, m_window->GetWidth(), m_window->GetHeight());
+        int contextFlags{};
+        glGetIntegerv(GL_CONTEXT_FLAGS, &contextFlags);
+        if (contextFlags & GL_CONTEXT_FLAG_DEBUG_BIT) {
+            glEnable(GL_DEBUG_OUTPUT);
+            glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+            glDebugMessageCallback(GLDebugOutput, nullptr);
+            glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+        }
         SetClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        constexpr std::array<GLfloat, 24> spriteVertexData{
-            -0.5f, 0.5f,  0.0f, 1.0f, // top left
+
+        constexpr std::array spriteVertices{
+            0.5f,  0.5f,  1.0f, 1.0f, // top right
             0.5f,  -0.5f, 1.0f, 0.0f, // bottom right
             -0.5f, -0.5f, 0.0f, 0.0f, // bottom left
             -0.5f, 0.5f,  0.0f, 1.0f, // top left
-            0.5f,  0.5f,  1.0f, 1.0f, // top right
-            0.5f,  -0.5f, 1.0f, 0.0f  // bottom right
         };
-        glGenVertexArrays(1, &m_spriteVao);
-        GLuint vbo{};
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(spriteVertexData), spriteVertexData.data(), GL_STATIC_DRAW);
-        glBindVertexArray(m_spriteVao);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), static_cast<void*>(nullptr));
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat),
-                              reinterpret_cast<void*>(2 * sizeof(GLfloat)));
-        constexpr std::array<GLfloat, 8> quadVertices{
-            -0.5f, -0.5f, // bottom left
-            -0.5f, 0.5f,  // top left
-            0.5f,  0.5f,  // top right
-            0.5f,  -0.5f  // bottom right
-        };
-        glGenVertexArrays(1, &m_quadVao);
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices.data(), GL_STATIC_DRAW);
-        glBindVertexArray(m_quadVao);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), static_cast<void*>(nullptr));
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-        m_shaderManager = std::make_unique<ShaderManager>();
-        m_shaderManager->LoadShader(m_spriteShaderId, "sprite.vert", "sprite.frag")
+        constexpr std::array spriteVertexIndices{0, 1, 3, 1, 2, 3};
+        m_spriteVertexArray.Create();
+        VertexBuffer spriteVertexBuffer{};
+        spriteVertexBuffer.Create(sizeof(spriteVertices), spriteVertices.data());
+        spriteVertexBuffer.AddAttribute(VertexAttribute{0, GL_FLOAT, 2, false});
+        spriteVertexBuffer.AddAttribute(VertexAttribute{1, GL_FLOAT, 2, false});
+        m_spriteVertexArray.AddVertexBuffer(std::move(spriteVertexBuffer));
+        VertexBuffer spriteInstanceBuffer{};
+        spriteInstanceBuffer.Create(s_spritesBatchSize * sizeof(SpriteData), true);
+        spriteInstanceBuffer.AddAttribute(VertexAttribute{2, GL_FLOAT, 4, false});
+        spriteInstanceBuffer.AddAttribute(VertexAttribute{3, GL_FLOAT, 4, false});
+        spriteInstanceBuffer.AddAttribute(VertexAttribute{4, GL_FLOAT, 4, false});
+        spriteInstanceBuffer.AddAttribute(VertexAttribute{5, GL_FLOAT, 4, false});
+        spriteInstanceBuffer.AddAttribute(VertexAttribute{6, GL_FLOAT, 2, false});
+        spriteInstanceBuffer.AddAttribute(VertexAttribute{7, GL_FLOAT, 2, false});
+        spriteInstanceBuffer.AddAttribute(VertexAttribute{8, GL_INT, 1, false});
+        spriteInstanceBuffer.AddAttribute(VertexAttribute{9, GL_UNSIGNED_BYTE, 4, true});
+        m_spriteVertexArray.AddVertexBuffer(std::move(spriteInstanceBuffer));
+        m_spriteVertexArray.ConfigureVertexAttributes();
+        ElementBuffer spriteElementBuffer{};
+        spriteElementBuffer.Create(sizeof(spriteVertexIndices), spriteVertexIndices.data());
+        m_spriteVertexArray.SetElementBuffer(std::move(spriteElementBuffer));
+
+        m_renderContext.cameraUniformBuffer.Create(sizeof(glm::mat4), 0);
+        m_renderContext.shaderManager = std::make_unique<ShaderManager>();
+        m_renderContext.shaderManager->LoadShader(s_spriteShaderId, "sprite.vert", "sprite.frag")
             .Use()
+            .BindUniformBlock("Camera", m_renderContext.cameraUniformBuffer.GetBindingPoint())
             .SetUniform("textureSampler", 0);
-        m_shaderManager->LoadShader(m_primitivesShaderId, "primitives.vert", "primitives.frag").Use();
+        m_debugRenderer = std::make_unique<DebugRenderer>(&m_renderContext);
+        m_debugRenderer->Init();
+        Locator::Provide(m_debugRenderer.get());
         Locator::GetLogger()->Info("Render manager initialized");
     }
 
     void RenderManager::ShutDown()
     {
-        glDeleteVertexArrays(1, &m_spriteVao);
-        glDeleteVertexArrays(1, &m_quadVao);
+        m_spriteVertexArray.Destroy();
+        m_renderContext.cameraUniformBuffer.Destroy();
+        m_debugRenderer->ShutDown();
         Locator::GetLogger()->Info("Render manager shut down");
     }
 
-    void RenderManager::SetViewport(int x, int y, int width, int height) { glViewport(x, y, width, height); }
+    void RenderManager::SetViewport(int x, int y, int width, int height)
+    {
+        glViewport(x, y, width, height);
+        m_renderContext.viewportWidth = width;
+        m_renderContext.viewportHeight = height;
+    }
 
-    void RenderManager::SetViewportSize(int width, int height) { SetViewport(0, 0, width, height); }
+    void RenderManager::OnViewportResize(int width, int height) { SetViewport(0, 0, width, height); }
 
     void RenderManager::SetClearColor(float red, float green, float blue, float alpha)
     {
         glClearColor(red, green, blue, alpha);
     }
 
-    void RenderManager::SetupCamera(const Camera& camera)
+    void RenderManager::SetCamera(Camera& camera)
     {
-        m_cameraTransformation = camera.GetCameraTransformation();
-        m_projectionTransformation = camera.GetProjectionTransformation();
+        const auto viewProjectionMatrix{camera.GetProjectionMatrix() * camera.GetViewMatrix()};
+        m_renderContext.cameraUniformBuffer.UpdateData(0, sizeof(viewProjectionMatrix),
+                                                       glm::value_ptr(viewProjectionMatrix));
+        m_renderContext.camera = &camera;
     }
 
-    void RenderManager::DrawRectangle(const Rect& rect, const glm::vec4& color, const glm::vec3& rotation)
+    void RenderManager::AddSprite(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale,
+                                  glm::vec2 pivotPoint, const Texture2D* texture,
+                                  glm::vec2 subTextureUvTopLeft, glm::vec2 subTextureSize, RGBA8 color)
     {
-        m_shaderManager->GetShader(m_primitivesShaderId)
-            .Use()
-            .SetUniform("model", GetModelTransformation(rect, rotation))
-            .SetUniform("camera", m_cameraTransformation)
-            .SetUniform("projection", m_projectionTransformation)
-            .SetUniform("color", color);
-        glBindVertexArray(m_quadVao);
-        glDrawArrays(GL_LINE_LOOP, 0, 4);
-        glBindVertexArray(0);
-    }
-
-    void RenderManager::DrawSprite(const Rect& spriteGeometry, const glm::vec3& rotation,
-                                   const Texture2D& texture, const Rect& textureArea, const glm::vec3& color)
-    {
-        m_shaderManager->GetShader(m_spriteShaderId)
-            .Use()
-            .SetUniform("model", GetModelTransformation(spriteGeometry, rotation))
-            .SetUniform("camera", m_cameraTransformation)
-            .SetUniform("projection", m_projectionTransformation)
-            .SetUniform("color", color)
-            .SetUniform("textureTransform", GetTextureTransformation(texture, textureArea));
-        glActiveTexture(GL_TEXTURE0);
-        texture.Bind();
-        glBindVertexArray(m_spriteVao);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
+        U32 textureIndex{m_spriteTextureCount};
+        for (U32 i{0}; i < m_spriteTextureCount; ++i) {
+            if (*m_spriteTextures[i] == *texture) {
+                textureIndex = i;
+            }
+        }
+        if (textureIndex == m_spriteTextureCount) {
+            if (m_spriteTextureCount == s_textureUnitsCount) {
+                // TODO: how to handle this?
+            } else {
+                m_spriteTextures[m_spriteTextureCount++] = texture;
+            }
+        }
+        const float textureWidth{static_cast<float>(texture->GetWidth())};
+        const float textureHeight{static_cast<float>(texture->GetHeight())};
+        glm::vec3 ndcPivotPoint{pivotPoint.x - 0.5f, pivotPoint.y - 0.5f, 0.0f};
+        glm::mat4 transform{Math::GetTransformMatrix(glm::vec3{position}, rotation, scale, ndcPivotPoint)};
+        m_sprites.emplace_back(transform,
+                               glm::vec2{subTextureUvTopLeft.x / textureWidth,
+                                         1 - (subTextureUvTopLeft.y + subTextureSize.y) / textureHeight},
+                               glm::vec2{subTextureSize.x / textureWidth, subTextureSize.y / textureHeight},
+                               textureIndex, color);
     }
 
     void RenderManager::Clear() { glClear(GL_COLOR_BUFFER_BIT); }
 
-    void RenderManager::Present() { SDL_GL_SwapWindow(m_window->GetWindowHandle()); }
+    void RenderManager::Flush()
+    {
+        FlushSprites();
+        m_debugRenderer->Flush();
+    }
+
+    void RenderManager::Present(const Window& window) { SDL_GL_SwapWindow(window.GetWindowHandle()); }
+
+    void RenderManager::RenderDevGui() { m_debugRenderer->RenderDevGui(); }
+
+    void RenderManager::FlushSprites()
+    {
+        int count{static_cast<int>(m_sprites.size())};
+        if (count == 0) {
+            return;
+        }
+        const auto* elementBuffer{m_spriteVertexArray.GetElementBuffer()};
+        auto& shader{m_renderContext.shaderManager->GetShader(s_spriteShaderId)};
+        shader.Use();
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        for (U32 i{0}; i < m_spriteTextureCount; ++i) {
+            m_spriteTextures[i]->Bind(i);
+            shader.SetUniform("tex_sprites[" + std::to_string(i) + "]", static_cast<int>(i));
+        }
+        m_spriteVertexArray.Bind();
+        auto* buffer{m_spriteVertexArray.GetVertexBuffer(1)};
+        std::size_t offset{0};
+        while (count > 0) {
+            const int batchSize{std::min(count, s_spritesBatchSize)};
+            buffer->UpdateData(0, static_cast<U32>(batchSize) * sizeof(SpriteData), &m_sprites[offset]);
+            glDrawElementsInstanced(GL_TRIANGLES, static_cast<GLsizei>(elementBuffer->GetSize()),
+                                    GL_UNSIGNED_INT, nullptr, batchSize);
+            count -= s_spritesBatchSize;
+            offset += s_spritesBatchSize;
+        }
+        m_spriteVertexArray.Unbind();
+        glDisable(GL_BLEND);
+        m_sprites.clear();
+    }
 } // namespace Engine

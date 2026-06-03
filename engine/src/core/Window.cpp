@@ -6,32 +6,25 @@
 
 namespace Engine
 {
-    Window::Window(const WindowConfig& config)
-        : m_config{config}
-    {
-        if (m_config.width <= 0 || m_config.height <= 0) {
-            m_config.width = 800;
-            m_config.height = 600;
-        }
-    }
-
-    void Window::Init()
+    void Window::Create(const WindowConfig& config)
     {
         SDL_WindowFlags flags{SDL_WINDOW_OPENGL | SDL_WINDOW_HIGH_PIXEL_DENSITY};
-        if (m_config.isFullscreen)
+        if (config.isFullscreen)
             flags |= SDL_WINDOW_FULLSCREEN;
-        if (m_config.isResizable)
+        if (config.isResizable)
             flags |= SDL_WINDOW_RESIZABLE;
-        if (m_config.isBorderless)
+        if (config.isBorderless)
             flags |= SDL_WINDOW_BORDERLESS;
-        if (m_config.isMaximized)
+        if (config.isMaximized)
             flags |= SDL_WINDOW_MAXIMIZED;
-        const SDL_DisplayMode* currentDisplayMode{SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay())};
-        if (m_config.width > currentDisplayMode->w || m_config.height > currentDisplayMode->h) {
-            m_config.width = currentDisplayMode->w;
-            m_config.height = currentDisplayMode->h;
+        int width{config.width};
+        int height{config.height};
+        if (width <= 0 || height <= 0) {
+            const SDL_DisplayMode* currentDisplayMode{SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay())};
+            width = currentDisplayMode->w;
+            height = currentDisplayMode->h;
         }
-        m_windowHandle = SDL_CreateWindow(m_config.title.c_str(), m_config.width, m_config.height, flags);
+        m_windowHandle = SDL_CreateWindow(config.title.c_str(), width, height, flags);
         if (!m_windowHandle) {
             Locator::GetLogger()->Critical("Failed to create a window: {}", SDL_GetError());
             std::abort();
@@ -42,11 +35,10 @@ namespace Engine
             std::abort();
         }
         SDL_GL_MakeCurrent(m_windowHandle, m_glContext);
-        m_displayScale = SDL_GetWindowDisplayScale(m_windowHandle);
         Locator::GetLogger()->Info("Window initialized");
     }
 
-    void Window::Close()
+    void Window::Destroy()
     {
         SDL_GL_DestroyContext(m_glContext);
         m_glContext = nullptr;
@@ -54,4 +46,13 @@ namespace Engine
         m_windowHandle = nullptr;
         Locator::GetLogger()->Info("Window closed");
     }
+
+    WindowSize Window::GetSize() const
+    {
+        WindowSize size{};
+        SDL_GetWindowSizeInPixels(m_windowHandle, &size.width, &size.height);
+        return size;
+    }
+
+    float Window::GetDisplayScale() const { return SDL_GetWindowDisplayScale(m_windowHandle); }
 } // namespace Engine

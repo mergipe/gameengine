@@ -17,8 +17,9 @@ components:
       tangent_speed: 0
   sprite:
     texture_id: textures/space-shooter-spritesheet.png
-    color: {r: 1.0, g: 1.0, b: 1.0}
+    color: {r: 255, g: 255, b: 255, a: 255} 
     z_index: 4
+    pivot_point: {x: 0.5, y: 0.5}
   player_input:
     default_scope: gameplay
   scripts:
