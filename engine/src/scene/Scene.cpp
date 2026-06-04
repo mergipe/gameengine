@@ -144,13 +144,15 @@ namespace Engine
             if (const auto* boxCollider{m_registry->try_get<BoxCollider2DComponent>(entity)}) {
                 physicsEngine->CreateBoxShape(
                     rigidBodyRuntime.bodyId, boxCollider->shapeData, boxCollider->width * transform.scale.x,
-                    boxCollider->height * transform.scale.y, boxCollider->edgeRadius);
+                    boxCollider->height * transform.scale.y, boxCollider->edgeRadius, boxCollider->offset,
+                    boxCollider->rotation);
                 hasCollider = true;
             }
             if (const auto* circleCollider{m_registry->try_get<CircleCollider2DComponent>(entity)}) {
                 physicsEngine->CreateCircleShape(rigidBodyRuntime.bodyId, circleCollider->shapeData,
                                                  circleCollider->radius *
-                                                     std::max(transform.scale.x, transform.scale.y));
+                                                     std::max(transform.scale.x, transform.scale.y),
+                                                 circleCollider->offset);
                 hasCollider = true;
             }
             if (!hasCollider) {

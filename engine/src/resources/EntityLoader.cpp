@@ -87,6 +87,12 @@ namespace Engine
         if (node["edge_radius"]) {
             boxCollider.edgeRadius = node["edge_radius"].as<float>();
         }
+        if (node["offset"]) {
+            boxCollider.offset = node["offset"].as<glm::vec2>();
+        }
+        if (node["rotation"]) {
+            boxCollider.rotation = glm::radians(node["rotation"].as<float>());
+        }
     }
 
     void LoadCircleCollider2D(const entt::handle& entityHandle, const YAML::Node& node)
@@ -95,6 +101,9 @@ namespace Engine
         ParseShape2DDef(circleCollider.shapeData, node);
         if (node["radius"]) {
             circleCollider.radius = node["radius"].as<float>();
+        }
+        if (node["offset"]) {
+            circleCollider.offset = node["offset"].as<glm::vec2>();
         }
     }
 

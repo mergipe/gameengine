@@ -48,13 +48,16 @@ namespace Engine
 
     struct BoxCollider2DComponent final {
         Shape2DData shapeData{};
+        glm::vec2 offset{0.0f};
         float width{1.0f};
         float height{1.0f};
         float edgeRadius{0.0f};
+        float rotation{0.0f};
     };
 
     struct CircleCollider2DComponent final {
         Shape2DData shapeData{};
+        glm::vec2 offset{0.0f};
         float radius{1.0f};
     };
 

@@ -22,8 +22,8 @@ namespace Engine
                             entt::entity entity);
         void CreateDefaultShape(b2BodyId);
         void CreateBoxShape(b2BodyId bodyId, const Shape2DData& shapeData, float width, float height,
-                            float edgeRadius);
-        void CreateCircleShape(b2BodyId bodyId, const Shape2DData& shapeData, float radius);
+                            float edgeRadius, glm::vec2 offset, float rotation);
+        void CreateCircleShape(b2BodyId bodyId, const Shape2DData& shapeData, float radius, glm::vec2 offset);
         [[nodiscard]] glm::vec2 GetPosition(b2BodyId bodyId) const;
         [[nodiscard]] float GetRotationAngle(b2BodyId bodyId) const;
         [[nodiscard]] glm::vec2 GetLinearVelocity(b2BodyId bodyId) const;

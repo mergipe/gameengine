@@ -68,17 +68,19 @@ namespace Engine
     }
 
     void PhysicsEngine2D::CreateBoxShape(b2BodyId bodyId, const Shape2DData& shapeData, float width,
-                                         float height, float edgeRadius)
+                                         float height, float edgeRadius, glm::vec2 offset, float rotation)
     {
         const b2ShapeDef shapeDef{CreateShapeDef(shapeData)};
-        const b2Polygon box{b2MakeRoundedBox(width / 2.0f, height / 2.0f, edgeRadius)};
+        const b2Polygon box{b2MakeOffsetRoundedBox(width / 2.0f, height / 2.0f, b2Vec2{offset.x, offset.y},
+                                                   b2MakeRot(rotation), edgeRadius)};
         b2CreatePolygonShape(bodyId, &shapeDef, &box);
     }
 
-    void PhysicsEngine2D::CreateCircleShape(b2BodyId bodyId, const Shape2DData& shapeData, float radius)
+    void PhysicsEngine2D::CreateCircleShape(b2BodyId bodyId, const Shape2DData& shapeData, float radius,
+                                            glm::vec2 offset)
     {
         const b2ShapeDef shapeDef{CreateShapeDef(shapeData)};
-        const b2Circle circle{b2Vec2_zero, radius};
+        const b2Circle circle{b2Vec2{offset.x, offset.y}, radius};
         b2CreateCircleShape(bodyId, &shapeDef, &circle);
     }
 
