@@ -1,5 +1,4 @@
-#ifndef DEV_GUI_H
-#define DEV_GUI_H
+#pragma once
 
 #include "core/Window.h"
 
@@ -58,5 +57,3 @@ namespace Engine
         DevGuiData m_data{};
     };
 } // namespace Engine
-
-#endif

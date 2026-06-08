@@ -1,5 +1,4 @@
-#ifndef SHADER_MANAGER_H
-#define SHADER_MANAGER_H
+#pragma once
 
 #include "Shader.h"
 #include "core/FileSystem.h"
@@ -33,5 +32,3 @@ namespace Engine
         std::unordered_map<StringId, std::unique_ptr<Shader>> m_shaders{};
     };
 } // namespace Engine
-
-#endif

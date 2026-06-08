@@ -1,5 +1,4 @@
-#ifndef SCENE_H
-#define SCENE_H
+#pragma once
 
 #include "events/EventBus.h"
 #include "events/Events.h"
@@ -33,5 +32,3 @@ namespace Engine
         entt::registry* m_registry{};
     };
 } // namespace Engine
-
-#endif

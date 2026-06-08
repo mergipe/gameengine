@@ -1,5 +1,4 @@
-#ifndef TYPES_H
-#define TYPES_H
+#pragma once
 
 #include <cstdint>
 
@@ -18,5 +17,3 @@ namespace Engine
         U8 a{};
     };
 } // namespace Engine
-
-#endif

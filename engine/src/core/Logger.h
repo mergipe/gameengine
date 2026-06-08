@@ -1,5 +1,4 @@
-#ifndef LOGGER_H
-#define LOGGER_H
+#pragma once
 
 #include "FileSystem.h"
 
@@ -132,5 +131,3 @@ namespace Engine
         m_logger->critical(fmt, std::forward<TArgs>(args)...);
     }
 } // namespace Engine
-
-#endif

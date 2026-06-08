@@ -1,5 +1,4 @@
-#ifndef SCRIPT_CLASS_H
-#define SCRIPT_CLASS_H
+#pragma once
 
 #include "core/StringId.h"
 
@@ -27,5 +26,3 @@ namespace Engine
         sol::table m_luaTable{};
     };
 } // namespace Engine
-
-#endif

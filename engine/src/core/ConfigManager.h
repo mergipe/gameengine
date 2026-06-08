@@ -1,5 +1,4 @@
-#ifndef CONFIG_MANAGER_H
-#define CONFIG_MANAGER_H
+#pragma once
 
 #include "FileSystem.h"
 #include "StringId.h"
@@ -61,5 +60,3 @@ namespace Engine
             ResourceManager::GetResourcePath("game.config")};
     };
 } // namespace Engine
-
-#endif

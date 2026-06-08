@@ -1,5 +1,4 @@
-#ifndef RESOURCE_MANAGER_H
-#define RESOURCE_MANAGER_H
+#pragma once
 
 #include "Texture2D.h"
 #include "core/FileSystem.h"
@@ -55,5 +54,3 @@ namespace Engine
         std::unique_ptr<Texture2D> m_fallbackTexture{};
     };
 } // namespace Engine
-
-#endif

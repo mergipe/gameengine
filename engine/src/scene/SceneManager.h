@@ -1,11 +1,10 @@
-#ifndef SCENE_MANAGER_H
-#define SCENE_MANAGER_H
+#pragma once
 
 #include "Scene.h"
 #include "core/Yaml.h"
 
-#include <memory>
 #include <entt/entity/registry.hpp>
+#include <memory>
 
 namespace Engine
 {
@@ -31,5 +30,3 @@ namespace Engine
         SceneManagerDebugUIData m_debugUIData{};
     };
 } // namespace Engine
-
-#endif

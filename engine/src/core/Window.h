@@ -1,5 +1,4 @@
-#ifndef WINDOW_H
-#define WINDOW_H
+#pragma once
 
 #include "ConfigManager.h"
 
@@ -27,5 +26,3 @@ namespace Engine
         SDL_GLContext m_glContext{};
     };
 } // namespace Engine
-
-#endif

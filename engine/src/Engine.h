@@ -1,5 +1,4 @@
-#ifndef ENGINE_H
-#define ENGINE_H
+#pragma once
 
 #include "core/Logger.h"
 #include "core/Window.h"
@@ -63,5 +62,3 @@ namespace Engine
         bool m_isRunning{false};
     };
 } // namespace Engine
-
-#endif

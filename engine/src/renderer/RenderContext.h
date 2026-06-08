@@ -1,5 +1,4 @@
-#ifndef RENDER_CONTEXT_H
-#define RENDER_CONTEXT_H
+#pragma once
 
 #include "Buffer.h"
 #include "Camera.h"
@@ -15,5 +14,3 @@ namespace Engine
         int viewportHeight{};
     };
 } // namespace Engine
-
-#endif

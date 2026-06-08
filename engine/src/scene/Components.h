@@ -1,5 +1,4 @@
-#ifndef COMPONENTS_H
-#define COMPONENTS_H
+#pragma once
 
 #include "core/Math.h"
 #include "core/StringId.h"
@@ -88,5 +87,3 @@ namespace Engine
         Camera camera{};
     };
 } // namespace Engine
-
-#endif

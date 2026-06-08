@@ -1,5 +1,4 @@
-#ifndef INPUT_COMMAND_MAPPING_H
-#define INPUT_COMMAND_MAPPING_H
+#pragma once
 
 #include "InputCommand.h"
 #include "InputDevice.h"
@@ -21,5 +20,3 @@ namespace Engine
         std::vector<InputCommand> m_commands{};
     };
 } // namespace Engine
-
-#endif

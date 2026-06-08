@@ -1,5 +1,4 @@
-#ifndef HASH_H
-#define HASH_H
+#pragma once
 
 #include "Types.h"
 
@@ -19,5 +18,3 @@ namespace Engine::Hash
 
     constexpr U32 Hash32(const char* str) { return Hash32(str, g_hashInit); }
 } // namespace Engine::Hash
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef LOCATOR_H
-#define LOCATOR_H
+#pragma once
 
 #include "core/Logger.h"
 #include "events/EventBus.h"
@@ -44,5 +43,3 @@ namespace Engine
         static inline ScriptSystem* s_scriptSystem{};
     };
 } // namespace Engine
-
-#endif

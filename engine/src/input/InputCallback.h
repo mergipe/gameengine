@@ -1,5 +1,4 @@
-#ifndef INPUT_CALLBACK_H
-#define INPUT_CALLBACK_H
+#pragma once
 
 #include "InputValue.h"
 #include "core/StringId.h"
@@ -38,5 +37,3 @@ namespace Engine
         std::unordered_map<StringId, InputCallback> m_mapping{};
     };
 } // namespace Engine
-
-#endif

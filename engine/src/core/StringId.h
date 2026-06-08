@@ -1,5 +1,4 @@
-#ifndef STRING_ID_H
-#define STRING_ID_H
+#pragma once
 
 #include "Hash.h"
 #include "Types.h"
@@ -53,5 +52,3 @@ template <>
 struct std::hash<Engine::StringId> {
     std::size_t operator()(const Engine::StringId& sid) const noexcept { return sid.GetSid(); }
 };
-
-#endif

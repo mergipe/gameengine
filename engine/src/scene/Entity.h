@@ -1,5 +1,4 @@
-#ifndef ENTITY_H
-#define ENTITY_H
+#pragma once
 
 #include "core/StringId.h"
 
@@ -25,5 +24,3 @@ namespace Engine
         return m_handle.get<T>();
     }
 } // namespace Engine
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef INPUT_COMMAND_H
-#define INPUT_COMMAND_H
+#pragma once
 
 #include "InputBinding.h"
 #include "core/StringId.h"
@@ -41,5 +40,3 @@ namespace Engine
         return {};
     }
 } // namespace Engine
-
-#endif

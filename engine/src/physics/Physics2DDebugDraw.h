@@ -1,5 +1,4 @@
-#ifndef PHYSICS_2D_DEBUG_DRAW_H
-#define PHYSICS_2D_DEBUG_DRAW_H
+#pragma once
 
 #include <box2d/box2d.h>
 
@@ -16,5 +15,3 @@ namespace Engine
         b2DebugDraw m_debugDraw{};
     };
 } // namespace Engine
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef EVENTS_H
-#define EVENTS_H
+#pragma once
 
 #include "core/StringId.h"
 #include "input/InputDevice.h"
@@ -43,5 +42,3 @@ namespace Engine
         bool isEngineCommand{false};
     };
 } // namespace Engine
-
-#endif

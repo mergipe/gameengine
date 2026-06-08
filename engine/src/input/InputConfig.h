@@ -1,5 +1,4 @@
-#ifndef INPUT_CONFIG_H
-#define INPUT_CONFIG_H
+#pragma once
 
 #include "InputScope.h"
 
@@ -12,5 +11,3 @@ namespace Engine
         std::unordered_map<StringId, InputScope> inputScopes{};
     };
 } // namespace Engine
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef PHYSICS_2D_TYPES_H
-#define PHYSICS_2D_TYPES_H
+#pragma once
 
 #include "core/StringId.h"
 
@@ -42,5 +41,3 @@ namespace Engine
         float linearDamping{0.0f};
     };
 } // namespace Engine
-
-#endif

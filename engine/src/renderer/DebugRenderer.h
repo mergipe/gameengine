@@ -1,5 +1,4 @@
-#ifndef DEBUG_RENDERER_H
-#define DEBUG_RENDERER_H
+#pragma once
 
 #include "RenderContext.h"
 #include "core/StringId.h"
@@ -98,5 +97,3 @@ namespace Engine
         DebugRendererUIData m_debugUIData{};
     };
 } // namespace Engine
-
-#endif

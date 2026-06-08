@@ -1,5 +1,4 @@
-#ifndef FILE_SYSTEM_H
-#define FILE_SYSTEM_H
+#pragma once
 
 #include <filesystem>
 
@@ -16,5 +15,3 @@ namespace Engine
         static std::string ReadStringFromFile(const std::filesystem::path& filePath);
     };
 } // namespace Engine
-
-#endif

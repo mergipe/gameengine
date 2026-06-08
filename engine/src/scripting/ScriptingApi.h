@@ -1,5 +1,4 @@
-#ifndef SCRIPTING_API_H
-#define SCRIPTING_API_H
+#pragma once
 
 #include "scene/Entity.h"
 
@@ -47,5 +46,3 @@ namespace Engine::ScriptingApi
         void ApplyTorque(float torque) const;
     };
 } // namespace Engine::ScriptingApi
-
-#endif

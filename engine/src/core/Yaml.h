@@ -1,5 +1,4 @@
-#ifndef YAML_H
-#define YAML_H
+#pragma once
 
 #include "core/Types.h"
 
@@ -94,5 +93,3 @@ namespace YAML
         }
     };
 } // namespace YAML
-
-#endif

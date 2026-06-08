@@ -1,5 +1,4 @@
-#ifndef ASSERTION_H
-#define ASSERTION_H
+#pragma once
 
 #define STATIC_ASSERT(expr) static_assert(expr, #expr)
 
@@ -34,7 +33,5 @@
 #else
 
 #define ASSERT(expr)
-
-#endif
 
 #endif

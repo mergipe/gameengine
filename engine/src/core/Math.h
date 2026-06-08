@@ -1,5 +1,4 @@
-#ifndef MATH_H
-#define MATH_H
+#pragma once
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -42,5 +41,3 @@ namespace Engine::Math
         return glm::vec2{position + velocity * extrapolationTimeStep};
     }
 } // namespace Engine::Math
-
-#endif

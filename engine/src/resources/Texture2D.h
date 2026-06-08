@@ -1,5 +1,4 @@
-#ifndef TEXTURE_2D_H
-#define TEXTURE_2D_H
+#pragma once
 
 #include "core/StringId.h"
 #include "core/Yaml.h"
@@ -64,5 +63,3 @@ namespace Engine
         bool m_generateMipmap{};
     };
 } // namespace Engine
-
-#endif

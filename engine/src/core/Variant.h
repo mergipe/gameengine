@@ -1,5 +1,4 @@
-#ifndef VARIANT_H
-#define VARIANT_H
+#pragma once
 
 #include "StringId.h"
 
@@ -16,5 +15,3 @@ namespace Engine
         };
     };
 } // namespace Engine
-
-#endif

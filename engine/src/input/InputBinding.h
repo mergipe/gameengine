@@ -1,5 +1,4 @@
-#ifndef INPUT_BINDING_H
-#define INPUT_BINDING_H
+#pragma once
 
 #include "InputDevice.h"
 
@@ -13,5 +12,3 @@ namespace Engine
         InputDevice::Type deviceType{};
     };
 } // namespace Engine
-
-#endif

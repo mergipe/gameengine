@@ -1,5 +1,4 @@
-#ifndef INPUT_SCOPE_H
-#define INPUT_SCOPE_H
+#pragma once
 
 #include "InputCommand.h"
 #include "InputCommandMapping.h"
@@ -29,5 +28,3 @@ namespace Engine
         StringId m_id{};
     };
 } // namespace Engine
-
-#endif

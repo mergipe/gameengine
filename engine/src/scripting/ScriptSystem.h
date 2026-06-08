@@ -1,5 +1,4 @@
-#ifndef SCRIPT_SYSTEM_H
-#define SCRIPT_SYSTEM_H
+#pragma once
 
 #include "ScriptClass.h"
 #include "core/FileSystem.h"
@@ -46,5 +45,3 @@ namespace Engine
         sol::state m_lua{};
     };
 } // namespace Engine
-
-#endif

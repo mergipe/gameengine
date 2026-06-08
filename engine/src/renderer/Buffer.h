@@ -1,5 +1,4 @@
-#ifndef BUFFER_H
-#define BUFFER_H
+#pragma once
 
 #include "core/Types.h"
 
@@ -95,5 +94,3 @@ namespace Engine
         U32 m_id{};
     };
 } // namespace Engine
-
-#endif

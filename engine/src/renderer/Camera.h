@@ -1,5 +1,4 @@
-#ifndef CAMERA_H
-#define CAMERA_H
+#pragma once
 
 #include "core/AABB.h"
 #include "core/StringId.h"
@@ -60,5 +59,3 @@ namespace Engine
         bool m_projectionDirty{true};
     };
 } // namespace Engine
-
-#endif

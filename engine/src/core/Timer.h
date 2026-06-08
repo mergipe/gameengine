@@ -1,5 +1,4 @@
-#ifndef TIME_H
-#define TIME_H
+#pragma once
 
 #include "Types.h"
 
@@ -9,5 +8,3 @@ namespace Engine::Timer
 
     Ticks GetTicks();
 } // namespace Engine::Timer
-
-#endif

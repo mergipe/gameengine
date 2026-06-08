@@ -1,5 +1,4 @@
-#ifndef FONT_H
-#define FONT_H
+#pragma once
 
 namespace Engine
 {
@@ -14,5 +13,3 @@ namespace Engine
         ~Font() = default;
     };
 } // namespace Engine
-
-#endif

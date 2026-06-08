@@ -1,5 +1,4 @@
-#ifndef SCRIPT_INSTANCE_H
-#define SCRIPT_INSTANCE_H
+#pragma once
 
 #include "core/Locator.h"
 #include "core/StringId.h"
@@ -39,5 +38,3 @@ namespace Engine
         }
     }
 } // namespace Engine
-
-#endif

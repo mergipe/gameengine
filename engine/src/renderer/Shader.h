@@ -1,5 +1,4 @@
-#ifndef SHADER_H
-#define SHADER_H
+#pragma once
 
 #include "core/StringId.h"
 
@@ -37,5 +36,3 @@ namespace Engine
         GLuint m_id{};
     };
 } // namespace Engine
-
-#endif

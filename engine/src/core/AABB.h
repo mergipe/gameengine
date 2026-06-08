@@ -1,5 +1,4 @@
-#ifndef AABB_H
-#define AABB_H
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -16,5 +15,3 @@ namespace Engine
         float height{0.0f};
     };
 } // namespace Engine
-
-#endif

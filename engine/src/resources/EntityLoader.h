@@ -1,5 +1,4 @@
-#ifndef ENTITY_LOADER_H
-#define ENTITY_LOADER_H
+#pragma once
 
 #include "core/Yaml.h"
 
@@ -13,5 +12,3 @@ namespace Engine
         static entt::entity Load(entt::registry& registry, const YAML::Node& entityNode);
     };
 } // namespace Engine
-
-#endif

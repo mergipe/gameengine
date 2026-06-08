@@ -1,5 +1,4 @@
-#ifndef EVENT_BUS_H
-#define EVENT_BUS_H
+#pragma once
 
 #include "Events.h"
 
@@ -98,5 +97,3 @@ namespace Engine
         }
     }
 } // namespace Engine
-
-#endif

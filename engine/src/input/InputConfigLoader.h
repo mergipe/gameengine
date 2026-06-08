@@ -1,5 +1,4 @@
-#ifndef INPUT_CONFIG_LOADER_H
-#define INPUT_CONFIG_LOADER_H
+#pragma once
 
 #include "InputConfig.h"
 #include "core/ConfigManager.h"
@@ -19,5 +18,3 @@ namespace Engine
             ConfigManager::GetEngineConfigPath() / "input.config"};
     };
 } // namespace Engine
-
-#endif

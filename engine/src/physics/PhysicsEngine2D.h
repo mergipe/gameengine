@@ -1,5 +1,4 @@
-#ifndef PHYSICS_ENGINE_2D_H
-#define PHYSICS_ENGINE_2D_H
+#pragma once
 
 #include "Physics2DDebugDraw.h"
 #include "Physics2DTypes.h"
@@ -39,5 +38,3 @@ namespace Engine
         b2WorldId m_worldId{};
     };
 } // namespace Engine
-
-#endif

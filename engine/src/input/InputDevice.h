@@ -1,5 +1,4 @@
-#ifndef INPUT_DEVICE_H
-#define INPUT_DEVICE_H
+#pragma once
 
 #include "core/StringId.h"
 #include "core/Types.h"
@@ -29,5 +28,3 @@ namespace Engine
         return {};
     }
 } // namespace Engine
-
-#endif

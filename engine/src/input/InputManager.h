@@ -1,5 +1,4 @@
-#ifndef INPUT_MANAGER_H
-#define INPUT_MANAGER_H
+#pragma once
 
 #include "InputCallback.h"
 #include "InputCommand.h"
@@ -46,5 +45,3 @@ namespace Engine
         std::size_t m_inputEventsCount{};
     };
 } // namespace Engine
-
-#endif

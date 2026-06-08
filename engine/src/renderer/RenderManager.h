@@ -1,5 +1,4 @@
-#ifndef RENDER_MANAGER_H
-#define RENDER_MANAGER_H
+#pragma once
 
 #include "Camera.h"
 #include "DebugRenderer.h"
@@ -53,5 +52,3 @@ namespace Engine
         U32 m_spriteTextureCount{0};
     };
 } // namespace Engine
-
-#endif
