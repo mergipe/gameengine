@@ -136,18 +136,44 @@ namespace Engine
 
     void LoadScripts(const entt::handle& entityHandle, const YAML::Node& node)
     {
-        for (auto it{node.begin()}; it != node.end(); ++it) {
-            const YAML::Node scriptNode{*it};
-            ScriptDef scriptDef{};
-            if (scriptNode["file_path"]) {
-                scriptDef.filePath = scriptNode["file_path"].as<std::string>();
+        auto& scriptComponent{entityHandle.get_or_emplace<ScriptComponent>()};
+        for (auto scriptIt{node.begin()}; scriptIt != node.end(); ++scriptIt) {
+            const auto scriptNode{*scriptIt};
+            const auto filePath{std::filesystem::path{scriptNode["file_path"].as<std::string>()}};
+            const auto className{scriptNode["class_name"].as<std::string>()};
+            if (filePath.empty() || className.empty()) {
+                continue;
             }
-            if (scriptNode["class_name"]) {
-                scriptDef.className = scriptNode["class_name"].as<std::string>();
+            ScriptData* scriptData{};
+            for (auto& existingScriptData : scriptComponent.scriptDatas) {
+                if (existingScriptData.filePath == filePath) {
+                    scriptData = &existingScriptData;
+                }
             }
-            if (!scriptDef.filePath.empty() && !scriptDef.className.empty()) {
-                auto& scriptComponent{entityHandle.get_or_emplace<ScriptComponent>()};
-                scriptComponent.scriptDefs.push_back(scriptDef);
+            if (!scriptData) {
+                scriptData = &scriptComponent.scriptDatas.emplace_back();
+            }
+            scriptData->filePath = filePath;
+            scriptData->className = className;
+            if (scriptNode["attributes"]) {
+                const auto attributesNode{scriptNode["attributes"]};
+                for (auto attrIt{attributesNode.begin()}; attrIt != attributesNode.end(); ++attrIt) {
+                    const auto attributeNode{*attrIt};
+                    const auto attributeValueNode{attributeNode.second};
+                    Variant attributeValue{};
+                    if (float floatValue{}; YAML::convert<float>::decode(attributeValueNode, floatValue)) {
+                        attributeValue.type = Variant::Type::tFloat;
+                        attributeValue.asFloat = floatValue;
+                    } else if (bool boolValue{}; YAML::convert<bool>::decode(attributeValueNode, boolValue)) {
+                        attributeValue.type = Variant::Type::tBool;
+                        attributeValue.asBool = boolValue;
+                    } else {
+                        attributeValue.type = Variant::Type::tStringId;
+                        attributeValue.asStringId =
+                            StringId::Intern(attributeValueNode.as<std::string>()).GetSid();
+                    }
+                    scriptData->attributes.emplace(attributeNode.first.as<std::string>(), attributeValue);
+                }
             }
         }
     }

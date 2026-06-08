@@ -111,7 +111,7 @@ namespace Engine
                 continue;
             }
             for (auto& scriptInstance : scriptComponent->scriptInstances) {
-                scriptInstances.insert(std::make_pair(scriptInstance.GetScriptClassId(), &scriptInstance));
+                scriptInstances.insert(std::make_pair(scriptInstance.GetClassId(), &scriptInstance));
             }
             for (const auto& [commandId, callbackDef] : playerInput.callbackDefs) {
                 if (auto it{scriptInstances.find(callbackDef.scriptId)}; it != scriptInstances.end()) {
@@ -119,7 +119,8 @@ namespace Engine
                     playerInputRuntime.callbackMapping.SetCommandCallback(
                         commandId, InputCallback{std::function<void(InputValue)>{
                                        [scriptInstance, callbackDef](InputValue inputValue) {
-                                           scriptInstance->Call(callbackDef.callbackName, inputValue);
+                                           scriptInstance->InvokeFunction(callbackDef.callbackName,
+                                                                          inputValue);
                                        }}});
                 }
             }
@@ -166,13 +167,13 @@ namespace Engine
         const auto view{m_registry->view<ScriptComponent>()};
         for (const auto entity : view) {
             auto& scriptComponent = view.get<ScriptComponent>(entity);
-            for (auto& scriptDef : scriptComponent.scriptDefs) {
+            for (auto& scriptData : scriptComponent.scriptDatas) {
                 std::optional scriptInstance{Locator::GetScriptSystem()->CreateScriptInstance(
-                    scriptDef.filePath, scriptDef.className, entt::handle{*m_registry, entity})};
+                    scriptData, entt::handle{*m_registry, entity})};
                 if (scriptInstance) {
                     auto& scriptRuntime{m_registry->get_or_emplace<ScriptRuntimeComponent>(entity)};
                     scriptRuntime.scriptInstances.push_back(*scriptInstance);
-                    scriptInstance->OnStart();
+                    scriptInstance->InvokeOnStart();
                 }
             }
         }
@@ -230,7 +231,7 @@ namespace Engine
         for (const auto entity : view) {
             auto& scriptComponent = view.get<ScriptRuntimeComponent>(entity);
             for (auto& script : scriptComponent.scriptInstances) {
-                script.OnUpdate(timeStep);
+                script.InvokeOnUpdate(timeStep);
             }
         }
     }

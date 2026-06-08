@@ -22,15 +22,20 @@ namespace Engine
     {
     public:
         static StringId Intern(std::string_view str);
+        static std::string_view GetString(StringIdType sid);
+
         StringId() = default;
         constexpr explicit StringId(const char* str);
+
         bool operator==(const StringId& other) const { return m_sid == other.m_sid; }
         [[nodiscard]] std::string_view GetString() const { return m_str; }
         [[nodiscard]] StringIdType GetSid() const { return m_sid; }
 
     private:
         static inline std::unordered_map<StringIdType, std::string> s_stringIdTable{};
+
         explicit StringId(std::string_view str, StringIdType sid);
+
         std::string_view m_str{};
         StringIdType m_sid{};
     };

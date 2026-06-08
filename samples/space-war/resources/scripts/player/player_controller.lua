@@ -1,18 +1,17 @@
-require("entity_script")
-
 PlayerController = EntityScript:new()
 
+PlayerController.rotation_speed = 300000000
+PlayerController.acceleration_magnitude = 2000000
+
 function PlayerController:OnStart()
-  self.rotation_speed = 300000000
   self.rotation_value = 0
-  self.acceleration_magnitude = 2000000
   self.is_accelerating = false
   self.is_shooting = false
   self.transform = self:GetComponent(Transform)
   self.rigidbody = self:GetComponent(RigidBody2D)
 end
 
-function PlayerController:OnUpdate(time_step)
+function PlayerController:OnUpdate()
   if self.is_accelerating then
     local up = self.transform.up
     self.rigidbody:ApplyForceToCenter(

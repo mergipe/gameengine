@@ -5,6 +5,8 @@
 
 namespace Engine::ScriptingApi
 {
+    void Debug::Log(std::string_view message) { Locator::GetLogger()->Debug(message); }
+
     Component::Component(Entity entity)
         : m_entity{entity}
     {
@@ -17,7 +19,10 @@ namespace Engine::ScriptingApi
 
     glm::vec3 Transform::GetPosition() const { return m_entity.GetComponent<TransformComponent>().position; }
 
-    glm::vec3 Transform::GetRotation() const { return m_entity.GetComponent<TransformComponent>().rotation; }
+    glm::vec3 Transform::GetRotation() const
+    {
+        return m_entity.GetComponent<TransformComponent>().rotation;
+    }
 
     glm::vec3 Transform::GetScale() const { return m_entity.GetComponent<TransformComponent>().scale; }
 

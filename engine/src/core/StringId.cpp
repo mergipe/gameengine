@@ -17,6 +17,14 @@ namespace Engine
         return StringId{s_stringIdTable[sid], sid};
     }
 
+    std::string_view StringId::GetString(StringIdType sid)
+    {
+        if (s_stringIdTable.contains(sid)) {
+            return s_stringIdTable[sid];
+        }
+        return {};
+    }
+
     StringId::StringId(std::string_view str, StringIdType sid)
         : m_str{str}, m_sid{sid}
     {

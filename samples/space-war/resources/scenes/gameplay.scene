@@ -44,6 +44,12 @@ entities:
           - name: shoot_p1
             script_id: scripts/player/player_controller.lua
             callback: OnShoot
+      scripts:
+        - file_path: scripts/player/player_controller.lua
+          class_name: PlayerController
+          attributes:
+            rotation_speed: 300000000
+            acceleration_magnitude: 2000000
   - components:
       template: templates/player.template
       id: Player2
@@ -68,6 +74,12 @@ entities:
           - name: shoot_p2
             script_id: scripts/player/player_controller.lua
             callback: OnShoot
+      scripts:
+        - file_path: scripts/player/player_controller.lua
+          class_name: PlayerController
+          attributes:
+            rotation_speed: 500000000
+            acceleration_magnitude: 3000000
   - components:
       template: templates/planet.template
       id: Planet

@@ -2,8 +2,8 @@
 #define SCRIPT_SYSTEM_H
 
 #include "ScriptClass.h"
-#include "ScriptInstance.h"
 #include "core/FileSystem.h"
+#include "core/Variant.h"
 #include "scene/Entity.h"
 
 #include <entt/entity/handle.hpp>
@@ -12,24 +12,34 @@
 
 namespace Engine
 {
+    struct ScriptData final {
+        std::filesystem::path filePath{};
+        std::string className{};
+        std::unordered_map<std::string, Variant> attributes{};
+    };
+
+    class ScriptInstance;
+
     class ScriptSystem
     {
     public:
-        std::optional<ScriptInstance> CreateScriptInstance(const std::filesystem::path& filePath,
-                                                           std::string_view className,
-                                                           entt::handle entityHandle);
         void Init();
         void ShutDown();
+        std::optional<ScriptInstance> CreateScriptInstance(const ScriptData& scriptData,
+                                                           entt::handle entityHandle);
 
     private:
-        static inline const std::filesystem::path s_scriptingLibPath{FileSystem::GetAbsolutePath("lua")};
+        static inline const std::filesystem::path s_scriptingLibPath{
+            FileSystem::GetAbsolutePath("scripting")};
 
-        std::unique_ptr<ScriptClass> LoadScriptClass(const std::filesystem::path& filePath,
-                                                     std::string_view className);
-        void CreateScriptBindings();
-        void StoreScriptClass(const StringId& scriptId, std::unique_ptr<ScriptClass> scriptClass);
+        void AppendPackagePath(const std::string& packagePath);
+        bool LuaInstanceOf(const sol::table& lhs, const sol::table& rhs);
+        ScriptClass* GetOrLoadScriptClass(const std::filesystem::path& filePath, std::string_view className);
         sol::object GetComponent(Entity entity, const sol::table& type);
         ScriptClass* GetScriptClass(const StringId& scriptId) const;
+        void SetBindings();
+        void BindCoreTypes();
+        void BindComponentTypes();
 
         std::unordered_map<StringId, std::unique_ptr<ScriptClass>> m_scriptClasses{};
         std::unordered_map<const void*, std::function<sol::object(Entity)>> m_componentTypes{};

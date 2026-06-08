@@ -1,6 +1,8 @@
 #ifndef SCRIPT_CLASS_H
 #define SCRIPT_CLASS_H
 
+#include "core/StringId.h"
+
 #include <sol/sol.hpp>
 #include <string>
 #include <string_view>
@@ -10,17 +12,19 @@ namespace Engine
     class ScriptClass
     {
     public:
-        ScriptClass(std::string_view className, const sol::table& luaClass)
-            : m_className{className}, m_luaClass{luaClass}
+        ScriptClass(const StringId& id, std::string_view name, const sol::table& luaTable)
+            : m_name{name}, m_id{id}, m_luaTable{luaTable}
         {
         }
-        [[nodiscard]] std::string_view GetClassName() const { return m_className; }
-        [[nodiscard]] sol::optional<sol::function> GetConstructor() const { return m_luaClass["new"]; }
-        const sol::table& GetLuaClass() { return m_luaClass; }
+        [[nodiscard]] const StringId& GetId() const { return m_id; }
+        [[nodiscard]] std::string_view GetName() const { return m_name; }
+        [[nodiscard]] sol::optional<sol::function> GetConstructor() const { return m_luaTable["new"]; }
+        const sol::table& GetLuaTable() { return m_luaTable; }
 
     private:
-        std::string m_className{};
-        sol::table m_luaClass{};
+        std::string m_name{};
+        StringId m_id{};
+        sol::table m_luaTable{};
     };
 } // namespace Engine
 

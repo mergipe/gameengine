@@ -61,13 +61,8 @@ namespace Engine
         float radius{1.0f};
     };
 
-    struct ScriptDef final {
-        std::string filePath{};
-        std::string className{};
-    };
-
     struct ScriptComponent final {
-        std::vector<ScriptDef> scriptDefs{};
+        std::vector<ScriptData> scriptDatas{};
     };
 
     struct ScriptRuntimeComponent final {

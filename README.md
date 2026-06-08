@@ -9,7 +9,7 @@
 
 ### Scripting system
 
-- Make script variables configurable via scene file
+- Hot reloading
 
 ### Dev mode
 
@@ -21,6 +21,7 @@
 
 ### Rendering
 
+- Hot reloading
 - Fonts
 - Particles
 - UI rendering

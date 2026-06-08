@@ -7,7 +7,12 @@
 
 namespace Engine::ScriptingApi
 {
-    // TODO: maybe implement these components classes and other things in lua using exposed c++ functions
+    class Debug
+    {
+    public:
+        static void Log(std::string_view message);
+    };
+
     class Component
     {
     protected:
