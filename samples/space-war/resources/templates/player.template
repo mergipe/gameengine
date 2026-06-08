@@ -25,3 +25,5 @@ components:
   scripts:
     - file_path: scripts/player/player_controller.lua
       class_name: PlayerController
+      attributes:
+        rotation_speed: 0

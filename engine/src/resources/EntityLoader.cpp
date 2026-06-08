@@ -172,7 +172,7 @@ namespace Engine
                         attributeValue.asStringId =
                             StringId::Intern(attributeValueNode.as<std::string>()).GetSid();
                     }
-                    scriptData->attributes.emplace(attributeNode.first.as<std::string>(), attributeValue);
+                    scriptData->attributes[attributeNode.first.as<std::string>()] = attributeValue;
                 }
             }
         }
