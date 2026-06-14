@@ -26,12 +26,14 @@ add_executable(${PROJECT_NAME}
         resources/Font.cpp
         resources/ResourceManager.cpp
         resources/Texture2D.cpp
+        scene/ECSUtils.cpp
         scene/Entity.cpp
         scene/Scene.cpp
         scene/SceneManager.cpp
-        scripting/ScriptingApi.cpp
         scripting/ScriptInstance.cpp
         scripting/ScriptSystem.cpp
+        scripting/api/Components.cpp
+        scripting/api/Core.cpp
 )
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 set_target_properties(${PROJECT_NAME} PROPERTIES

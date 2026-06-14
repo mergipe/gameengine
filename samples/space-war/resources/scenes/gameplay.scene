@@ -3,6 +3,7 @@ resources:
   - textures/planet00.png
   - templates/player.template
   - templates/planet.template
+  - templates/missile.template
 entities:
   - components:
       id: Camera

@@ -4,10 +4,16 @@
 
 namespace Engine
 {
-    Entity::Entity(entt::handle handle)
-        : m_handle{handle}
+    Entity::Entity(entt::handle handle, Scene* scene)
+        : m_handle{handle}, m_scene{scene}
     {
     }
 
-    const StringId& Entity::GetId() const { return m_handle.get<IdComponent>().value; }
+    void Entity::SetHandle(entt::handle handle) { m_handle = handle; }
+
+    entt::handle Entity::GetHandle() const { return m_handle; }
+
+    const StringId& Entity::GetId() const { return GetComponent<IdComponent>().value; }
+
+    const StringId& Entity::GetTag() const { return GetComponent<TagComponent>().value; }
 } // namespace Engine

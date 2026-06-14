@@ -2,6 +2,7 @@
 
 #include "core/Locator.h"
 #include "scene/Components.h"
+#include "scene/ECSUtils.h"
 
 namespace Engine
 {
@@ -13,13 +14,16 @@ namespace Engine
         if (node["is_trigger"]) {
             shapeDef.isTrigger = node["is_trigger"].as<bool>();
         }
+        if (node["enable_events"]) {
+            shapeDef.enableEvents = node["enable_events"].as<bool>();
+        }
         if (const auto& materialNode{node["material"]}) {
             Material2DData materialData{};
             if (materialNode["friction"]) {
                 materialData.friction = materialNode["friction"].as<float>();
             }
-            if (materialNode["restitution"]) {
-                materialData.restitution = materialNode["restitution"].as<float>();
+            if (materialNode["bounciness"]) {
+                materialData.bounciness = materialNode["bounciness"].as<float>();
             }
             if (materialNode["rolling_resistance"]) {
                 materialData.rollingResistance = materialNode["rolling_resistance"].as<float>();
@@ -63,6 +67,12 @@ namespace Engine
                 rigidBody.bodyData.type = *bodyType;
             }
         }
+        if (node["linear_velocity"]) {
+            rigidBody.bodyData.linearVelocity = node["linear_velocity"].as<glm::vec2>();
+        }
+        if (node["angular_velocity"]) {
+            rigidBody.bodyData.angularVelocity = node["angular_velocity"].as<float>();
+        }
         if (node["gravity_scale"]) {
             rigidBody.bodyData.gravityScale = node["gravity_scale"].as<float>();
         }
@@ -71,6 +81,9 @@ namespace Engine
         }
         if (node["linear_damping"]) {
             rigidBody.bodyData.linearDamping = node["linear_damping"].as<float>();
+        }
+        if (node["precise_collisions"]) {
+            rigidBody.bodyData.preciseCollisions = node["precise_collisions"].as<bool>();
         }
     }
 
@@ -170,7 +183,7 @@ namespace Engine
                     } else {
                         attributeValue.type = Variant::Type::tStringId;
                         attributeValue.asStringId =
-                            StringId::Intern(attributeValueNode.as<std::string>()).GetSid();
+                            StringId::Intern(attributeValueNode.as<std::string>()).GetId();
                     }
                     scriptData->attributes[attributeNode.first.as<std::string>()] = attributeValue;
                 }
@@ -232,41 +245,38 @@ namespace Engine
         }
     }
 
-    void CopyEntity(const entt::handle& source, const entt::handle& destination)
-    {
-        for (auto [id, sourceStorage] : source.storage()) {
-            if (sourceStorage.contains(source.entity())) {
-                if (auto* destinationStorage{destination.registry()->storage(id)}) {
-                    destinationStorage->push(destination.entity(), sourceStorage.value(source.entity()));
-                }
-            }
-        }
-    }
-
     entt::entity EntityLoader::Load(entt::registry& registry, const YAML::Node& entityNode)
     {
         const auto& componentsNode{entityNode["components"]};
         if (!componentsNode) {
             return entt::null;
         }
+        if (!componentsNode["id"]) {
+            Locator::GetLogger()->Warn("Trying to load entity without ID!");
+            return entt::null;
+        }
         const auto entity{registry.create()};
         const auto entityHandle{entt::handle{registry, entity}};
-        if (componentsNode["id"]) {
-            entityHandle.emplace<IdComponent>(StringId::Intern(componentsNode["id"].as<std::string>()));
-        }
         std::optional<StringId> parentTemplateId{};
         if (componentsNode["template"]) {
             parentTemplateId = StringId::Intern(componentsNode["template"].as<std::string>());
-            if (const auto entityTemplate{Locator::GetResourceManager()->GetTemplate(*parentTemplateId)}) {
-                CopyEntity(*entityTemplate, entityHandle);
+            if (const auto entityTemplate{
+                    Locator::GetResourceManager()->GetEntityTemplate(*parentTemplateId)}) {
+                ECSUtils::CopyEntity(*entityTemplate, entityHandle);
             } else {
                 Locator::GetLogger()->Error("Template {} not found", parentTemplateId->GetString());
             }
         }
+        auto& id{entityHandle.get_or_emplace<IdComponent>()};
+        id.value = StringId::Intern(componentsNode["id"].as<std::string>());
+        if (!entityHandle.all_of<TransformComponent>()) {
+            entityHandle.emplace<TransformComponent>();
+        }
+        if (!entityHandle.all_of<TagComponent>()) {
+            entityHandle.emplace<TagComponent>();
+        }
         if (componentsNode["transform"]) {
             LoadTransform(entityHandle, componentsNode["transform"]);
-        } else if (!entityHandle.any_of<TransformComponent>()) {
-            entityHandle.emplace<TransformComponent>();
         }
         if (componentsNode["tag"]) {
             LoadTag(entityHandle, componentsNode["tag"]);

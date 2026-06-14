@@ -54,6 +54,7 @@ namespace Engine
         m_devGui->Init();
         m_sceneManager = std::make_unique<SceneManager>();
         m_sceneManager->Init();
+        Locator::Provide(m_sceneManager.get());
         m_physicsEngine2D = std::make_unique<PhysicsEngine2D>();
         m_physicsEngine2D->Init();
         Locator::Provide(m_physicsEngine2D.get());
@@ -90,10 +91,10 @@ namespace Engine
         Locator::GetLogger()->Info("Engine started running");
         m_isRunning = true;
         m_sceneManager->LoadScene(ConfigManager::GetGameConfig().initialScene);
-        Timer::Ticks previousTicks{Timer::GetTicks()};
+        Timer::Ticks previousTicks{Timer::GetNanoseconds()};
         float lagInNs{0.0f};
         while (m_isRunning) {
-            const Timer::Ticks currentTicks{Timer::GetTicks()};
+            const Timer::Ticks currentTicks{Timer::GetNanoseconds()};
             lagInNs += static_cast<float>(currentTicks - previousTicks);
             previousTicks = currentTicks;
             ProcessEvents();

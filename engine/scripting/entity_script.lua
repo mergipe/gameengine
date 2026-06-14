@@ -9,8 +9,14 @@ end
 
 function EntityScript:OnStart() end
 
-function EntityScript:OnUpdate() end
+function EntityScript:OnUpdate(timeStep) end
 
-function EntityScript:GetComponent(componentType)
-  return ApiGetComponent(self.entity, componentType)
-end
+function EntityScript:OnLateUpdate(timeStep) end
+
+function EntityScript:OnCollisionEnter(otherCollider, collisionData) end
+
+function EntityScript:OnCollisionExit(otherCollider) end
+
+function EntityScript:OnTriggerEnter(otherCollider) end
+
+function EntityScript:OnTriggerExit(otherCollider) end

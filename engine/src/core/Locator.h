@@ -7,6 +7,7 @@
 #include "renderer/DebugRenderer.h"
 #include "renderer/RenderManager.h"
 #include "resources/ResourceManager.h"
+#include "scene/SceneManager.h"
 #include "scripting/ScriptSystem.h"
 
 namespace Engine
@@ -23,6 +24,7 @@ namespace Engine
         static InputManager* GetInputManager() { return s_inputManager; }
         static PhysicsEngine2D* GetPhysicsEngine2D() { return s_physicsEngine2D; }
         static ScriptSystem* GetScriptSystem() { return s_scriptSystem; }
+        static SceneManager* GetSceneManager() { return s_sceneManager; }
         static void Provide(Logger* logger) { s_logger = logger; }
         static void Provide(EventBus* eventBus) { s_eventBus = eventBus; }
         static void Provide(ResourceManager* resourceManager) { s_resourceManager = resourceManager; }
@@ -31,6 +33,7 @@ namespace Engine
         static void Provide(InputManager* inputManager) { s_inputManager = inputManager; }
         static void Provide(PhysicsEngine2D* physicsEngine2D) { s_physicsEngine2D = physicsEngine2D; }
         static void Provide(ScriptSystem* scriptSystem) { s_scriptSystem = scriptSystem; }
+        static void Provide(SceneManager* sceneManager) { s_sceneManager = sceneManager; };
 
     private:
         static inline Logger* s_logger{};
@@ -41,5 +44,6 @@ namespace Engine
         static inline InputManager* s_inputManager{};
         static inline PhysicsEngine2D* s_physicsEngine2D{};
         static inline ScriptSystem* s_scriptSystem{};
+        static inline SceneManager* s_sceneManager{};
     };
 } // namespace Engine

@@ -1,44 +1,70 @@
 PlayerController = EntityScript:new()
 
-PlayerController.rotation_speed = 300000000
-PlayerController.acceleration_magnitude = 2000000
+PlayerController.rotationSpeed = 300000000
+PlayerController.accelerationMagnitude = 2000000
 
 function PlayerController:OnStart()
-  self.rotation_value = 0
-  self.is_accelerating = false
-  self.is_shooting = false
-  self.transform = self:GetComponent(Transform)
-  self.rigidbody = self:GetComponent(RigidBody2D)
+  self.rotationValue = 0
+  self.isAccelerating = false
+  self.isShooting = false
+  self.shotCooldown = 100
+  self.lastShotTime = Timer.GetMilliseconds()
+  self.transform = self.entity:GetComponent(Transform)
+  self.rigidBody = self.entity:GetComponent(RigidBody2D)
 end
 
 function PlayerController:OnUpdate()
-  if self.is_accelerating then
+  if self.isAccelerating then
     local up = self.transform.up
-    self.rigidbody:ApplyForceToCenter(
-      Vec2.new(-up.x * self.acceleration_magnitude, -up.y * self.acceleration_magnitude)
-    )
+    self.rigidBody:ApplyForce(Vec2.new(-up.x * self.accelerationMagnitude, -up.y * self.accelerationMagnitude))
   end
-  if self.rotation_value ~= 0 then
-    self.rigidbody:ApplyTorque(-self.rotation_value * self.rotation_speed)
+  if self.rotationValue ~= 0 then
+    self.rigidBody:ApplyTorque(-self.rotationValue * self.rotationSpeed)
+  end
+  if self.isShooting then
+    local currentTime = Timer.GetMilliseconds()
+    if currentTime - self.lastShotTime > self.shotCooldown then
+      local missile = Entity.Create(StringId.new("templates/missile.template"))
+      local transform = missile:GetComponent(Transform)
+      transform.position = self.transform.position - self.transform.up * 50
+      transform.rotation = Vec3:new(0, 0, self.transform.rotation.z + math.pi)
+      local rigidBody = missile:GetComponent(RigidBody2D)
+      rigidBody.linearVelocity = -self.transform.up * 500
+      self.lastShotTime = currentTime
+    end
   end
 end
 
-function PlayerController:OnRotateLeft(input_value)
-  self.rotation_value = -input_value.value
-end
-
-function PlayerController:OnRotateRight(input_value)
-  self.rotation_value = input_value.value
-end
-
-function PlayerController:OnAccelerate(input_value)
-  if input_value.value == 0 then
-    self.is_accelerating = false
+function PlayerController:OnCollisionEnter(otherCollider, collisionData)
+  if otherCollider.entity.tag.str == "planet" then
+    self.entity:Destroy()
   else
-    self.is_accelerating = true
+    otherCollider.entity:Destroy()
   end
 end
 
-function PlayerController:OnShoot(input_value)
-  self.is_shooting = (input_value.value ~= 0)
+function PlayerController:OnCollisionExit(otherCollider) end
+
+function PlayerController:OnTriggerEnter(otherCollider) end
+
+function PlayerController:OnTriggerExit(otherCollider) end
+
+function PlayerController:OnRotateLeft(inputValue)
+  self.rotationValue = -inputValue.value
+end
+
+function PlayerController:OnRotateRight(inputValue)
+  self.rotationValue = inputValue.value
+end
+
+function PlayerController:OnAccelerate(inputValue)
+  if inputValue.value == 0 then
+    self.isAccelerating = false
+  else
+    self.isAccelerating = true
+  end
+end
+
+function PlayerController:OnShoot(inputValue)
+  self.isShooting = (inputValue.value ~= 0)
 end

@@ -38,7 +38,7 @@ namespace Engine
         void Clear();
         void LoadResource(const std::filesystem::path& relativeFilePath);
         const Texture2D& GetTexture(const StringId& id) const;
-        std::optional<entt::handle> GetTemplate(const StringId& id) const;
+        std::optional<entt::handle> GetEntityTemplate(const StringId& id) const;
 
     private:
         static inline const std::filesystem::path s_resourcesPath{FileSystem::GetAbsolutePath("resources")};
@@ -47,9 +47,9 @@ namespace Engine
                          const YAML::Node& metadataNode);
         void LoadFont(const StringId& id, const std::filesystem::path& filePath,
                       const YAML::Node& metadataNode);
-        void LoadTemplate(const StringId& id, const std::filesystem::path& filePath);
+        void LoadEntityTemplate(const StringId& id, const std::filesystem::path& filePath);
         entt::registry m_templateRegistry{};
-        std::unordered_map<StringId, entt::handle> m_templates{};
+        std::unordered_map<StringId, entt::handle> m_entityTemplates{};
         std::unordered_map<StringId, std::unique_ptr<Texture2D>> m_textures{};
         std::unique_ptr<Texture2D> m_fallbackTexture{};
     };

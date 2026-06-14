@@ -76,7 +76,7 @@ namespace Engine
             LoadFont(resourceId, absoluteFilePath, metadataNode);
             break;
         case ResourceType::entity_template:
-            LoadTemplate(resourceId, absoluteFilePath);
+            LoadEntityTemplate(resourceId, absoluteFilePath);
             break;
         }
     }
@@ -89,9 +89,9 @@ namespace Engine
         return *m_fallbackTexture;
     }
 
-    std::optional<entt::handle> ResourceManager::GetTemplate(const StringId& id) const
+    std::optional<entt::handle> ResourceManager::GetEntityTemplate(const StringId& id) const
     {
-        if (const auto it{m_templates.find(id)}; it != m_templates.end()) {
+        if (const auto it{m_entityTemplates.find(id)}; it != m_entityTemplates.end()) {
             return it->second;
         }
         return {};
@@ -129,7 +129,7 @@ namespace Engine
         texture->Create(data, width, height, imageFormat);
         stbi_image_free(data);
         m_textures.insert(std::make_pair(id, std::move(texture)));
-        Locator::GetLogger()->Info("Texture {} loaded with id {}", filePath.c_str(), id.GetSid());
+        Locator::GetLogger()->Info("Texture {} loaded with id {}", filePath.c_str(), id.GetId());
     }
 
     void ResourceManager::LoadFont([[maybe_unused]] const StringId& id,
@@ -138,14 +138,14 @@ namespace Engine
     {
     }
 
-    void ResourceManager::LoadTemplate(const StringId& id, const std::filesystem::path& filePath)
+    void ResourceManager::LoadEntityTemplate(const StringId& id, const std::filesystem::path& filePath)
     {
         const auto entityNode{YAML::LoadFile(filePath)};
         auto entity{EntityLoader::Load(m_templateRegistry, entityNode)};
         if (m_templateRegistry.valid(entity)) {
-            m_templates.emplace(id, entt::handle{m_templateRegistry, entity});
+            m_entityTemplates.emplace(id, entt::handle{m_templateRegistry, entity});
         } else {
-            Locator::GetLogger()->Error("Loaded entity {} is not valid!", id.GetString());
+            Locator::GetLogger()->Error("Loaded entity template {} is not valid!", id.GetString());
         }
     }
 } // namespace Engine

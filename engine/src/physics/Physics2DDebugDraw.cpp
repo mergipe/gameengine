@@ -112,6 +112,7 @@ namespace Engine
                     ImGui::Checkbox("Draw contact impulses", &m_debugDraw.drawContactImpulses);
                     ImGui::Checkbox("Draw friction impulses", &m_debugDraw.drawFrictionImpulses);
                     ImGui::Checkbox("Draw mass", &m_debugDraw.drawMass);
+                    ImGui::Checkbox("Draw body names", &m_debugDraw.drawBodyNames);
                     ImGui::Checkbox("Draw islands", &m_debugDraw.drawIslands);
                     ImGui::EndMenu();
                 }

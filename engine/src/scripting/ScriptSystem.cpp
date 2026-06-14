@@ -1,12 +1,25 @@
 #include "ScriptSystem.h"
 
 #include "ScriptInstance.h"
-#include "ScriptingApi.h"
+#include "api/Core.h"
+#include "api/Physics.h"
 #include "core/Locator.h"
 #include "resources/ResourceManager.h"
+#include "scene/Components.h"
 
 namespace Engine
 {
+    std::optional<ScriptingApi::Entity> CreateEntity(const StringId& entityTemplateId)
+    {
+        const auto entityTemplate{Locator::GetResourceManager()->GetEntityTemplate(entityTemplateId)};
+        if (!entityTemplate) {
+            Locator::GetLogger()->Error("Entity template {} not found", entityTemplateId.GetString());
+            return {};
+        }
+        auto& entity{Locator::GetSceneManager()->GetCurrentScene()->CreateEntity(entityTemplate.value())};
+        return ScriptingApi::Entity{&entity};
+    }
+
     void ScriptSystem::Init()
     {
         m_lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
@@ -14,12 +27,17 @@ namespace Engine
         m_lua.require_file("utils", s_scriptingLibPath / "utils.lua");
         m_lua.script_file(s_scriptingLibPath / "entity_script.lua");
         SetBindings();
+        Locator::GetLogger()->Info("Script system initialized");
     }
 
-    void ScriptSystem::ShutDown() { m_scriptClasses.clear(); }
+    void ScriptSystem::ShutDown()
+    {
+        m_scriptClasses.clear();
+        Locator::GetLogger()->Info("Script system shutdown");
+    }
 
     std::optional<ScriptInstance> ScriptSystem::CreateScriptInstance(const ScriptData& scriptData,
-                                                                     entt::handle entityHandle)
+                                                                     Entity& entity)
     {
         ScriptClass* scriptClass{GetOrLoadScriptClass(scriptData.filePath, scriptData.className)};
         if (!scriptClass) {
@@ -36,7 +54,8 @@ namespace Engine
             Locator::GetLogger()->Warn("Failed to instantiate '{}'", scriptClass->GetName());
             return {};
         }
-        ScriptInstance scriptInstance{Entity{entityHandle}, scriptClass, maybeScriptInstance.value()};
+        ScriptInstance scriptInstance{ScriptingApi::Entity{&entity}, scriptClass,
+                                      maybeScriptInstance.value()};
         for (const auto& [name, value] : scriptData.attributes) {
             scriptInstance.SetAttribute(name, value);
         }
@@ -85,14 +104,6 @@ namespace Engine
         return m_scriptClasses[scriptClassId].get();
     }
 
-    sol::object ScriptSystem::GetComponent(Entity entity, const sol::table& type)
-    {
-        if (const auto it{m_componentTypes.find(type.pointer())}; it != m_componentTypes.end()) {
-            return m_componentTypes[type.pointer()](entity);
-        }
-        return sol::nil;
-    }
-
     ScriptClass* ScriptSystem::GetScriptClass(const StringId& scriptId) const
     {
         const auto scriptIterator{m_scriptClasses.find(scriptId)};
@@ -105,30 +116,65 @@ namespace Engine
     void ScriptSystem::SetBindings()
     {
         BindCoreTypes();
-        m_lua.new_usertype<ScriptingApi::Debug>("Debug", "Log", &ScriptingApi::Debug::Log);
         BindComponentTypes();
+        BindPhysicsTypes();
+        SetComponentOperations();
         m_lua.new_usertype<InputValue>("InputValue", "value", &InputValue::value);
     }
 
     void ScriptSystem::BindCoreTypes()
     {
-        m_lua.new_usertype<glm::vec2>(
-            "Vec2", sol::constructors<glm::vec2(), glm::vec2(float), glm::vec2(float, float)>(), "x",
-            &glm::vec2::x, "y", &glm::vec2::y);
-        m_lua.new_usertype<glm::vec3>(
-            "Vec3", sol::constructors<glm::vec3(), glm::vec3(float), glm::vec3(float, float, float)>(), "x",
-            &glm::vec3::x, "y", &glm::vec3::y, "z", &glm::vec3::z);
-        m_lua.new_usertype<glm::vec4>(
-            "Vec4", sol::constructors<glm::vec4(), glm::vec4(float), glm::vec4(float, float, float, float)>(),
-            "x", &glm::vec4::x, "y", &glm::vec4::y, "z", &glm::vec4::z, "w", &glm::vec4::w);
-        m_lua.new_usertype<StringId>("StringId", "id", &StringId::GetSid, "str",
-                                     sol::resolve<std::string_view() const>(&StringId::GetString));
-        m_lua.new_usertype<Entity>("Entity", "id", sol::property(&Entity::GetId));
+        auto vec2{m_lua.new_usertype<glm::vec2>(
+            "Vec2", sol::constructors<glm::vec2(), glm::vec2(float), glm::vec2(float, float)>())};
+        vec2["x"] = &glm::vec2::x;
+        vec2["y"] = &glm::vec2::y;
+        BindVectorFunctions(vec2);
+        auto vec3{m_lua.new_usertype<glm::vec3>(
+            "Vec3", sol::constructors<glm::vec3(), glm::vec3(float), glm::vec3(float, float, float)>())};
+        vec3["x"] = &glm::vec3::x;
+        vec3["y"] = &glm::vec3::y;
+        vec3["z"] = &glm::vec3::z;
+        BindVectorFunctions(vec3);
+        auto vec4{m_lua.new_usertype<glm::vec4>(
+            "Vec4",
+            sol::constructors<glm::vec4(), glm::vec4(float), glm::vec4(float, float, float, float)>())};
+        vec4["x"] = &glm::vec4::x;
+        vec4["y"] = &glm::vec4::y;
+        vec4["z"] = &glm::vec4::z;
+        vec4["w"] = &glm::vec4::w;
+        BindVectorFunctions(vec4);
+        auto stringId{
+            m_lua.new_usertype<StringId>("StringId", sol::constructors<StringId(), StringId(const char*)>())};
+        stringId["id"] = sol::property(&StringId::GetId);
+        stringId["str"] = sol::property(sol::resolve<std::string_view() const>(&StringId::GetString));
+        auto debug{m_lua.new_usertype<ScriptingApi::Debug>("Debug")};
+        debug["Log"] = &ScriptingApi::Debug::Log;
+        auto timer{m_lua.new_usertype<ScriptingApi::Timer>("Timer")};
+        timer["GetMilliseconds"] = &ScriptingApi::Timer::GetMilliseconds;
     }
 
     void ScriptSystem::BindComponentTypes()
     {
-        sol::usertype transform{m_lua.new_usertype<ScriptingApi::Transform>("Transform")};
+        auto entity{m_lua.new_usertype<ScriptingApi::Entity>("Entity")};
+        entity["id"] = sol::property(&ScriptingApi::Entity::GetId);
+        entity["tag"] = sol::property(&ScriptingApi::Entity::GetTag);
+        entity["GetComponent"] = [this](ScriptingApi::Entity& entity, const sol::table& componentType) {
+            return GetComponent(entity, componentType);
+        };
+        entity["AddComponent"] = [this](ScriptingApi::Entity& entity, const sol::table& componentType) {
+            return AddComponent(entity, componentType);
+        };
+        entity["RemoveComponent"] = [this](ScriptingApi::Entity& entity, const sol::table& componentType) {
+            RemoveComponent(entity, componentType);
+        };
+        entity["Destroy"] = [](ScriptingApi::Entity& entity) {
+            Locator::GetSceneManager()->GetCurrentScene()->DestroyEntity(*entity.GetEntityPtr());
+        };
+        entity["Create"] = &CreateEntity;
+        auto component{m_lua.new_usertype<ScriptingApi::Component>("Component")};
+        component["entity"] = sol::property(&ScriptingApi::Component::GetEntity);
+        auto transform{m_lua.new_usertype<ScriptingApi::Transform>("Transform", sol::base_classes,
+                                                                   sol::bases<ScriptingApi::Component>())};
         transform["position"] =
             sol::property(&ScriptingApi::Transform::GetPosition, &ScriptingApi::Transform::SetPosition);
         transform["rotation"] =
@@ -138,22 +184,66 @@ namespace Engine
         transform["up"] = sol::property(&ScriptingApi::Transform::GetUp);
         transform["right"] = sol::property(&ScriptingApi::Transform::GetRight);
         transform["forward"] = sol::property(&ScriptingApi::Transform::GetForward);
-        sol::usertype rigidBody2D{m_lua.new_usertype<ScriptingApi::RigidBody2D>("RigidBody2D")};
-        rigidBody2D["position"] = sol::property(&ScriptingApi::RigidBody2D::GetPosition);
-        rigidBody2D["rotationAngle"] = sol::property(&ScriptingApi::RigidBody2D::GetRotationAngle);
+        auto rigidBody2D{m_lua.new_usertype<ScriptingApi::RigidBody2D>(
+            "RigidBody2D", sol::base_classes, sol::bases<ScriptingApi::Component>())};
         rigidBody2D["linearVelocity"] = sol::property(&ScriptingApi::RigidBody2D::GetLinearVelocity,
                                                       &ScriptingApi::RigidBody2D::SetLinearVelocity);
-        rigidBody2D["ApplyForceToCenter"] = &ScriptingApi::RigidBody2D::ApplyForceToCenter;
+        rigidBody2D["angularVelocity"] = sol::property(&ScriptingApi::RigidBody2D::GetAngularVelocity,
+                                                       &ScriptingApi::RigidBody2D::SetAngularVelocity);
+        rigidBody2D["ApplyForce"] = &ScriptingApi::RigidBody2D::ApplyForce;
         rigidBody2D["ApplyTorque"] = &ScriptingApi::RigidBody2D::ApplyTorque;
-        m_componentTypes.emplace(
-            m_lua.create_named_table("Transform").pointer(),
-            [this](const Entity entity) { return sol::make_object(m_lua, ScriptingApi::Transform{entity}); });
-        m_componentTypes.emplace(m_lua.create_named_table("RigidBody2D").pointer(),
-                                 [this](const Entity entity) {
-                                     return sol::make_object(m_lua, ScriptingApi::RigidBody2D{entity});
-                                 });
-        m_lua.set_function("ApiGetComponent", [this](const Entity entity, const sol::table& table) {
-            return GetComponent(entity, table);
-        });
+        auto collider2D{m_lua.new_usertype<ScriptingApi::Collider2D>("Collider2D", sol::base_classes,
+                                                                     sol::bases<ScriptingApi::Component>())};
+    }
+
+    void ScriptSystem::BindPhysicsTypes()
+    {
+        auto collisionPoint2D{m_lua.new_usertype<ScriptingApi::CollisionPoint2D>("CollisionPoint2D")};
+        collisionPoint2D["anchorA"] = &ScriptingApi::CollisionPoint2D::anchorA;
+        collisionPoint2D["anchorB"] = &ScriptingApi::CollisionPoint2D::anchorB;
+        collisionPoint2D["normalImpulse"] = &ScriptingApi::CollisionPoint2D::normalImpulse;
+        collisionPoint2D["normalVelocity"] = &ScriptingApi::CollisionPoint2D::normalVelocity;
+        collisionPoint2D["separation"] = &ScriptingApi::CollisionPoint2D::separation;
+        collisionPoint2D["tangentImpulse"] = &ScriptingApi::CollisionPoint2D::tangentImpulse;
+        collisionPoint2D["totalNormalImpulse"] = &ScriptingApi::CollisionPoint2D::totalNormalImpulse;
+        collisionPoint2D["id"] = &ScriptingApi::CollisionPoint2D::id;
+        collisionPoint2D["persisted"] = &ScriptingApi::CollisionPoint2D::persisted;
+        auto collision2DData{m_lua.new_usertype<ScriptingApi::Collision2DData>("Collision2DData")};
+        collision2DData["points"] = &ScriptingApi::Collision2DData::points;
+        collision2DData["normal"] = &ScriptingApi::Collision2DData::normal;
+        collision2DData["pointCount"] = &ScriptingApi::Collision2DData::pointCount;
+    }
+
+    void ScriptSystem::SetComponentOperations()
+    {
+        m_componentOperations.emplace(
+            sol::table{m_lua["Transform"]}.pointer(),
+            CreateComponentOperations<TransformComponent, ScriptingApi::Transform>());
+        m_componentOperations.emplace(
+            sol::table{m_lua["RigidBody2D"]}.pointer(),
+            CreateComponentOperations<RigidBody2DComponent, ScriptingApi::RigidBody2D>());
+    }
+
+    sol::table ScriptSystem::GetComponent(ScriptingApi::Entity& entity, const sol::table& componentType)
+    {
+        if (m_componentOperations.contains(componentType.pointer())) {
+            return m_componentOperations[componentType.pointer()].get(*entity.GetEntityPtr());
+        }
+        return sol::nil;
+    }
+
+    sol::table ScriptSystem::AddComponent(ScriptingApi::Entity& entity, const sol::table& componentType)
+    {
+        if (m_componentOperations.contains(componentType.pointer())) {
+            return m_componentOperations[componentType.pointer()].add(*entity.GetEntityPtr());
+        }
+        return sol::nil;
+    }
+
+    void ScriptSystem::RemoveComponent(ScriptingApi::Entity& entity, const sol::table& componentType)
+    {
+        if (m_componentOperations.contains(componentType.pointer())) {
+            m_componentOperations[componentType.pointer()].remove(*entity.GetEntityPtr());
+        }
     }
 } // namespace Engine

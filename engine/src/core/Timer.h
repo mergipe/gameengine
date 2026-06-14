@@ -6,5 +6,6 @@ namespace Engine::Timer
 {
     using Ticks = U64;
 
-    Ticks GetTicks();
+    Ticks GetMilliseconds();
+    Ticks GetNanoseconds();
 } // namespace Engine::Timer

@@ -5,9 +5,13 @@
 
 namespace Engine::Math
 {
+    constexpr glm::vec3 g_canonicalUp{0.0f, 1.0f, 0.0f};
+    constexpr glm::vec3 g_canonicalRight{1.0f, 0.0f, 0.0f};
+    constexpr glm::vec3 g_canonicalForward{0.0f, 0.0f, 1.0f};
+
     constexpr glm::mat4 BuildRotationMatrix(glm::vec3 rotationAngles)
     {
-        return glm::mat4_cast(glm::quat(rotationAngles));
+        return glm::mat4_cast(glm::quat{rotationAngles});
     }
 
     constexpr glm::mat4 BuildTranslationMatrix(glm::vec3 position)
@@ -39,5 +43,20 @@ namespace Engine::Math
                                                       float extrapolationTimeStep)
     {
         return glm::vec2{position + velocity * extrapolationTimeStep};
+    }
+
+    constexpr glm::vec3 CalculateUpVector(glm::vec3 rotation)
+    {
+        return BuildRotationMatrix(rotation) * glm::vec4{g_canonicalUp, 1.0f};
+    }
+
+    constexpr glm::vec3 CalculateRightVector(glm::vec3 rotation)
+    {
+        return BuildRotationMatrix(rotation) * glm::vec4{g_canonicalRight, 1.0f};
+    }
+
+    constexpr glm::vec3 CalculateForwardVector(glm::vec3 rotation)
+    {
+        return BuildRotationMatrix(rotation) * glm::vec4{g_canonicalForward, 1.0f};
     }
 } // namespace Engine::Math

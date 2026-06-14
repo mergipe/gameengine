@@ -21,26 +21,26 @@ namespace Engine
     {
     public:
         static StringId Intern(std::string_view str);
-        static std::string_view GetString(StringIdType sid);
+        static std::string_view GetString(StringIdType id);
 
         StringId() = default;
         constexpr explicit StringId(const char* str);
 
-        bool operator==(const StringId& other) const { return m_sid == other.m_sid; }
+        bool operator==(const StringId& other) const { return m_id == other.m_id; }
         [[nodiscard]] std::string_view GetString() const { return m_str; }
-        [[nodiscard]] StringIdType GetSid() const { return m_sid; }
+        [[nodiscard]] StringIdType GetId() const { return m_id; }
 
     private:
         static inline std::unordered_map<StringIdType, std::string> s_stringIdTable{};
 
-        explicit StringId(std::string_view str, StringIdType sid);
+        explicit StringId(std::string_view str, StringIdType id);
 
         std::string_view m_str{};
-        StringIdType m_sid{};
+        StringIdType m_id{};
     };
 
     constexpr StringId::StringId(const char* str)
-        : m_str{str}, m_sid{Hash::Hash32(str)}
+        : m_str{str}, m_id{Hash::Hash32(str)}
     {
     }
 
@@ -50,5 +50,5 @@ namespace Engine
 
 template <>
 struct std::hash<Engine::StringId> {
-    std::size_t operator()(const Engine::StringId& sid) const noexcept { return sid.GetSid(); }
+    std::size_t operator()(const Engine::StringId& sid) const noexcept { return sid.GetId(); }
 };

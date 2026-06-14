@@ -1,12 +1,12 @@
 #pragma once
 
-#include "core/Math.h"
 #include "core/StringId.h"
 #include "input/InputCallback.h"
 #include "input/InputDevice.h"
 #include "physics/Physics2DTypes.h"
 #include "renderer/Camera.h"
 #include "scripting/ScriptInstance.h"
+#include "scripting/ScriptSystem.h"
 
 #include <vector>
 
@@ -39,14 +39,12 @@ namespace Engine
 
     struct RigidBody2DComponent final {
         Body2DData bodyData{};
-    };
-
-    struct RigidBody2DRuntimeComponent final {
-        b2BodyId bodyId{};
+        std::optional<Body2DId> bodyId{};
     };
 
     struct BoxCollider2DComponent final {
         Shape2DData shapeData{};
+        std::optional<Shape2DId> shapeId{};
         glm::vec2 offset{0.0f};
         float width{1.0f};
         float height{1.0f};
@@ -56,6 +54,7 @@ namespace Engine
 
     struct CircleCollider2DComponent final {
         Shape2DData shapeData{};
+        std::optional<Shape2DId> shapeId{};
         glm::vec2 offset{0.0f};
         float radius{1.0f};
     };
@@ -86,4 +85,13 @@ namespace Engine
     struct CameraComponent final {
         Camera camera{};
     };
+
+    template <typename... T>
+    struct ComponentTypes {
+    };
+
+    using AllComponentTypes =
+        ComponentTypes<IdComponent, TagComponent, TransformComponent, SpriteComponent,
+                       SpriteAnimationComponent, RigidBody2DComponent, BoxCollider2DComponent,
+                       CircleCollider2DComponent, ScriptComponent, PlayerInputComponent, CameraComponent>;
 } // namespace Engine

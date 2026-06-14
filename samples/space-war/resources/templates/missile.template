@@ -1,0 +1,16 @@
+components:
+  id: Missile
+  tag: missile
+  transform:
+    scale: {x: 0.4, y: 0.4, z: 1}
+  rigid_body_2d:
+    type: dynamic
+    gravity_scale: 0
+  box_collider_2d:
+    width: 21
+    height: 69
+    enable_events: true
+  sprite:
+    texture_id: textures/space-shooter-spritesheet.png
+    sprite_id: spaceMissiles_038
+    z_index: 4

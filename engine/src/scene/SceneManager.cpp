@@ -1,6 +1,7 @@
 #include "SceneManager.h"
 
 #include "Components.h"
+#include "ECSUtils.h"
 #include "core/Locator.h"
 #include "core/StringId.h"
 #include "core/Yaml.h"
@@ -12,8 +13,9 @@
 
 namespace Engine
 {
-    void LoadResources(const YAML::Node& resourcesNode)
+    void LoadResources(const YAML::Node& rootNode)
     {
+        const auto resourcesNode{rootNode["resources"]};
         if (!resourcesNode) {
             return;
         }
@@ -24,20 +26,21 @@ namespace Engine
         }
     }
 
+    void LoadEntities(const YAML::Node& rootNode, entt::registry& registry)
+    {
+        const auto entitiesNode{rootNode["entities"]};
+        if (!entitiesNode) {
+            return;
+        }
+        for (auto entityIt{entitiesNode.begin()}; entityIt != entitiesNode.end(); ++entityIt) {
+            const auto& entityNode{*entityIt};
+            EntityLoader::Load(registry, entityNode);
+        }
+    }
+
     void SceneManager::Init()
     {
-        // TODO: initializes registry storages for template copying; find a better way
-        m_ecsRegistry.storage<IdComponent>();
-        m_ecsRegistry.storage<TagComponent>();
-        m_ecsRegistry.storage<TransformComponent>();
-        m_ecsRegistry.storage<SpriteComponent>();
-        m_ecsRegistry.storage<SpriteAnimationComponent>();
-        m_ecsRegistry.storage<RigidBody2DComponent>();
-        m_ecsRegistry.storage<BoxCollider2DComponent>();
-        m_ecsRegistry.storage<CircleCollider2DComponent>();
-        m_ecsRegistry.storage<PlayerInputComponent>();
-        m_ecsRegistry.storage<ScriptComponent>();
-        m_ecsRegistry.storage<CameraComponent>();
+        ECSUtils::CreateStorages(AllComponentTypes{}, m_ecsRegistry);
         Locator::GetLogger()->Info("Scene manager initialized");
     }
 
@@ -56,9 +59,9 @@ namespace Engine
             return;
         }
         const YAML::Node rootNode{YAML::LoadFile(ResourceManager::GetResourcePath(sceneId.GetString()))};
-        LoadResources(rootNode["resources"]);
-        LoadEntities(rootNode["entities"]);
         m_currentScene = std::make_unique<Scene>(&m_ecsRegistry);
+        LoadResources(rootNode);
+        LoadEntities(rootNode, m_ecsRegistry);
         m_currentScene->Start();
     }
 
@@ -182,14 +185,4 @@ namespace Engine
         }
     }
 
-    void SceneManager::LoadEntities(const YAML::Node& entitiesNode)
-    {
-        if (!entitiesNode) {
-            return;
-        }
-        for (auto entityIt{entitiesNode.begin()}; entityIt != entitiesNode.end(); ++entityIt) {
-            const auto& entityNode{*entityIt};
-            EntityLoader::Load(m_ecsRegistry, entityNode);
-        }
-    }
 } // namespace Engine

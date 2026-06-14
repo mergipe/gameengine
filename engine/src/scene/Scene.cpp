@@ -1,15 +1,55 @@
 #include "Scene.h"
 
 #include "Components.h"
+#include "ECSUtils.h"
 #include "Engine.h"
+#include "core/Assert.h"
 #include "core/Locator.h"
 #include "core/Math.h"
 
 namespace Engine
 {
-    Scene::Scene(entt::registry* registry)
-        : m_registry{registry}
+    void OnCollisionEnter(const Entity& entity, Entity& other, const CollisionManifold2D& manifold,
+                          Shape2DId otherShapeId)
     {
+        if (entity.HasComponent<ScriptRuntimeComponent>()) {
+            for (auto& script : entity.GetComponent<ScriptRuntimeComponent>().scriptInstances) {
+                script.InvokeOnCollisionEnter(other, manifold, otherShapeId);
+            }
+        }
+    }
+
+    void OnCollisionExit(const Entity& entity, Entity& other, Shape2DId otherShapeId)
+    {
+        if (entity.HasComponent<ScriptRuntimeComponent>()) {
+            for (auto& script : entity.GetComponent<ScriptRuntimeComponent>().scriptInstances) {
+                script.InvokeOnCollisionExit(other, otherShapeId);
+            }
+        }
+    }
+
+    void OnTriggerEnter(const Entity& entity, Entity& other, Shape2DId otherShapeId)
+    {
+        if (entity.HasComponent<ScriptRuntimeComponent>()) {
+            for (auto& script : entity.GetComponent<ScriptRuntimeComponent>().scriptInstances) {
+                script.InvokeOnTriggerEnter(other, otherShapeId);
+            }
+        }
+    }
+
+    void OnTriggerExit(const Entity& entity, Entity& other, Shape2DId otherShapeId)
+    {
+        if (entity.HasComponent<ScriptRuntimeComponent>()) {
+            for (auto& script : entity.GetComponent<ScriptRuntimeComponent>().scriptInstances) {
+                script.InvokeOnTriggerExit(other, otherShapeId);
+            }
+        }
+    }
+
+    Scene::Scene(entt::registry* registry)
+        : m_mainRegistry{registry}
+    {
+        ECSUtils::CreateStorages(AllComponentTypes{}, m_stagingRegistry);
     }
 
     Scene::~Scene()
@@ -19,23 +59,45 @@ namespace Engine
 
     void Scene::Start()
     {
+        const auto view{m_mainRegistry->view<const IdComponent>()};
+        for (const auto entity : view) {
+            const auto& id{view.get<IdComponent>(entity).value};
+            m_entityById.try_emplace(id, entt::handle{*m_mainRegistry, entity}, this);
+        }
+
+        m_mainRegistry->on_construct<RigidBody2DComponent>().connect<&Scene::OnAddRigidBody2DComponent>(this);
+        m_mainRegistry->on_construct<BoxCollider2DComponent>().connect<&Scene::OnAddBoxCollider2DComponent>(
+            this);
+        m_mainRegistry->on_construct<CircleCollider2DComponent>()
+            .connect<&Scene::OnAddCircleCollider2DComponent>(this);
+        m_mainRegistry->on_destroy<RigidBody2DComponent>().connect<&Scene::OnRemoveRigidBody2DComponent>(
+            this);
+        m_mainRegistry->on_destroy<BoxCollider2DComponent>().connect<&Scene::OnRemoveBoxCollider2DComponent>(
+            this);
+        m_mainRegistry->on_destroy<CircleCollider2DComponent>()
+            .connect<&Scene::OnRemoveCircleCollider2DComponent>(this);
+
+        StartPhysics2D();
         StartScripts();
         StartPlayerInput();
-        StartPhysics2D();
     }
 
     void Scene::Update(float timeStep)
     {
+        CreateEntities();
+        AddComponents();
         auto* eventBus{Locator::GetEventBus()};
         eventBus->Reset();
         UpdatePlayerInput(eventBus);
         UpdatePhysics2D(timeStep);
         UpdateScripts(timeStep);
+        RemoveComponents();
+        DestroyEntities();
     }
 
     void Scene::Render(float frameExtrapolationTimeStep)
     {
-        const auto cameraView{m_registry->view<const TransformComponent, CameraComponent>()};
+        const auto cameraView{m_mainRegistry->view<const TransformComponent, CameraComponent>()};
         Camera* cameraPtr{};
         for (const auto entity : cameraView) {
             auto [transform, camera] = cameraView.get<TransformComponent, CameraComponent>(entity);
@@ -48,15 +110,17 @@ namespace Engine
         if (!cameraPtr)
             return;
         Locator::GetRenderManager()->SetCamera(*cameraPtr);
-        m_registry->sort<SpriteComponent>(
+        m_mainRegistry->sort<SpriteComponent>(
             [](const SpriteComponent& lhs, const SpriteComponent& rhs) { return lhs.zIndex < rhs.zIndex; });
-        auto spriteView{m_registry->view<const TransformComponent, const SpriteComponent>()};
+        auto spriteView{m_mainRegistry->view<const TransformComponent, const SpriteComponent>()};
         spriteView.use<SpriteComponent>();
         for (const auto entity : spriteView) {
             auto [transform, spriteComponent] = spriteView.get<TransformComponent, SpriteComponent>(entity);
             glm::vec2 renderPosition{transform.position};
-            if (const auto* rigidBody{m_registry->try_get<RigidBody2DRuntimeComponent>(entity)}) {
-                const auto velocity{Locator::GetPhysicsEngine2D()->GetLinearVelocity(rigidBody->bodyId)};
+            if (const auto* rigidBody{m_mainRegistry->try_get<RigidBody2DComponent>(entity)}) {
+                ASSERT(rigidBody->bodyId);
+                const auto velocity{
+                    Locator::GetPhysicsEngine2D()->GetLinearVelocity(rigidBody->bodyId.value())};
                 renderPosition = Math::CalculateExtrapolatedPosition(transform.position, velocity,
                                                                      frameExtrapolationTimeStep);
             }
@@ -87,26 +151,164 @@ namespace Engine
 
     void Scene::OnViewportResize(int width, int height)
     {
-        const auto view{m_registry->view<CameraComponent>()};
+        const auto view{m_mainRegistry->view<CameraComponent>()};
         for (const auto entity : view) {
             auto& cameraComponent{view.get<CameraComponent>(entity)};
             cameraComponent.camera.SetViewport(static_cast<float>(width), static_cast<float>(height));
         }
     }
 
+    Entity& Scene::CreateEntity() { return CreateEntity(entt::handle{}); }
+
+    Entity& Scene::CreateEntity(entt::handle entityTemplate)
+    {
+        auto newEntityHandle{entt::handle{m_stagingRegistry, m_stagingRegistry.create()}};
+        if (entityTemplate.valid()) {
+            ECSUtils::CopyEntity(entityTemplate, newEntityHandle);
+        }
+        static U32 s_nextId{0};
+        auto& entityId{newEntityHandle.get<IdComponent>().value};
+        entityId = StringId::Intern(entityId.GetString().data() + std::to_string(s_nextId++));
+        auto& newEntity{m_entityById.try_emplace(entityId, newEntityHandle, this).first->second};
+        m_entitiesToCreate.push_back(&newEntity);
+        return newEntity;
+    }
+
+    void Scene::DestroyEntity(const Entity& entity) { m_entitiesToDestroy.push_back(entity); }
+
+    void Scene::CreateEntities()
+    {
+        for (auto& entityToCreate : m_entitiesToCreate) {
+            const auto newEntity{m_mainRegistry->create()};
+            const auto newHandle{entt::handle{*m_mainRegistry, newEntity}};
+            auto oldHandle{entityToCreate->GetHandle()};
+            ECSUtils::CopyEntity(oldHandle, newHandle);
+            entityToCreate->SetHandle(newHandle);
+            oldHandle.destroy();
+        }
+        m_entitiesToCreate.clear();
+    }
+
+    void Scene::DestroyEntities()
+    {
+        for (const auto entity : m_entitiesToDestroy) {
+            m_entityById.erase(entity.GetId());
+            m_mainRegistry->destroy(entity.GetHandle());
+        }
+        m_entitiesToDestroy.clear();
+    }
+
+    void Scene::AddComponents()
+    {
+        for (const auto [entity, componentId] : m_componentsToAdd) {
+            m_mainRegistry->storage(componentId)->push(entity->GetHandle());
+        }
+        m_componentsToAdd.clear();
+    }
+
+    void Scene::RemoveComponents()
+    {
+        for (const auto [entity, componentId] : m_componentsToRemove) {
+            m_mainRegistry->storage(componentId)->remove(entity->GetHandle());
+        }
+        m_componentsToRemove.clear();
+    }
+
+    void Scene::OnAddRigidBody2DComponent(entt::registry& registry, entt::entity entity)
+    {
+        const auto& entityId{registry.get<IdComponent>(entity).value};
+        ASSERT(m_entityById.contains(entityId));
+        auto [transform, rigidBody] = registry.get<const TransformComponent, RigidBody2DComponent>(entity);
+        rigidBody.bodyId = Locator::GetPhysicsEngine2D()->CreateBody(
+            rigidBody.bodyData, glm::vec2{transform.position.x, transform.position.y}, transform.rotation.z,
+            m_entityById.find(entityId)->second, entityId.GetString());
+    }
+
+    void Scene::OnAddBoxCollider2DComponent(entt::registry& registry, entt::entity entity)
+    {
+        const auto& entityId{registry.get<IdComponent>(entity).value};
+        ASSERT(m_entityById.contains(entityId));
+        const auto* rigidBody{registry.try_get<RigidBody2DComponent>(entity)};
+        if (!rigidBody) {
+            Locator::GetLogger()->Warn("Trying to add box collider into {} without rigid body!",
+                                       registry.get<const IdComponent>(entity).value.GetString());
+            return;
+        }
+        auto [transform, collider] = registry.get<const TransformComponent, BoxCollider2DComponent>(entity);
+        ASSERT(rigidBody->bodyId);
+        collider.shapeId = Locator::GetPhysicsEngine2D()->CreateBoxShape(
+            rigidBody->bodyId.value(), collider.shapeData, collider.width * transform.scale.x,
+            collider.height * transform.scale.y, collider.edgeRadius, collider.offset, collider.rotation,
+            m_entityById.find(entityId)->second);
+    }
+
+    void Scene::OnAddCircleCollider2DComponent(entt::registry& registry, entt::entity entity)
+    {
+        const auto& entityId{registry.get<IdComponent>(entity).value};
+        ASSERT(m_entityById.contains(entityId));
+        const auto* rigidBody{registry.try_get<RigidBody2DComponent>(entity)};
+        if (!rigidBody) {
+            Locator::GetLogger()->Warn("Trying to add circle collider into {} without rigid body!",
+                                       registry.get<const IdComponent>(entity).value.GetString());
+            return;
+        }
+        auto [transform, collider] =
+            registry.get<const TransformComponent, CircleCollider2DComponent>(entity);
+        ASSERT(rigidBody->bodyId);
+        collider.shapeId = Locator::GetPhysicsEngine2D()->CreateCircleShape(
+            rigidBody->bodyId.value(), collider.shapeData,
+            collider.radius * std::max(transform.scale.x, transform.scale.y), collider.offset,
+            m_entityById.find(entityId)->second);
+    }
+
+    void Scene::OnRemoveRigidBody2DComponent(entt::registry& registry, entt::entity entity)
+    {
+        const auto& rigidBody{registry.get<const RigidBody2DComponent>(entity)};
+        ASSERT(rigidBody.bodyId);
+        Locator::GetPhysicsEngine2D()->DestroyBody(rigidBody.bodyId.value());
+    }
+
+    void Scene::OnRemoveBoxCollider2DComponent(entt::registry& registry, entt::entity entity)
+    {
+        const auto& collider{registry.get<const BoxCollider2DComponent>(entity)};
+        ASSERT(collider.shapeId);
+        Locator::GetPhysicsEngine2D()->DestroyShape(collider.shapeId.value(), true);
+    }
+
+    void Scene::OnRemoveCircleCollider2DComponent(entt::registry& registry, entt::entity entity)
+    {
+        const auto& collider{registry.get<const CircleCollider2DComponent>(entity)};
+        ASSERT(collider.shapeId);
+        Locator::GetPhysicsEngine2D()->DestroyShape(collider.shapeId.value(), true);
+    }
+
+    void Scene::StartPhysics2D()
+    {
+        const auto view{m_mainRegistry->view<RigidBody2DComponent>()};
+        for (const auto entity : view) {
+            OnAddRigidBody2DComponent(*m_mainRegistry, entity);
+            if (m_mainRegistry->all_of<BoxCollider2DComponent>(entity)) {
+                OnAddBoxCollider2DComponent(*m_mainRegistry, entity);
+            }
+            if (m_mainRegistry->all_of<CircleCollider2DComponent>(entity)) {
+                OnAddCircleCollider2DComponent(*m_mainRegistry, entity);
+            }
+        }
+    }
+
     void Scene::StartPlayerInput()
     {
-        const auto view{m_registry->view<PlayerInputComponent>()};
+        const auto view{m_mainRegistry->view<PlayerInputComponent>()};
         const StringId* defaultInputScope{};
         for (const auto entity : view) {
             auto& playerInput{view.get<PlayerInputComponent>(entity)};
             if (!defaultInputScope) {
                 defaultInputScope = &playerInput.defaultInputScope;
             }
-            auto& playerInputRuntime{m_registry->get_or_emplace<PlayerInputRuntimeComponent>(entity)};
+            auto& playerInputRuntime{m_mainRegistry->get_or_emplace<PlayerInputRuntimeComponent>(entity)};
             playerInputRuntime.inputDeviceId = Locator::GetInputManager()->AcquireAvailableDevice();
             std::unordered_map<StringId, ScriptInstance*> scriptInstances{};
-            auto* scriptComponent = m_registry->try_get<ScriptRuntimeComponent>(entity);
+            auto* scriptComponent = m_mainRegistry->try_get<ScriptRuntimeComponent>(entity);
             if (!scriptComponent) {
                 continue;
             }
@@ -130,48 +332,18 @@ namespace Engine
         }
     }
 
-    void Scene::StartPhysics2D()
-    {
-        const auto view{m_registry->view<const TransformComponent, const RigidBody2DComponent>(
-            entt::exclude<RigidBody2DRuntimeComponent>)};
-        auto physicsEngine{Locator::GetPhysicsEngine2D()};
-        for (const auto entity : view) {
-            auto [transform, rigidBody] = view.get<TransformComponent, RigidBody2DComponent>(entity);
-            const auto bodyId = physicsEngine->CreateBody(
-                rigidBody.bodyData, glm::vec2{transform.position.x, transform.position.y},
-                transform.rotation.z, entity);
-            auto& rigidBodyRuntime{m_registry->emplace<RigidBody2DRuntimeComponent>(entity, bodyId)};
-            bool hasCollider{false};
-            if (const auto* boxCollider{m_registry->try_get<BoxCollider2DComponent>(entity)}) {
-                physicsEngine->CreateBoxShape(
-                    rigidBodyRuntime.bodyId, boxCollider->shapeData, boxCollider->width * transform.scale.x,
-                    boxCollider->height * transform.scale.y, boxCollider->edgeRadius, boxCollider->offset,
-                    boxCollider->rotation);
-                hasCollider = true;
-            }
-            if (const auto* circleCollider{m_registry->try_get<CircleCollider2DComponent>(entity)}) {
-                physicsEngine->CreateCircleShape(rigidBodyRuntime.bodyId, circleCollider->shapeData,
-                                                 circleCollider->radius *
-                                                     std::max(transform.scale.x, transform.scale.y),
-                                                 circleCollider->offset);
-                hasCollider = true;
-            }
-            if (!hasCollider) {
-                physicsEngine->CreateDefaultShape(rigidBodyRuntime.bodyId);
-            }
-        }
-    }
-
     void Scene::StartScripts()
     {
-        const auto view{m_registry->view<ScriptComponent>()};
+        const auto view{m_mainRegistry->view<ScriptComponent>()};
         for (const auto entity : view) {
-            auto& scriptComponent = view.get<ScriptComponent>(entity);
+            const auto& entityId{m_mainRegistry->get<IdComponent>(entity).value};
+            ASSERT(m_entityById.contains(entityId));
+            auto& scriptComponent{view.get<ScriptComponent>(entity)};
             for (auto& scriptData : scriptComponent.scriptDatas) {
                 std::optional scriptInstance{Locator::GetScriptSystem()->CreateScriptInstance(
-                    scriptData, entt::handle{*m_registry, entity})};
+                    scriptData, m_entityById.find(entityId)->second)};
                 if (scriptInstance) {
-                    auto& scriptRuntime{m_registry->get_or_emplace<ScriptRuntimeComponent>(entity)};
+                    auto& scriptRuntime{m_mainRegistry->get_or_emplace<ScriptRuntimeComponent>(entity)};
                     scriptRuntime.scriptInstances.push_back(*scriptInstance);
                     scriptInstance->InvokeOnStart();
                 }
@@ -181,7 +353,7 @@ namespace Engine
 
     void Scene::OnInputCommand(const InputEvent& event)
     {
-        const auto view{m_registry->view<const PlayerInputRuntimeComponent>()};
+        const auto view{m_mainRegistry->view<const PlayerInputRuntimeComponent>()};
         for (const auto entity : view) {
             const auto& playerInput{view.get<PlayerInputRuntimeComponent>(entity)};
             if (event.inputDeviceId == playerInput.inputDeviceId) {
@@ -202,36 +374,74 @@ namespace Engine
     void Scene::UpdatePhysics2D(float timeStep)
     {
         const auto physicsEngine{Locator::GetPhysicsEngine2D()};
-        const auto view{m_registry->view<TransformComponent, RigidBody2DRuntimeComponent>()};
+        const auto view{m_mainRegistry->view<TransformComponent, RigidBody2DComponent>()};
         for (const auto entity : view) {
-            auto [transform, rigidBody] = view.get<TransformComponent, RigidBody2DRuntimeComponent>(entity);
+            auto [transform, rigidBody] = view.get<TransformComponent, RigidBody2DComponent>(entity);
             const auto position{glm::vec2{transform.position}};
             const auto rotation{transform.rotation.z};
-            if (physicsEngine->GetPosition(rigidBody.bodyId) != position ||
-                physicsEngine->GetRotationAngle(rigidBody.bodyId) != rotation) {
-                physicsEngine->SetTransform(rigidBody.bodyId, position, rotation);
+            ASSERT(rigidBody.bodyId);
+            if (const auto bodyId{rigidBody.bodyId.value()};
+                physicsEngine->GetPosition(bodyId) != position ||
+                physicsEngine->GetRotationAngle(bodyId) != rotation) {
+                physicsEngine->SetTransform(bodyId, position, rotation);
             }
         }
         physicsEngine->Update(timeStep);
-        b2BodyEvents events{physicsEngine->GetBodyEvents()};
-        for (int i{0}; i < events.moveCount; ++i) {
-            const b2BodyMoveEvent* event{events.moveEvents + i};
-            entt::entity entity{static_cast<entt::entity>(reinterpret_cast<std::uintptr_t>(event->userData))};
-            if (auto* transform{m_registry->try_get<TransformComponent>(entity)}) {
+        const auto bodyEvents{physicsEngine->GetBodyEvents()};
+        for (int i{0}; i < bodyEvents.moveCount; ++i) {
+            const auto* event{bodyEvents.moveEvents + i};
+            Entity* entity{static_cast<Entity*>(event->userData)};
+            if (auto* transform{m_mainRegistry->try_get<TransformComponent>(entity->GetHandle().entity())}) {
                 transform->position.x = event->transform.p.x;
                 transform->position.y = event->transform.p.y;
                 transform->rotation.z = b2Rot_GetAngle(event->transform.q);
+            }
+        }
+        const auto collisionEvents{physicsEngine->GetCollisionEvents()};
+        for (int i{0}; i < collisionEvents.beginCount; ++i) {
+            const auto* beginEvent{collisionEvents.beginEvents + i};
+            auto& entityA{*physicsEngine->GetEntity(beginEvent->shapeIdA)};
+            auto& entityB{*physicsEngine->GetEntity(beginEvent->shapeIdB)};
+            OnCollisionEnter(entityA, entityB, beginEvent->manifold, beginEvent->shapeIdB);
+            OnCollisionEnter(entityB, entityA, beginEvent->manifold, beginEvent->shapeIdA);
+        }
+        for (int i{0}; i < collisionEvents.endCount; ++i) {
+            const auto* endEvent{collisionEvents.endEvents + i};
+            if (physicsEngine->IsValid(endEvent->shapeIdA) && physicsEngine->IsValid(endEvent->shapeIdB)) {
+                auto& entityA{*physicsEngine->GetEntity(endEvent->shapeIdA)};
+                auto& entityB{*physicsEngine->GetEntity(endEvent->shapeIdB)};
+                OnCollisionExit(entityA, entityB, endEvent->shapeIdB);
+                OnCollisionExit(entityB, entityA, endEvent->shapeIdA);
+            }
+        }
+        const auto triggerEvents{physicsEngine->GetTriggerEvents()};
+        for (int i{0}; i < triggerEvents.beginCount; ++i) {
+            const auto* beginEvent{triggerEvents.beginEvents + i};
+            auto& triggerEntity{*physicsEngine->GetEntity(beginEvent->sensorShapeId)};
+            auto& visitorEntity{*physicsEngine->GetEntity(beginEvent->visitorShapeId)};
+            OnTriggerEnter(triggerEntity, visitorEntity, beginEvent->visitorShapeId);
+        }
+        for (int i{0}; i < triggerEvents.endCount; ++i) {
+            const auto* endEvent{triggerEvents.endEvents + i};
+            if (physicsEngine->IsValid(endEvent->visitorShapeId)) {
+                auto& triggerEntity{*physicsEngine->GetEntity(endEvent->sensorShapeId)};
+                auto& visitorEntity{*physicsEngine->GetEntity(endEvent->visitorShapeId)};
+                OnTriggerExit(triggerEntity, visitorEntity, endEvent->visitorShapeId);
             }
         }
     }
 
     void Scene::UpdateScripts(float timeStep)
     {
-        const auto view{m_registry->view<ScriptRuntimeComponent>()};
+        const auto view{m_mainRegistry->view<ScriptRuntimeComponent>()};
         for (const auto entity : view) {
-            auto& scriptComponent = view.get<ScriptRuntimeComponent>(entity);
-            for (auto& script : scriptComponent.scriptInstances) {
+            for (auto& script : view.get<ScriptRuntimeComponent>(entity).scriptInstances) {
                 script.InvokeOnUpdate(timeStep);
+            }
+        }
+        for (const auto entity : view) {
+            for (auto& script : view.get<ScriptRuntimeComponent>(entity).scriptInstances) {
+                script.InvokeOnLateUpdate(timeStep);
             }
         }
     }
