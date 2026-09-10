@@ -36,10 +36,8 @@ function PlayerController:OnUpdate()
 end
 
 function PlayerController:OnCollisionEnter(otherCollider, collisionData)
-  if otherCollider.entity.tag.str == "planet" then
+  if otherCollider.entity.tag.str == "player" then
     self.entity:Destroy()
-  else
-    otherCollider.entity:Destroy()
   end
 end
 

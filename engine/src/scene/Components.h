@@ -5,8 +5,8 @@
 #include "input/InputDevice.h"
 #include "physics/Physics2DTypes.h"
 #include "renderer/Camera.h"
+#include "scripting/ScriptClass.h"
 #include "scripting/ScriptInstance.h"
-#include "scripting/ScriptSystem.h"
 
 #include <vector>
 
@@ -59,16 +59,20 @@ namespace Engine
         float radius{1.0f};
     };
 
-    struct ScriptComponent final {
-        std::vector<ScriptData> scriptDatas{};
+    struct ScriptClassDatasComponent final {
+        std::vector<ScriptClassData> classDatas{};
     };
 
-    struct ScriptRuntimeComponent final {
-        std::vector<ScriptInstance> scriptInstances{};
+    struct ScriptBaseComponent final {
+        std::vector<StringId> classIds{};
+    };
+
+    struct ScriptInstanceComponent final {
+        ScriptInstance instance;
     };
 
     struct InputCallbackDef final {
-        StringId scriptId{};
+        StringId scriptClassId{};
         std::string callbackName{};
     };
 
@@ -93,5 +97,6 @@ namespace Engine
     using AllComponentTypes =
         ComponentTypes<IdComponent, TagComponent, TransformComponent, SpriteComponent,
                        SpriteAnimationComponent, RigidBody2DComponent, BoxCollider2DComponent,
-                       CircleCollider2DComponent, ScriptComponent, PlayerInputComponent, CameraComponent>;
+                       CircleCollider2DComponent, ScriptClassDatasComponent, PlayerInputComponent,
+                       CameraComponent>;
 } // namespace Engine

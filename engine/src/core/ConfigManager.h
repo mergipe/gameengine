@@ -53,10 +53,10 @@ namespace Engine
         static inline GameConfig s_gameConfig{};
         static inline const std::filesystem::path s_engineConfigPath{FileSystem::GetAbsolutePath("config")};
         static inline const std::filesystem::path s_videoConfigPath{
-            ResourceManager::GetResourcePath("video.config")};
+            ResourceManager::GetResourceAbsolutePath("video.config")};
         static inline const std::filesystem::path s_physics2DConfigPath{
-            ResourceManager::GetResourcePath("physics2d.config")};
+            ResourceManager::GetResourceAbsolutePath("physics2d.config")};
         static inline const std::filesystem::path s_gameConfigPath{
-            ResourceManager::GetResourcePath("game.config")};
+            ResourceManager::GetResourceAbsolutePath("game.config")};
     };
 } // namespace Engine

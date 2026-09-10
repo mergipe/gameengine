@@ -2,9 +2,14 @@
 
 #include "core/StringId.h"
 #include "physics/Physics2DTypes.h"
-#include "scene/Entity.h"
 
 #include <glm/glm.hpp>
+
+// forward declarations
+namespace Engine
+{
+    class Entity;
+}
 
 namespace Engine::ScriptingApi
 {

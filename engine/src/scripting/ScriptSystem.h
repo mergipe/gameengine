@@ -3,7 +3,7 @@
 #include "ScriptClass.h"
 #include "api/Components.h"
 #include "core/FileSystem.h"
-#include "core/Variant.h"
+#include "scene/Entity.h"
 
 #include <filesystem>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -12,12 +12,6 @@
 
 namespace Engine
 {
-    struct ScriptData final {
-        std::filesystem::path filePath{};
-        std::string className{};
-        std::unordered_map<std::string, Variant> attributes{};
-    };
-
     class ScriptInstance;
 
     class ScriptSystem
@@ -25,7 +19,11 @@ namespace Engine
     public:
         void Init();
         void ShutDown();
-        std::optional<ScriptInstance> CreateScriptInstance(const ScriptData& scriptData, Entity& entity);
+
+        const std::unordered_map<StringId, std::unique_ptr<ScriptClass>>& GetScriptClasses();
+        std::optional<ScriptInstance> CreateScriptInstance(Entity& entity, const StringId& scriptClassId);
+        std::optional<ScriptInstance> CreateScriptInstance(Entity& entity,
+                                                           const ScriptClassData& scriptClassData);
 
     private:
         struct ComponentOperations {
@@ -37,10 +35,11 @@ namespace Engine
         static inline const std::filesystem::path s_scriptingLibPath{
             FileSystem::GetAbsolutePath("scripting")};
 
+        ScriptClass* GetScriptClass(const StringId& scriptClassId) const;
+        void LoadProjectScripts();
         void AppendPackagePath(const std::string& packagePath);
         bool LuaInstanceOf(const sol::table& lhs, const sol::table& rhs);
-        ScriptClass* GetOrLoadScriptClass(const std::filesystem::path& filePath, std::string_view className);
-        ScriptClass* GetScriptClass(const StringId& scriptId) const;
+        void LoadScriptClass(const std::filesystem::path& absoluteFilePath);
         template <typename NativeComponentType, typename ScriptComponentType> ComponentOperations
         CreateComponentOperations();
         void SetBindings();
@@ -48,7 +47,8 @@ namespace Engine
         void BindCoreTypes();
         void BindComponentTypes();
         void BindPhysicsTypes();
-        void SetComponentOperations();
+        void SetNativeComponentsOperations();
+        void SetScriptComponentOperations(const ScriptClass& scriptClass);
 
         [[nodiscard]] sol::table GetComponent(ScriptingApi::Entity& entity, const sol::table& componentType);
         [[nodiscard]] sol::table AddComponent(ScriptingApi::Entity&, const sol::table& componentType);
@@ -69,10 +69,17 @@ namespace Engine
                                        return sol::nil;
                                    },
                                    [this](Entity& entity) -> sol::table {
-                                       entity.AddComponent<NativeComponentType>();
+                                       if (entity.HasComponent<NativeComponentType>()) {
+                                           return sol::nil;
+                                       }
+                                       entity.AddComponentOnNextStep<NativeComponentType>();
                                        return sol::make_object(m_lua, ScriptComponentType{&entity});
                                    },
-                                   [this](Entity& entity) { entity.RemoveComponent<NativeComponentType>(); }};
+                                   [this](Entity& entity) {
+                                       if (entity.HasComponent<NativeComponentType>()) {
+                                           entity.RemoveComponentOnNextStep<NativeComponentType>();
+                                       }
+                                   }};
     }
 
     template <typename T> void ScriptSystem::BindVectorFunctions(sol::usertype<T> type)

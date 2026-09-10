@@ -10,9 +10,16 @@
 
 namespace Engine
 {
-    std::filesystem::path ResourceManager::GetResourcePath(const std::filesystem::path& relativePath)
+    const std::filesystem::path& ResourceManager::GetResourcesPath() { return s_resourcesPath; }
+
+    std::filesystem::path ResourceManager::GetResourceAbsolutePath(const std::filesystem::path& relativePath)
     {
         return s_resourcesPath / relativePath;
+    }
+
+    std::filesystem::path ResourceManager::GetResourceRelativePath(const std::filesystem::path& absolutePath)
+    {
+        return std::filesystem::relative(absolutePath, s_resourcesPath);
     }
 
     void ResourceManager::Init()
@@ -89,7 +96,7 @@ namespace Engine
         return *m_fallbackTexture;
     }
 
-    std::optional<entt::handle> ResourceManager::GetEntityTemplate(const StringId& id) const
+    entt::handle ResourceManager::GetEntityTemplate(const StringId& id) const
     {
         if (const auto it{m_entityTemplates.find(id)}; it != m_entityTemplates.end()) {
             return it->second;

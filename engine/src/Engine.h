@@ -57,6 +57,8 @@ namespace Engine
         std::unique_ptr<PhysicsEngine2D> m_physicsEngine2D{};
         std::unique_ptr<ScriptSystem> m_scriptSystem{};
 
+        U64 m_currentStep{0};
+
         bool m_hasDevMode{true};
         bool m_isDevModeEnabled{false};
         bool m_isRunning{false};

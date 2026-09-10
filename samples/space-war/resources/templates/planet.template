@@ -22,3 +22,5 @@ components:
       bouciness: 0
       rolling_resistance: 0
       tangent_speed: 0
+  scripts:
+    - class_id: scripts/KillOnTouch.lua

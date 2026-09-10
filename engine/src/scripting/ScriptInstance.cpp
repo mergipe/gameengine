@@ -2,30 +2,35 @@
 
 #include "api/Components.h"
 #include "api/Physics.h"
+#include "core/Locator.h"
 
 namespace Engine
 {
-    ScriptInstance::ScriptInstance(ScriptingApi::Entity entity, ScriptClass* scriptClass,
-                                   const sol::table& luaTable)
-        : m_entity{entity}, m_luaTable{luaTable}, m_scriptClass{scriptClass}
+    ScriptInstance::ScriptInstance(const ScriptingApi::Entity& entity, ScriptClass* scriptClass,
+                                   const ScriptHandle& luaTable)
+        : m_handle{luaTable}, m_scriptClass{scriptClass}, m_entity{entity}
     {
-        m_luaTable["entity"] = m_entity;
+        m_handle["entity"] = m_entity;
     }
+
+    const ScriptClass& ScriptInstance::GetClass() const { return *m_scriptClass; }
+
+    const ScriptHandle& ScriptInstance::GetHandle() const { return m_handle; }
 
     void ScriptInstance::SetAttribute(std::string_view name, Variant value)
     {
         switch (value.type) {
         case Variant::Type::tInteger:
-            m_luaTable[name] = value.asInteger;
+            m_handle[name] = value.asInteger;
             break;
         case Variant::Type::tFloat:
-            m_luaTable[name] = value.asFloat;
+            m_handle[name] = value.asFloat;
             break;
         case Variant::Type::tBool:
-            m_luaTable[name] = value.asBool;
+            m_handle[name] = value.asBool;
             break;
         case Variant::Type::tStringId:
-            m_luaTable[name] = std::string{StringId::GetString(value.asStringId)};
+            m_handle[name] = std::string{StringId::GetString(value.asStringId)};
         default:
             break;
         }
@@ -80,5 +85,12 @@ namespace Engine
         ScriptingApi::Collider2D collider{&otherEntity};
         collider.SetShapeId(otherShapeId);
         InvokeFunction("OnTriggerExit", collider);
+    }
+
+    void ScriptInstance::OnInvokeFunctionError(std::string_view functionName,
+                                               const sol::protected_function_result& result)
+    {
+        Locator::GetLogger()->Error("Error calling {}:{} on entity {}: {}", m_scriptClass->GetName(),
+                                    functionName, m_entity.GetId().GetString(), sol::error{result}.what());
     }
 } // namespace Engine

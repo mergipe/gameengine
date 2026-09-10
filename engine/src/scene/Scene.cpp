@@ -7,41 +7,48 @@
 #include "core/Locator.h"
 #include "core/Math.h"
 
+#include <entt/entity/runtime_view.hpp>
+#include <ranges>
+
 namespace Engine
 {
     void OnCollisionEnter(const Entity& entity, Entity& other, const CollisionManifold2D& manifold,
                           Shape2DId otherShapeId)
     {
-        if (entity.HasComponent<ScriptRuntimeComponent>()) {
-            for (auto& script : entity.GetComponent<ScriptRuntimeComponent>().scriptInstances) {
-                script.InvokeOnCollisionEnter(other, manifold, otherShapeId);
+        if (entity.HasComponent<ScriptBaseComponent>()) {
+            const auto& scriptClassIds{entity.GetComponent<ScriptBaseComponent>().classIds};
+            for (const auto& scriptClassId : scriptClassIds) {
+                entity.GetScript(scriptClassId)->InvokeOnCollisionEnter(other, manifold, otherShapeId);
             }
         }
     }
 
     void OnCollisionExit(const Entity& entity, Entity& other, Shape2DId otherShapeId)
     {
-        if (entity.HasComponent<ScriptRuntimeComponent>()) {
-            for (auto& script : entity.GetComponent<ScriptRuntimeComponent>().scriptInstances) {
-                script.InvokeOnCollisionExit(other, otherShapeId);
+        if (entity.HasComponent<ScriptBaseComponent>()) {
+            const auto& scriptClassIds{entity.GetComponent<ScriptBaseComponent>().classIds};
+            for (const auto& scriptClassId : scriptClassIds) {
+                entity.GetScript(scriptClassId)->InvokeOnCollisionExit(other, otherShapeId);
             }
         }
     }
 
     void OnTriggerEnter(const Entity& entity, Entity& other, Shape2DId otherShapeId)
     {
-        if (entity.HasComponent<ScriptRuntimeComponent>()) {
-            for (auto& script : entity.GetComponent<ScriptRuntimeComponent>().scriptInstances) {
-                script.InvokeOnTriggerEnter(other, otherShapeId);
+        if (entity.HasComponent<ScriptBaseComponent>()) {
+            const auto& scriptClassIds{entity.GetComponent<ScriptBaseComponent>().classIds};
+            for (const auto& scriptClassId : scriptClassIds) {
+                entity.GetScript(scriptClassId)->InvokeOnTriggerEnter(other, otherShapeId);
             }
         }
     }
 
     void OnTriggerExit(const Entity& entity, Entity& other, Shape2DId otherShapeId)
     {
-        if (entity.HasComponent<ScriptRuntimeComponent>()) {
-            for (auto& script : entity.GetComponent<ScriptRuntimeComponent>().scriptInstances) {
-                script.InvokeOnTriggerExit(other, otherShapeId);
+        if (entity.HasComponent<ScriptBaseComponent>()) {
+            const auto& scriptClassIds{entity.GetComponent<ScriptBaseComponent>().classIds};
+            for (const auto& scriptClassId : scriptClassIds) {
+                entity.GetScript(scriptClassId)->InvokeOnTriggerExit(other, otherShapeId);
             }
         }
     }
@@ -65,18 +72,7 @@ namespace Engine
             m_entityById.try_emplace(id, entt::handle{*m_mainRegistry, entity}, this);
         }
 
-        m_mainRegistry->on_construct<RigidBody2DComponent>().connect<&Scene::OnAddRigidBody2DComponent>(this);
-        m_mainRegistry->on_construct<BoxCollider2DComponent>().connect<&Scene::OnAddBoxCollider2DComponent>(
-            this);
-        m_mainRegistry->on_construct<CircleCollider2DComponent>()
-            .connect<&Scene::OnAddCircleCollider2DComponent>(this);
-        m_mainRegistry->on_destroy<RigidBody2DComponent>().connect<&Scene::OnRemoveRigidBody2DComponent>(
-            this);
-        m_mainRegistry->on_destroy<BoxCollider2DComponent>().connect<&Scene::OnRemoveBoxCollider2DComponent>(
-            this);
-        m_mainRegistry->on_destroy<CircleCollider2DComponent>()
-            .connect<&Scene::OnRemoveCircleCollider2DComponent>(this);
-
+        SetRegistryListeners();
         StartPhysics2D();
         StartScripts();
         StartPlayerInput();
@@ -86,11 +82,15 @@ namespace Engine
     {
         CreateEntities();
         AddComponents();
+        AddScripts();
+
         auto* eventBus{Locator::GetEventBus()};
         eventBus->Reset();
         UpdatePlayerInput(eventBus);
         UpdatePhysics2D(timeStep);
         UpdateScripts(timeStep);
+
+        RemoveScripts();
         RemoveComponents();
         DestroyEntities();
     }
@@ -158,9 +158,9 @@ namespace Engine
         }
     }
 
-    Entity& Scene::CreateEntity() { return CreateEntity(entt::handle{}); }
+    Entity& Scene::CreateEntityOnNextStep() { return CreateEntityOnNextStep(entt::handle{}); }
 
-    Entity& Scene::CreateEntity(entt::handle entityTemplate)
+    Entity& Scene::CreateEntityOnNextStep(entt::handle entityTemplate)
     {
         auto newEntityHandle{entt::handle{m_stagingRegistry, m_stagingRegistry.create()}};
         if (entityTemplate.valid()) {
@@ -174,7 +174,38 @@ namespace Engine
         return newEntity;
     }
 
-    void Scene::DestroyEntity(const Entity& entity) { m_entitiesToDestroy.push_back(entity); }
+    void Scene::DestroyEntityOnNextStep(const Entity& entity) { m_entitiesToDestroy.push_back(entity); }
+
+    std::optional<ScriptHandle> Scene::AddScriptOnNextStep(Entity& entity, const StringId& scriptClassId)
+    {
+        if (auto scriptInstance{Locator::GetScriptSystem()->CreateScriptInstance(entity, scriptClassId)}) {
+            return m_scriptsToAdd.emplace_back(&entity, std::move(scriptInstance.value()))
+                .scriptInstance.GetHandle();
+        }
+        return {};
+    }
+
+    void Scene::RemoveScriptOnNextStep(Entity& entity, const StringId& scriptClassId)
+    {
+        m_scriptsToRemove.emplace_back(&entity, scriptClassId);
+    }
+
+    void Scene::SetRegistryListeners()
+    {
+        m_mainRegistry->on_construct<RigidBody2DComponent>().connect<&Scene::OnAddRigidBody2DComponent>(this);
+        m_mainRegistry->on_construct<BoxCollider2DComponent>().connect<&Scene::OnAddBoxCollider2DComponent>(
+            this);
+        m_mainRegistry->on_construct<CircleCollider2DComponent>()
+            .connect<&Scene::OnAddCircleCollider2DComponent>(this);
+        m_mainRegistry->on_construct<ScriptClassDatasComponent>()
+            .connect<&Scene::OnAddScriptClassDatasComponent>(this);
+        m_mainRegistry->on_destroy<RigidBody2DComponent>().connect<&Scene::OnRemoveRigidBody2DComponent>(
+            this);
+        m_mainRegistry->on_destroy<BoxCollider2DComponent>().connect<&Scene::OnRemoveBoxCollider2DComponent>(
+            this);
+        m_mainRegistry->on_destroy<CircleCollider2DComponent>()
+            .connect<&Scene::OnRemoveCircleCollider2DComponent>(this);
+    }
 
     void Scene::CreateEntities()
     {
@@ -192,8 +223,10 @@ namespace Engine
     void Scene::DestroyEntities()
     {
         for (const auto entity : m_entitiesToDestroy) {
-            m_entityById.erase(entity.GetId());
-            m_mainRegistry->destroy(entity.GetHandle());
+            if (entity.IsValid()) {
+                m_entityById.erase(entity.GetId());
+                m_mainRegistry->destroy(entity.GetHandle());
+            }
         }
         m_entitiesToDestroy.clear();
     }
@@ -201,7 +234,7 @@ namespace Engine
     void Scene::AddComponents()
     {
         for (const auto [entity, componentId] : m_componentsToAdd) {
-            m_mainRegistry->storage(componentId)->push(entity->GetHandle());
+            entity->AddComponent(componentId);
         }
         m_componentsToAdd.clear();
     }
@@ -209,9 +242,49 @@ namespace Engine
     void Scene::RemoveComponents()
     {
         for (const auto [entity, componentId] : m_componentsToRemove) {
-            m_mainRegistry->storage(componentId)->remove(entity->GetHandle());
+            entity->RemoveComponent(componentId);
         }
         m_componentsToRemove.clear();
+    }
+
+    void Scene::AddScripts()
+    {
+        for (auto& [entity, scriptInstance] : m_scriptsToAdd) {
+            entity->AddScript(std::move(scriptInstance));
+        }
+        m_scriptsToAdd.clear();
+    }
+
+    void Scene::RemoveScripts()
+    {
+        for (const auto& [entity, scriptClassId] : m_scriptsToRemove) {
+            entity->RemoveScript(scriptClassId);
+        }
+        m_scriptsToRemove.clear();
+    }
+
+    void InvokeOnStart(ScriptInstance& scriptInstance) { scriptInstance.InvokeOnStart(); }
+
+    void InvokeOnUpdate(ScriptInstance& scriptInstance, float timeStep)
+    {
+        scriptInstance.InvokeOnUpdate(timeStep);
+    }
+
+    void InvokeOnLateUpdate(ScriptInstance& scriptInstance, float timeStep)
+    {
+        scriptInstance.InvokeOnLateUpdate(timeStep);
+    }
+
+    void Scene::InvokeOnAllScripts(const std::function<void(ScriptInstance&)>& function)
+    {
+        for (const auto& scriptClassId : Locator::GetScriptSystem()->GetScriptClasses() | std::views::keys) {
+            auto& storage{m_mainRegistry->storage<ScriptInstanceComponent>(scriptClassId.GetId())};
+            entt::runtime_view scriptInstanceView{};
+            scriptInstanceView.iterate(storage);
+            for (const auto entity : scriptInstanceView) {
+                function(storage.get(entity).instance);
+            }
+        }
     }
 
     void Scene::OnAddRigidBody2DComponent(entt::registry& registry, entt::entity entity)
@@ -261,6 +334,21 @@ namespace Engine
             m_entityById.find(entityId)->second);
     }
 
+    void Scene::OnAddScriptClassDatasComponent(entt::registry& registry, entt::entity entity)
+    {
+        const auto& entityId{registry.get<IdComponent>(entity).value};
+        ASSERT(m_entityById.contains(entityId));
+        const auto& scriptComponent{registry.get<ScriptClassDatasComponent>(entity)};
+        auto& entityRef{m_entityById.find(entityId)->second};
+        for (auto& scriptClassData : scriptComponent.classDatas) {
+            std::optional scriptInstance{
+                Locator::GetScriptSystem()->CreateScriptInstance(entityRef, scriptClassData)};
+            if (scriptInstance) {
+                entityRef.AddScript(std::move(scriptInstance.value()));
+            }
+        }
+    }
+
     void Scene::OnRemoveRigidBody2DComponent(entt::registry& registry, entt::entity entity)
     {
         const auto& rigidBody{registry.get<const RigidBody2DComponent>(entity)};
@@ -301,30 +389,22 @@ namespace Engine
         const auto view{m_mainRegistry->view<PlayerInputComponent>()};
         const StringId* defaultInputScope{};
         for (const auto entity : view) {
+            const auto& entityId{m_mainRegistry->get<IdComponent>(entity).value};
+            ASSERT(m_entityById.contains(entityId));
+            const auto& entityRef{m_entityById.find(entityId)->second};
             auto& playerInput{view.get<PlayerInputComponent>(entity)};
             if (!defaultInputScope) {
                 defaultInputScope = &playerInput.defaultInputScope;
             }
             auto& playerInputRuntime{m_mainRegistry->get_or_emplace<PlayerInputRuntimeComponent>(entity)};
             playerInputRuntime.inputDeviceId = Locator::GetInputManager()->AcquireAvailableDevice();
-            std::unordered_map<StringId, ScriptInstance*> scriptInstances{};
-            auto* scriptComponent = m_mainRegistry->try_get<ScriptRuntimeComponent>(entity);
-            if (!scriptComponent) {
-                continue;
-            }
-            for (auto& scriptInstance : scriptComponent->scriptInstances) {
-                scriptInstances.insert(std::make_pair(scriptInstance.GetClassId(), &scriptInstance));
-            }
             for (const auto& [commandId, callbackDef] : playerInput.callbackDefs) {
-                if (auto it{scriptInstances.find(callbackDef.scriptId)}; it != scriptInstances.end()) {
-                    ScriptInstance* scriptInstance{it->second};
-                    playerInputRuntime.callbackMapping.SetCommandCallback(
-                        commandId, InputCallback{std::function<void(InputValue)>{
-                                       [scriptInstance, callbackDef](InputValue inputValue) {
-                                           scriptInstance->InvokeFunction(callbackDef.callbackName,
-                                                                          inputValue);
-                                       }}});
-                }
+                playerInputRuntime.callbackMapping.SetCommandCallback(
+                    commandId, InputCallback{[entityRef, callbackDef](InputValue inputValue) {
+                        if (auto* scriptInstance{entityRef.GetScript(callbackDef.scriptClassId)}) {
+                            scriptInstance->InvokeFunction(callbackDef.callbackName, inputValue);
+                        }
+                    }});
             }
         }
         if (defaultInputScope) {
@@ -334,21 +414,11 @@ namespace Engine
 
     void Scene::StartScripts()
     {
-        const auto view{m_mainRegistry->view<ScriptComponent>()};
-        for (const auto entity : view) {
-            const auto& entityId{m_mainRegistry->get<IdComponent>(entity).value};
-            ASSERT(m_entityById.contains(entityId));
-            auto& scriptComponent{view.get<ScriptComponent>(entity)};
-            for (auto& scriptData : scriptComponent.scriptDatas) {
-                std::optional scriptInstance{Locator::GetScriptSystem()->CreateScriptInstance(
-                    scriptData, m_entityById.find(entityId)->second)};
-                if (scriptInstance) {
-                    auto& scriptRuntime{m_mainRegistry->get_or_emplace<ScriptRuntimeComponent>(entity)};
-                    scriptRuntime.scriptInstances.push_back(*scriptInstance);
-                    scriptInstance->InvokeOnStart();
-                }
-            }
+        const auto scriptView{m_mainRegistry->view<const ScriptClassDatasComponent>()};
+        for (const auto entity : scriptView) {
+            OnAddScriptClassDatasComponent(*m_mainRegistry, entity);
         }
+        InvokeOnAllScripts([](ScriptInstance& scriptInstance) { scriptInstance.InvokeOnStart(); });
     }
 
     void Scene::OnInputCommand(const InputEvent& event)
@@ -423,7 +493,8 @@ namespace Engine
         }
         for (int i{0}; i < triggerEvents.endCount; ++i) {
             const auto* endEvent{triggerEvents.endEvents + i};
-            if (physicsEngine->IsValid(endEvent->visitorShapeId)) {
+            if (physicsEngine->IsValid(endEvent->sensorShapeId) &&
+                physicsEngine->IsValid(endEvent->visitorShapeId)) {
                 auto& triggerEntity{*physicsEngine->GetEntity(endEvent->sensorShapeId)};
                 auto& visitorEntity{*physicsEngine->GetEntity(endEvent->visitorShapeId)};
                 OnTriggerExit(triggerEntity, visitorEntity, endEvent->visitorShapeId);
@@ -433,16 +504,9 @@ namespace Engine
 
     void Scene::UpdateScripts(float timeStep)
     {
-        const auto view{m_mainRegistry->view<ScriptRuntimeComponent>()};
-        for (const auto entity : view) {
-            for (auto& script : view.get<ScriptRuntimeComponent>(entity).scriptInstances) {
-                script.InvokeOnUpdate(timeStep);
-            }
-        }
-        for (const auto entity : view) {
-            for (auto& script : view.get<ScriptRuntimeComponent>(entity).scriptInstances) {
-                script.InvokeOnLateUpdate(timeStep);
-            }
-        }
+        InvokeOnAllScripts(
+            [timeStep](ScriptInstance& scriptInstance) { scriptInstance.InvokeOnUpdate(timeStep); });
+        InvokeOnAllScripts(
+            [timeStep](ScriptInstance& scriptInstance) { scriptInstance.InvokeOnLateUpdate(timeStep); });
     }
 } // namespace Engine

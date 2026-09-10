@@ -14,3 +14,8 @@ components:
     texture_id: textures/space-shooter-spritesheet.png
     sprite_id: spaceMissiles_038
     z_index: 4
+  scripts:
+    - class_id: scripts/SelfDestroyOnTouch.lua
+    - class_id: scripts/DamageOnTouch.lua
+      attributes:
+        amount: 20

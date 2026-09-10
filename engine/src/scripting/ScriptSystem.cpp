@@ -7,16 +7,18 @@
 #include "resources/ResourceManager.h"
 #include "scene/Components.h"
 
+#include <ranges>
+
 namespace Engine
 {
     std::optional<ScriptingApi::Entity> CreateEntity(const StringId& entityTemplateId)
     {
         const auto entityTemplate{Locator::GetResourceManager()->GetEntityTemplate(entityTemplateId)};
-        if (!entityTemplate) {
+        if (!entityTemplate.valid()) {
             Locator::GetLogger()->Error("Entity template {} not found", entityTemplateId.GetString());
             return {};
         }
-        auto& entity{Locator::GetSceneManager()->GetCurrentScene()->CreateEntity(entityTemplate.value())};
+        auto& entity{Locator::GetSceneManager()->GetCurrentScene()->CreateEntityOnNextStep(entityTemplate)};
         return ScriptingApi::Entity{&entity};
     }
 
@@ -24,42 +26,72 @@ namespace Engine
     {
         m_lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
         AppendPackagePath((s_scriptingLibPath / "?.lua").string());
-        m_lua.require_file("utils", s_scriptingLibPath / "utils.lua");
-        m_lua.script_file(s_scriptingLibPath / "entity_script.lua");
+        m_lua.require_file("utils", s_scriptingLibPath / "Utils.lua");
+        m_lua.script_file(s_scriptingLibPath / "EntityScript.lua");
         SetBindings();
+        LoadProjectScripts();
         Locator::GetLogger()->Info("Script system initialized");
     }
 
     void ScriptSystem::ShutDown()
     {
+        m_componentOperations.clear();
         m_scriptClasses.clear();
         Locator::GetLogger()->Info("Script system shutdown");
     }
 
-    std::optional<ScriptInstance> ScriptSystem::CreateScriptInstance(const ScriptData& scriptData,
-                                                                     Entity& entity)
+    const std::unordered_map<StringId, std::unique_ptr<ScriptClass>>& ScriptSystem::GetScriptClasses()
     {
-        ScriptClass* scriptClass{GetOrLoadScriptClass(scriptData.filePath, scriptData.className)};
+        return m_scriptClasses;
+    }
+
+    std::optional<ScriptInstance> ScriptSystem::CreateScriptInstance(Entity& entity,
+                                                                     const StringId& scriptClassId)
+    {
+        ScriptClass* scriptClass{GetScriptClass(scriptClassId)};
         if (!scriptClass) {
+            Locator::GetLogger()->Error("No script found on {}", scriptClassId.GetString());
             return {};
         }
-        const sol::optional scriptClassConstructor{scriptClass->GetConstructor()};
-        if (!scriptClassConstructor) {
-            Locator::GetLogger()->Warn("'{}' doesn't have a constructor", scriptClass->GetName());
-            return {};
-        }
-        const sol::optional<sol::table> maybeScriptInstance{
-            scriptClassConstructor.value()(scriptClass->GetLuaTable())};
+        auto maybeScriptInstance{scriptClass->ConstructInstance(entity)};
         if (!maybeScriptInstance) {
-            Locator::GetLogger()->Warn("Failed to instantiate '{}'", scriptClass->GetName());
+            Locator::GetLogger()->Error("Unable to create script instance of {}", scriptClassId.GetString());
             return {};
         }
-        ScriptInstance scriptInstance{ScriptingApi::Entity{&entity}, scriptClass,
-                                      maybeScriptInstance.value()};
-        for (const auto& [name, value] : scriptData.attributes) {
+        return maybeScriptInstance;
+    }
+
+    std::optional<ScriptInstance> ScriptSystem::CreateScriptInstance(Entity& entity,
+                                                                     const ScriptClassData& scriptClassData)
+    {
+        const auto maybeScriptInstance{CreateScriptInstance(entity, scriptClassData.classId)};
+        if (!maybeScriptInstance) {
+            return {};
+        }
+        auto scriptInstance{maybeScriptInstance.value()};
+        for (const auto& [name, value] : scriptClassData.attributes) {
             scriptInstance.SetAttribute(name, value);
         }
         return scriptInstance;
+    }
+
+    ScriptClass* ScriptSystem::GetScriptClass(const StringId& scriptClassId) const
+    {
+        const auto scriptIterator{m_scriptClasses.find(scriptClassId)};
+        if (scriptIterator != m_scriptClasses.end()) {
+            return scriptIterator->second.get();
+        }
+        return nullptr;
+    }
+
+    void ScriptSystem::LoadProjectScripts()
+    {
+        const auto& resourcesPath{Locator::GetResourceManager()->GetResourcesPath()};
+        for (const auto& dirEntry : std::filesystem::recursive_directory_iterator{resourcesPath}) {
+            if (dirEntry.is_regular_file() && dirEntry.path().extension() == ".lua") {
+                LoadScriptClass(dirEntry.path());
+            }
+        }
     }
 
     void ScriptSystem::AppendPackagePath(const std::string& packagePath)
@@ -73,44 +105,34 @@ namespace Engine
         return m_lua["utils"]["instance_of"](lhs, rhs).get<bool>();
     }
 
-    ScriptClass* ScriptSystem::GetOrLoadScriptClass(const std::filesystem::path& filePath,
-                                                    std::string_view className)
+    void ScriptSystem::LoadScriptClass(const std::filesystem::path& absoluteFilePath)
     {
-        StringId scriptClassId{StringId::Intern(filePath.c_str())};
-        if (const auto scriptClass{GetScriptClass(scriptClassId)}) {
-            return scriptClass;
-        }
-        const auto absoluteFilePath{ResourceManager::GetResourcePath(filePath)};
         const auto scriptResult{m_lua.script_file(absoluteFilePath, sol::script_pass_on_error)};
         if (!scriptResult.valid()) {
-            Locator::GetLogger()->Error("Error loading script {}: {} error\n\t{}", absoluteFilePath.c_str(),
-                                        sol::to_string(scriptResult.status()),
+            Locator::GetLogger()->Error("Error loading script class {}: {} error\n\t{}",
+                                        absoluteFilePath.c_str(), sol::to_string(scriptResult.status()),
                                         sol::error{scriptResult}.what());
-            return {};
+            return;
         }
+        std::string className{absoluteFilePath.stem()};
         const sol::optional<sol::table> maybeScriptClassTable{m_lua[className]};
+        const auto relativeFilePath{Locator::GetResourceManager()->GetResourceRelativePath(absoluteFilePath)};
         if (!maybeScriptClassTable) {
-            Locator::GetLogger()->Warn("Script '{}' doesn't have '{}' class", filePath.c_str(), className);
-            return {};
+            Locator::GetLogger()->Warn("Script file '{}' doesn't have '{}' class", relativeFilePath.c_str(),
+                                       className);
+            return;
         }
         sol::table scriptClassTable{maybeScriptClassTable.value()};
         const sol::table entityScriptClassTable{m_lua["EntityScript"]};
         if (!LuaInstanceOf(scriptClassTable, entityScriptClassTable)) {
             Locator::GetLogger()->Warn("'{}' is not an EntityScript", className);
-            return {};
+            return;
         }
-        m_scriptClasses.emplace(scriptClassId,
-                                std::make_unique<ScriptClass>(scriptClassId, className, scriptClassTable));
-        return m_scriptClasses[scriptClassId].get();
-    }
-
-    ScriptClass* ScriptSystem::GetScriptClass(const StringId& scriptId) const
-    {
-        const auto scriptIterator{m_scriptClasses.find(scriptId)};
-        if (scriptIterator != m_scriptClasses.end()) {
-            return scriptIterator->second.get();
-        }
-        return nullptr;
+        const auto scriptClassId{StringId::Intern(relativeFilePath.c_str())};
+        auto scriptClass{std::make_unique<ScriptClass>(scriptClassId, className, scriptClassTable)};
+        SetScriptComponentOperations(*scriptClass);
+        m_scriptClasses.emplace(scriptClassId, std::move(scriptClass));
+        Locator::GetLogger()->Info("Script class {} loaded", scriptClassId.GetString());
     }
 
     void ScriptSystem::SetBindings()
@@ -118,7 +140,7 @@ namespace Engine
         BindCoreTypes();
         BindComponentTypes();
         BindPhysicsTypes();
-        SetComponentOperations();
+        SetNativeComponentsOperations();
         m_lua.new_usertype<InputValue>("InputValue", "value", &InputValue::value);
     }
 
@@ -168,7 +190,7 @@ namespace Engine
             RemoveComponent(entity, componentType);
         };
         entity["Destroy"] = [](ScriptingApi::Entity& entity) {
-            Locator::GetSceneManager()->GetCurrentScene()->DestroyEntity(*entity.GetEntityPtr());
+            Locator::GetSceneManager()->GetCurrentScene()->DestroyEntityOnNextStep(*entity.GetEntityPtr());
         };
         entity["Create"] = &CreateEntity;
         auto component{m_lua.new_usertype<ScriptingApi::Component>("Component")};
@@ -214,7 +236,7 @@ namespace Engine
         collision2DData["pointCount"] = &ScriptingApi::Collision2DData::pointCount;
     }
 
-    void ScriptSystem::SetComponentOperations()
+    void ScriptSystem::SetNativeComponentsOperations()
     {
         m_componentOperations.emplace(
             sol::table{m_lua["Transform"]}.pointer(),
@@ -222,6 +244,33 @@ namespace Engine
         m_componentOperations.emplace(
             sol::table{m_lua["RigidBody2D"]}.pointer(),
             CreateComponentOperations<RigidBody2DComponent, ScriptingApi::RigidBody2D>());
+    }
+
+    void ScriptSystem::SetScriptComponentOperations(const ScriptClass& scriptClass)
+    {
+        const auto& scriptClassId{scriptClass.GetId()};
+        m_componentOperations.emplace(
+            scriptClass.GetLuaTablePointer(),
+            ComponentOperations{[scriptClassId](const Entity& entity) -> sol::table {
+                                    if (const auto scriptInstance{entity.GetScript(scriptClassId)}) {
+                                        return scriptInstance->GetHandle();
+                                    }
+                                    return sol::nil;
+                                },
+                                [scriptClassId](Entity& entity) mutable -> sol::table {
+                                    if (entity.HasScript(scriptClassId)) {
+                                        return sol::nil;
+                                    }
+                                    if (const auto scriptHandle{entity.AddScriptOnNextStep(scriptClassId)}) {
+                                        return scriptHandle.value();
+                                    }
+                                    return sol::nil;
+                                },
+                                [scriptClassId](Entity& entity) {
+                                    if (entity.HasScript(scriptClassId)) {
+                                        entity.RemoveScriptOnNextStep(scriptClassId);
+                                    }
+                                }});
     }
 
     sol::table ScriptSystem::GetComponent(ScriptingApi::Entity& entity, const sol::table& componentType)

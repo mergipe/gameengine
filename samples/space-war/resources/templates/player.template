@@ -29,7 +29,9 @@ components:
   player_input:
     default_scope: gameplay
   scripts:
-    - file_path: scripts/player/player_controller.lua
-      class_name: PlayerController
+    - class_id: scripts/PlayerController.lua
       attributes:
         rotation_speed: 0
+    - class_id: scripts/Health.lua
+      attributes:
+        health: 100

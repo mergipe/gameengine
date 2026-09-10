@@ -30,6 +30,7 @@ add_executable(${PROJECT_NAME}
         scene/Entity.cpp
         scene/Scene.cpp
         scene/SceneManager.cpp
+        scripting/ScriptClass.cpp
         scripting/ScriptInstance.cpp
         scripting/ScriptSystem.cpp
         scripting/api/Components.cpp

@@ -149,25 +149,24 @@ namespace Engine
 
     void LoadScripts(const entt::handle& entityHandle, const YAML::Node& node)
     {
-        auto& scriptComponent{entityHandle.get_or_emplace<ScriptComponent>()};
+        auto& scriptComponent{entityHandle.get_or_emplace<ScriptClassDatasComponent>()};
         for (auto scriptIt{node.begin()}; scriptIt != node.end(); ++scriptIt) {
             const auto scriptNode{*scriptIt};
-            const auto filePath{std::filesystem::path{scriptNode["file_path"].as<std::string>()}};
-            const auto className{scriptNode["class_name"].as<std::string>()};
-            if (filePath.empty() || className.empty()) {
+            const auto scriptClassIdStr{scriptNode["class_id"].as<std::string>()};
+            if (scriptClassIdStr.empty()) {
                 continue;
             }
-            ScriptData* scriptData{};
-            for (auto& existingScriptData : scriptComponent.scriptDatas) {
-                if (existingScriptData.filePath == filePath) {
-                    scriptData = &existingScriptData;
+            const auto scriptClassId{StringId::Intern(scriptClassIdStr)};
+            ScriptClassData* scriptClassData{};
+            for (auto& existingScriptClassData : scriptComponent.classDatas) {
+                if (existingScriptClassData.classId == scriptClassId) {
+                    scriptClassData = &existingScriptClassData;
                 }
             }
-            if (!scriptData) {
-                scriptData = &scriptComponent.scriptDatas.emplace_back();
+            if (!scriptClassData) {
+                scriptClassData = &scriptComponent.classDatas.emplace_back();
             }
-            scriptData->filePath = filePath;
-            scriptData->className = className;
+            scriptClassData->classId = scriptClassId;
             if (scriptNode["attributes"]) {
                 const auto attributesNode{scriptNode["attributes"]};
                 for (auto attrIt{attributesNode.begin()}; attrIt != attributesNode.end(); ++attrIt) {
@@ -185,7 +184,7 @@ namespace Engine
                         attributeValue.asStringId =
                             StringId::Intern(attributeValueNode.as<std::string>()).GetId();
                     }
-                    scriptData->attributes[attributeNode.first.as<std::string>()] = attributeValue;
+                    scriptClassData->attributes[attributeNode.first.as<std::string>()] = attributeValue;
                 }
             }
         }
@@ -207,7 +206,7 @@ namespace Engine
                 const StringId commandName{StringId::Intern(commandNode["name"].as<std::string>())};
                 auto& callbackDef{playerInput.callbackDefs[commandName]};
                 if (commandNode["script_id"]) {
-                    callbackDef.scriptId = StringId::Intern(commandNode["script_id"].as<std::string>());
+                    callbackDef.scriptClassId = StringId::Intern(commandNode["script_id"].as<std::string>());
                 }
                 if (commandNode["callback"]) {
                     callbackDef.callbackName = commandNode["callback"].as<std::string>();
@@ -257,14 +256,13 @@ namespace Engine
         }
         const auto entity{registry.create()};
         const auto entityHandle{entt::handle{registry, entity}};
-        std::optional<StringId> parentTemplateId{};
         if (componentsNode["template"]) {
-            parentTemplateId = StringId::Intern(componentsNode["template"].as<std::string>());
-            if (const auto entityTemplate{
-                    Locator::GetResourceManager()->GetEntityTemplate(*parentTemplateId)}) {
-                ECSUtils::CopyEntity(*entityTemplate, entityHandle);
+            const auto parentTemplateId = StringId::Intern(componentsNode["template"].as<std::string>());
+            const auto entityTemplate{Locator::GetResourceManager()->GetEntityTemplate(parentTemplateId)};
+            if (entityTemplate.valid()) {
+                ECSUtils::CopyEntity(entityTemplate, entityHandle);
             } else {
-                Locator::GetLogger()->Error("Template {} not found", parentTemplateId->GetString());
+                Locator::GetLogger()->Error("Template {} not found", parentTemplateId.GetString());
             }
         }
         auto& id{entityHandle.get_or_emplace<IdComponent>()};

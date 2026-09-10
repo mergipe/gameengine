@@ -2,6 +2,8 @@
 
 #include "events/EventBus.h"
 #include "events/Events.h"
+#include "scripting/ScriptClass.h"
+#include "scripting/ScriptInstance.h"
 
 namespace Engine
 {
@@ -22,11 +24,13 @@ namespace Engine
         void Render(float frameExtrapolationTimeStep);
         void OnViewportResize(int width, int height);
 
-        Entity& CreateEntity();
-        Entity& CreateEntity(entt::handle entityTemplate);
-        void DestroyEntity(const Entity& entity);
-        template <typename T> void AddComponent(Entity& entity);
-        template <typename T> void RemoveComponent(Entity& entity);
+        Entity& CreateEntityOnNextStep();
+        Entity& CreateEntityOnNextStep(entt::handle entityTemplate);
+        void DestroyEntityOnNextStep(const Entity& entity);
+        template <typename T> void AddComponentOnNextStep(Entity& entity);
+        template <typename T> void RemoveComponentOnNextStep(Entity& entity);
+        std::optional<ScriptHandle> AddScriptOnNextStep(Entity& entity, const StringId& scriptClassId);
+        void RemoveScriptOnNextStep(Entity& entity, const StringId& scriptClassId);
 
     private:
         struct EntityComponent {
@@ -34,14 +38,29 @@ namespace Engine
             entt::id_type componentId{};
         };
 
+        struct EntityScript {
+            Entity* entity{};
+            ScriptInstance scriptInstance;
+        };
+
+        struct EntityScriptClassId {
+            Entity* entity{};
+            StringId scriptClassId{};
+        };
+
+        void SetRegistryListeners();
         void CreateEntities();
         void DestroyEntities();
         void AddComponents();
         void RemoveComponents();
+        void AddScripts();
+        void RemoveScripts();
+        void InvokeOnAllScripts(const std::function<void(ScriptInstance&)>& function);
 
         void OnAddRigidBody2DComponent(entt::registry& registry, entt::entity entity);
         void OnAddBoxCollider2DComponent(entt::registry& registry, entt::entity entity);
         void OnAddCircleCollider2DComponent(entt::registry& registry, entt::entity entity);
+        void OnAddScriptClassDatasComponent(entt::registry& registry, entt::entity entity);
         void OnRemoveRigidBody2DComponent(entt::registry& registry, entt::entity entity);
         void OnRemoveBoxCollider2DComponent(entt::registry& registry, entt::entity entity);
         void OnRemoveCircleCollider2DComponent(entt::registry& registry, entt::entity entity);
@@ -64,16 +83,18 @@ namespace Engine
         std::vector<Entity> m_entitiesToDestroy{};
         std::vector<EntityComponent> m_componentsToAdd{};
         std::vector<EntityComponent> m_componentsToRemove{};
+        std::vector<EntityScript> m_scriptsToAdd{};
+        std::vector<EntityScriptClassId> m_scriptsToRemove{};
 
         entt::registry* m_mainRegistry{};
     };
 
-    template <typename T> void Scene::AddComponent(Entity& entity)
+    template <typename T> void Scene::AddComponentOnNextStep(Entity& entity)
     {
         m_componentsToAdd.emplace_back(&entity, m_mainRegistry->storage<T>().info().hash());
     }
 
-    template <typename T> void Scene::RemoveComponent(Entity& entity)
+    template <typename T> void Scene::RemoveComponentOnNextStep(Entity& entity)
     {
         m_componentsToRemove.emplace_back(&entity, m_mainRegistry->storage<T>().info().hash());
     }

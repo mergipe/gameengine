@@ -1,5 +1,6 @@
 #include "Components.h"
 
+#include "core/Locator.h"
 #include "core/Math.h"
 #include "scene/Components.h"
 

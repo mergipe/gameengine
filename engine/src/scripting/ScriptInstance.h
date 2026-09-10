@@ -1,8 +1,7 @@
 #pragma once
 
 #include "ScriptClass.h"
-#include "core/Locator.h"
-#include "core/StringId.h"
+#include "api/Components.h"
 #include "core/Variant.h"
 
 #include <sol/sol.hpp>
@@ -11,12 +10,16 @@
 
 namespace Engine
 {
+    using ScriptHandle = sol::table;
+
     class ScriptInstance
     {
     public:
-        ScriptInstance(ScriptingApi::Entity entity, ScriptClass* scriptClass, const sol::table& luaTable);
+        ScriptInstance(const ScriptingApi::Entity& entity, ScriptClass* scriptClass,
+                       const ScriptHandle& luaTable);
 
-        [[nodiscard]] const StringId& GetClassId() const { return m_scriptClass->GetId(); }
+        [[nodiscard]] const ScriptClass& GetClass() const;
+        [[nodiscard]] const ScriptHandle& GetHandle() const;
         void SetAttribute(std::string_view name, Variant value);
 
         template <typename... TArgs> void InvokeFunction(std::string_view functionName, TArgs&&... args);
@@ -30,9 +33,12 @@ namespace Engine
         void InvokeOnTriggerExit(Entity& otherEntity, Shape2DId otherShapeId);
 
     private:
-        ScriptingApi::Entity m_entity;
-        sol::table m_luaTable{};
+        void OnInvokeFunctionError(std::string_view functionName,
+                                   const sol::protected_function_result& result);
+
+        ScriptHandle m_handle{};
         ScriptClass* m_scriptClass{};
+        ScriptingApi::Entity m_entity;
         bool m_enabled{true};
     };
 
@@ -42,12 +48,10 @@ namespace Engine
         if (!m_enabled) {
             return;
         }
-        sol::protected_function function{m_luaTable[functionName]};
-        const auto result{function(m_luaTable, std::forward<TArgs>(args)...)};
+        sol::protected_function function{m_handle[functionName]};
+        const auto result{function(m_handle, std::forward<TArgs>(args)...)};
         if (!result.valid()) {
-            Locator::GetLogger()->Error("Error calling {}:{} on entity {}: {}", m_scriptClass->GetName(),
-                                        functionName, m_entity.GetId().GetString(),
-                                        sol::error{result}.what());
+            OnInvokeFunctionError(functionName, result);
         }
     }
 } // namespace Engine

@@ -32,22 +32,29 @@ namespace Engine
     class ResourceManager final
     {
     public:
-        static std::filesystem::path GetResourcePath(const std::filesystem::path& relativePath);
+        static const std::filesystem::path& GetResourcesPath();
+        static std::filesystem::path GetResourceAbsolutePath(const std::filesystem::path& relativePath);
+        static std::filesystem::path GetResourceRelativePath(const std::filesystem::path& absolutePath);
+
         void Init();
         void ShutDown();
         void Clear();
+
         void LoadResource(const std::filesystem::path& relativeFilePath);
         const Texture2D& GetTexture(const StringId& id) const;
-        std::optional<entt::handle> GetEntityTemplate(const StringId& id) const;
+        // TODO: maybe use Entity instead of entt::handle
+        entt::handle GetEntityTemplate(const StringId& id) const;
 
     private:
-        static inline const std::filesystem::path s_resourcesPath{FileSystem::GetAbsolutePath("resources")};
-        static inline const auto s_metadataFileExtension{".metadata"};
         void LoadTexture(const StringId& id, const std::filesystem::path& filePath,
                          const YAML::Node& metadataNode);
         void LoadFont(const StringId& id, const std::filesystem::path& filePath,
                       const YAML::Node& metadataNode);
         void LoadEntityTemplate(const StringId& id, const std::filesystem::path& filePath);
+
+        static inline const std::filesystem::path s_resourcesPath{FileSystem::GetAbsolutePath("resources")};
+        static inline const auto s_metadataFileExtension{".metadata"};
+
         entt::registry m_templateRegistry{};
         std::unordered_map<StringId, entt::handle> m_entityTemplates{};
         std::unordered_map<StringId, std::unique_ptr<Texture2D>> m_textures{};

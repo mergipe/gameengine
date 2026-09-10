@@ -34,20 +34,19 @@ entities:
       player_input:
         commands:
           - name: rotate_left_p1
-            script_id: scripts/player/player_controller.lua
+            script_id: scripts/PlayerController.lua
             callback: OnRotateLeft
           - name: rotate_right_p1
-            script_id: scripts/player/player_controller.lua
+            script_id: scripts/PlayerController.lua
             callback: OnRotateRight
           - name: accelerate_p1
-            script_id: scripts/player/player_controller.lua
+            script_id: scripts/PlayerController.lua
             callback: OnAccelerate
           - name: shoot_p1
-            script_id: scripts/player/player_controller.lua
+            script_id: scripts/PlayerController.lua
             callback: OnShoot
       scripts:
-        - file_path: scripts/player/player_controller.lua
-          class_name: PlayerController
+        - class_id: scripts/PlayerController.lua
           attributes:
             rotation_speed: 300000000
             acceleration_magnitude: 2000000
@@ -64,20 +63,19 @@ entities:
       player_input:
         commands:
           - name: rotate_left_p2
-            script_id: scripts/player/player_controller.lua
+            script_id: scripts/PlayerController.lua
             callback: OnRotateLeft
           - name: rotate_right_p2
-            script_id: scripts/player/player_controller.lua
+            script_id: scripts/PlayerController.lua
             callback: OnRotateRight
           - name: accelerate_p2
-            script_id: scripts/player/player_controller.lua
+            script_id: scripts/PlayerController.lua
             callback: OnAccelerate
           - name: shoot_p2
-            script_id: scripts/player/player_controller.lua
+            script_id: scripts/PlayerController.lua
             callback: OnShoot
       scripts:
-        - file_path: scripts/player/player_controller.lua
-          class_name: PlayerController
+        - class_id: scripts/PlayerController.lua
           attributes:
             rotation_speed: 500000000
             acceleration_magnitude: 3000000

@@ -151,7 +151,11 @@ namespace Engine
         m_inputManager->ResolveInput();
     }
 
-    void Engine::Update() { m_sceneManager->GetCurrentScene()->Update(s_timeStep); }
+    void Engine::Update()
+    {
+        m_currentStep++;
+        m_sceneManager->GetCurrentScene()->Update(s_timeStep);
+    }
 
     void Engine::Render(float frameExtrapolationTimeStep)
     {

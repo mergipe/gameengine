@@ -58,7 +58,8 @@ namespace Engine
             Locator::GetLogger()->Error("Scene {} not found!", sceneId.GetString());
             return;
         }
-        const YAML::Node rootNode{YAML::LoadFile(ResourceManager::GetResourcePath(sceneId.GetString()))};
+        const YAML::Node rootNode{
+            YAML::LoadFile(ResourceManager::GetResourceAbsolutePath(sceneId.GetString()))};
         m_currentScene = std::make_unique<Scene>(&m_ecsRegistry);
         LoadResources(rootNode);
         LoadEntities(rootNode, m_ecsRegistry);
