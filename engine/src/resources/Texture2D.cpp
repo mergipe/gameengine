@@ -122,10 +122,10 @@ namespace Engine
 
     bool Texture2D::operator==(const Texture2D& other) const { return m_id == other.m_id; }
 
-    std::optional<Sprite> Texture2D::GetSprite(const StringId& spriteId) const
+    const Sprite* Texture2D::GetSprite(const StringId& spriteId) const
     {
         if (const auto sprite{m_sprites.find(spriteId)}; sprite != m_sprites.end()) {
-            return sprite->second;
+            return &sprite->second;
         }
         return {};
     }

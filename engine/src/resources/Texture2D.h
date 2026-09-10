@@ -45,12 +45,12 @@ namespace Engine
         bool operator==(const Texture2D& texture) const;
         GLsizei GetWidth() const { return m_width; }
         GLsizei GetHeight() const { return m_height; }
-        std::optional<Sprite> GetSprite(const StringId& spriteId) const;
+        const Sprite* GetSprite(const StringId& spriteId) const;
         void Create(const unsigned char* data, GLsizei width, GLsizei height, GLint imageFormat);
         void Bind(U32 unit) const;
 
     private:
-        std::unordered_map<StringId, Sprite> m_sprites{};
+        const std::unordered_map<StringId, Sprite> m_sprites{};
         GLuint m_id{};
         GLsizei m_width{};
         GLsizei m_height{};

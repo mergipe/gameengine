@@ -23,7 +23,7 @@ namespace Engine
         const Shader& LoadShader(const StringId& shaderId,
                                  const std::filesystem::path& vertexShaderRelativePath,
                                  const std::filesystem::path& fragmentShaderRelativePath,
-                                 const std::optional<std::filesystem::path>& geometryShaderRelativePath = {});
+                                 const std::filesystem::path& geometryShaderRelativePath = {});
         const Shader& GetShader(const StringId& shaderId) const;
 
     private:

@@ -12,20 +12,20 @@ namespace Engine
 
     void ShaderManager::Clear() { m_shaders.clear(); }
 
-    const Shader&
-    ShaderManager::LoadShader(const StringId& shaderId, const std::filesystem::path& vertexShaderRelativePath,
-                              const std::filesystem::path& fragmentShaderRelativePath,
-                              const std::optional<std::filesystem::path>& geometryShaderRelativePath)
+    const Shader& ShaderManager::LoadShader(const StringId& shaderId,
+                                            const std::filesystem::path& vertexShaderRelativePath,
+                                            const std::filesystem::path& fragmentShaderRelativePath,
+                                            const std::filesystem::path& geometryShaderRelativePath)
     {
         const std::string vertexShaderCode{ReadShaderFile(vertexShaderRelativePath)};
         const std::string fragmentShaderCode{ReadShaderFile(fragmentShaderRelativePath)};
         std::string geometryShaderCode{};
-        if (geometryShaderRelativePath) {
-            geometryShaderCode = ReadShaderFile(*geometryShaderRelativePath);
+        if (!geometryShaderRelativePath.empty()) {
+            geometryShaderCode = ReadShaderFile(geometryShaderRelativePath);
         }
         auto shader{std::make_unique<Shader>()};
         shader->Create(vertexShaderCode.c_str(), fragmentShaderCode.c_str(),
-                       geometryShaderRelativePath ? geometryShaderCode.c_str() : nullptr);
+                       geometryShaderRelativePath.empty() ? nullptr : geometryShaderCode.c_str());
         m_shaders.insert(std::make_pair(shaderId, std::move(shader)));
         Locator::GetLogger()->Info("'{}' shader loaded", shaderId.GetString());
         return *m_shaders.at(shaderId);
